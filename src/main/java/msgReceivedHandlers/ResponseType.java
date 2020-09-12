@@ -20,6 +20,7 @@ import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
+import start.RuntimeVariables;
 import survey.Survey;
 
 public abstract class ResponseType {
@@ -112,22 +113,27 @@ public abstract class ResponseType {
 	 * created.
 	 */
 	private final void redirect() {
+		
+		final String PREFIX = RuntimeVariables.MESSAGE_PREFIX.toLowerCase();
+		
 		// Expressions
 		switch (this.msgContent.toLowerCase()) {
 		case "hey megumin":
 			this.onGreeting();
 		}
 
-		// Expressions starting with "Meg"
-		if (this.msgContent.toLowerCase().startsWith("meg")) {
+		// Expressions starting with prefix
+		if (this.msgContent.toLowerCase().startsWith(PREFIX)) {
 
 			// Extract order and arguments
 			if (this.msgContent.contains(" ")) {
 				this.commandSection = this.msgContent.split(" ")[0];
 				this.argumentSection = this.msgContent.replaceFirst(this.commandSection + " ", "");
-				this.commandSection = this.commandSection.toLowerCase().replaceFirst("meg", "");
-			} else {
-				this.commandSection = this.msgContent.toLowerCase().replaceFirst("meg", "");
+				this.commandSection = this.commandSection.toLowerCase().replaceFirst(PREFIX, "");
+			}
+			// No command section exists
+			else {
+				this.commandSection = this.msgContent.toLowerCase().replaceFirst(PREFIX, "");
 			}
 
 			// Redirect

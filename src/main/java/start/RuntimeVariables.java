@@ -9,5 +9,6 @@ public class RuntimeVariables {
 	public final static Calendar START_TIME = Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
 	public static boolean IS_DEBUG = false;
 	public final static String VERSION = "1.0.3.4";
+	public final static String MESSAGE_PREFIX = "MEG";
 	
 }
