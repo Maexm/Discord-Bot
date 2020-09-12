@@ -1,8 +1,13 @@
 # Megumin-Bot
 
 # Wie verwende ich diesen Bot?
-1. Repo herunterladen
-2. Mit mvn build bauen und die entstehende JAR Datei ausführen **ODER** mit eclipse öffenen und von dort aus öffnen
+1. Repo klonen
+2. Mit `mvn build` bauen und die entstehende JAR Datei ausführen **ODER** mit Eclipse öffnen und von dort aus starten
+
+Nach dem Start erhält der User einen Bot-Token prompt. Hier einfach den Token für den eigenen Bot eingeben.
+Der Bot ist auf *Unser Server* ausgerichtet und funktioniert vermutlich bei anderen Clients nicht.
+
+Das Verhalten vom Bot, der auf mehreren Servern Mitglied ist, wurde **NICHT** getestet.
 
 # Wie orientiere ich mich in dem Spaghetticode?
 
