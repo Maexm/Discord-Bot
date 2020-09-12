@@ -1,5 +1,9 @@
 # Megumin-Bot
 
+# Wie verwende ich diesen Bot?
+1. Repo herunterladen
+2. Mit mvn build bauen und die entstehende JAR Datei ausführen **ODER** mit eclipse öffenen und von dort aus öffnen
+
 # Wie orientiere ich mich in dem Spaghetticode?
 
 Offensichtlich beginnt der Bot bei **StartUp**. Von dort aus werden messageReceivedEvents an den **MessageResponsePicker** weitergegeben und von dort aus an eine Instanz von **ResponseType**, wo der Befehl dann schließlich verarbeitet wird.
