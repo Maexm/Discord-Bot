@@ -1,11 +1,11 @@
 package msgReceivedHandlers;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import discord4j.core.DiscordClient;
+import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.ApplicationInfo;
@@ -13,17 +13,13 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.GuildEmoji;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.MessageChannel;
-import discord4j.core.object.entity.PrivateChannel;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.entity.VoiceChannel;
-import discord4j.core.object.util.Snowflake;
+import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.object.entity.channel.PrivateChannel;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
-import exceptions.IllegalMagicException;
 import musicBot.AudioEventHandler;
-import snowflakes.ChannelID;
-import snowflakes.GuildID;
 import survey.Survey;
 
 public abstract class ResponseType {
@@ -34,12 +30,11 @@ public abstract class ResponseType {
 	private String msgAuthorName;
 	private User msgAuthorObject;
 	private VoiceConnection voiceConnection = null;
-	private final DiscordClient client;
+	private final GatewayDiscordClient client;
 	private String commandSection = "";
 	private String argumentSection = "";
 	protected boolean useStandardRedirect;
 	protected final ArrayList<Survey> surveys;
-	private int retryCount = 0;
 
 	// AUDIO
 	protected final AudioEventHandler audioEventHandler;
@@ -54,7 +49,7 @@ public abstract class ResponseType {
 	 * @param client              The discord client object representing this bot
 	 * @param audioProvider       The audioProvider for this bot
 	 */
-	public ResponseType(boolean useStandardRedirect, final DiscordClient client, final AudioProvider audioProvider,
+	public ResponseType(boolean useStandardRedirect, final GatewayDiscordClient client, final AudioProvider audioProvider,
 			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
 		this.useStandardRedirect = useStandardRedirect;
 		this.client = client;
@@ -72,13 +67,12 @@ public abstract class ResponseType {
 	public final void acceptEvent(final MessageCreateEvent messageEvent) {
 
 		boolean fetchSuccess = true;
-		this.retryCount = 0;
 
 		try {
 			// Save message and other useful variables for easy access
 			this.msgEvent = messageEvent;
 			this.msgObject = this.msgEvent.getMessage();
-			this.msgContent = this.msgObject.getContent().orElse("");
+			this.msgContent = this.msgObject.getContent();
 			this.msgAuthorObject = this.msgObject.getAuthor().orElse(null);
 			this.msgAuthorName = this.msgAuthorObject.getUsername();
 			this.argumentSection = "";
@@ -99,20 +93,6 @@ public abstract class ResponseType {
 				// ERROR HANDLING
 			} catch (Exception e) {
 				e.printStackTrace();
-				if (e.getClass() == IOException.class && this.retryCount < 5) {
-					if (this.retryCount < 4) {
-						this.retryCount++;
-						System.out.println("A connection error occurred, retrying (attempt #" + this.retryCount + ")");
-						this.redirect();
-					} else {
-						this.retryCount++;// retryCount = 5
-						System.out.println("Retry failed, reconnecting...");
-						this.client.logout().block();
-						this.client.login().block();
-						System.out.println("Connected!");
-						this.redirect();
-					}
-				} else {
 					try {
 						this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
 					} catch (Exception e2) {
@@ -120,7 +100,7 @@ public abstract class ResponseType {
 					}
 				}
 			}
-		}
+		
 		if (fetchSuccess) {
 			this.customRedirect();// Method is empty by default. Must be implemented in order to to something.
 		}
@@ -344,7 +324,7 @@ public abstract class ResponseType {
 	 * 
 	 * @return This bot as client
 	 */
-	public final DiscordClient getClient() {
+	public final GatewayDiscordClient getClient() {
 		return this.client;
 	}
 
@@ -422,7 +402,7 @@ public abstract class ResponseType {
 	}
 
 	protected final long getResponseTime() {
-		return this.getClient().getResponseTime();
+		return 0l;//this.getClient().getResponseTime();
 	}
 
 	protected final ApplicationInfo getAppInfo() {

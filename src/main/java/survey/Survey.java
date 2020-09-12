@@ -6,8 +6,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.MessageChannel;
 import exceptions.SurveyCreateIllegalDurationException;
 import services.Markdown;
 import services.TimePrint;

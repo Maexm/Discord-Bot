@@ -7,7 +7,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
@@ -18,7 +18,7 @@ import survey.Survey;
 public final class MessageResponsePicker {
 	
 	private ResponseType responseSet;
-	private final DiscordClient client;
+	private final GatewayDiscordClient client;
 	private final TrackLoader trackScheduler;
 	private final AudioProvider audioProvider;
 	private final AudioPlayer player;
@@ -27,7 +27,7 @@ public final class MessageResponsePicker {
 	private final LinkedList<MusicTrackInfo> addInfo;
 	private final AudioEventHandler playerEventHandler;
 	
-	public MessageResponsePicker(final DiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
+	public MessageResponsePicker(final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
 		this.trackList = new LinkedList<AudioTrack>();
 		this.addInfo = new LinkedList<MusicTrackInfo>();
 		this.client = client;
@@ -46,7 +46,7 @@ public final class MessageResponsePicker {
 	 * @param client This client
 	 */
 	public void onMessageReceived(MessageCreateEvent msgEvent) {
-		if(!msgEvent.getMessage().getAuthor().get().getId().equals(client.getSelfId().get())) {
+		if(!msgEvent.getMessage().getAuthor().get().getId().equals(client.getSelfId())) {
 			this.responseSet.acceptEvent(msgEvent);
 		}
 	}

@@ -1,8 +1,8 @@
 package security;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.util.Snowflake;
 import exceptions.NoPermissionException;
 import snowflakes.GuildID;
 import snowflakes.RoleID;

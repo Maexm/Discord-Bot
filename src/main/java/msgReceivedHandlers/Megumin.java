@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
 import exceptions.IllegalMagicException;
 import exceptions.NoPermissionException;
@@ -28,7 +28,7 @@ import survey.Survey;
 
 public class Megumin extends ResponseType {
 
-	public Megumin(boolean useStandardRedirect, DiscordClient client, AudioProvider audioProvider,
+	public Megumin(boolean useStandardRedirect, GatewayDiscordClient client, AudioProvider audioProvider,
 			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler) {
 		super(useStandardRedirect, client, audioProvider, surveys, audioEventHandler);
 	}
@@ -399,7 +399,7 @@ public class Megumin extends ResponseType {
 	protected void onStatus() {
 		this.sendInSameChannel(Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ")
 				+ this.getAppInfo().getName() + "\n" + Markdown.toBold("Beschreibung: ")
-				+ this.getAppInfo().getDescription().orElse("FEHLER") + "\n" + Markdown.toBold("Ping: ")
+				+ this.getAppInfo().getDescription() + "\n" + Markdown.toBold("Ping: ")
 				+ this.getResponseTime() + "ms\n" + Markdown.toBold("Online seit: ")
 				+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
 				+ Markdown.toBold("Mein Entwickler: ")

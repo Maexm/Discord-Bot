@@ -9,12 +9,11 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 
-import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.GuildEmoji;
-import discord4j.core.object.entity.MessageChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
@@ -59,46 +58,55 @@ public class StartUp {
 		AudioSourceManagers.registerRemoteSources(playerManager);
 		final AudioPlayer player = playerManager.createPlayer();
 		AudioProvider provider = new AudioProviderLavaPlayer(player);
+
 		
-		final DiscordClient client = DiscordClientBuilder.create(TOKEN).build();
-		final MessageResponsePicker messageReceivedHandler = new MessageResponsePicker(client, provider, player, playerManager);
+		DiscordClientBuilder.create(TOKEN).build()
+				.withGateway(client -> {
+					
+					final MessageResponsePicker messageReceivedHandler = new MessageResponsePicker(client, provider, player, playerManager);
+					
+					// ########## On client login ##########
+					
+					client.getEventDispatcher().on(ReadyEvent.class).subscribe(ready -> {
+						System.out.println("LOGGED IN AS: '" + ready.getSelf().getUsername()+"'");
+						System.out.println("Currently member of "+ready.getGuilds().size()+ " guilds");
+						
+						client.updatePresence(Presence.online(Activity.playing(RuntimeVariables.IS_DEBUG?"EXPERIMENTELL":"Schreib 'MegHelp'!"))).block();
+						try {
+							List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer().blockFirst();
+							String emojiFormat = "";
+							for(GuildEmoji emoji: emojis) {
+								if(emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
+									emojiFormat = emoji.asFormat();
+									break;
+								}
+							}
+							MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
+								.getChannelById(ChannelID.MEGUMIN).block();
+							
+							channel.createMessage("Megumin ist online und einsatzbereit! "+emojiFormat+" Schreib "+Markdown.toBold("'MegHelp'")+" für mehr Informationen! ").block();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						});
+					
+					// ########## On received message ##########
+					
+					client.getEventDispatcher().on(MessageCreateEvent.class).log().subscribe(event -> {
+						if(RuntimeVariables.IS_DEBUG) {
+							System.out.println("Event received!");
+						}
+						messageReceivedHandler.onMessageReceived(event);
+					});
+					
+					return client.onDisconnect();
+				}).block();
 		
-		//	On logged in
-		client.getEventDispatcher().on(ReadyEvent.class).subscribe(ready -> {
-		System.out.println("LOGGED IN AS: '" + ready.getSelf().getUsername()+"'");
-		System.out.println("Currently member of "+ready.getGuilds().size()+ " guilds");
-		
-		client.updatePresence(Presence.online(Activity.playing(RuntimeVariables.IS_DEBUG?"EXPERIMENTELL":"Schreib 'MegHelp'!"))).block();
-		try {
-			List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer().blockFirst();
-			String emojiFormat = "";
-			for(GuildEmoji emoji: emojis) {
-				if(emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
-					emojiFormat = emoji.asFormat();
-					break;
-				}
-			}
-			MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
-				.getChannelById(ChannelID.MEGUMIN).block();
-			
-			channel.createMessage("Megumin ist online und einsatzbereit! "+emojiFormat+" Schreib "+Markdown.toBold("'MegHelp'")+" für mehr Informationen! ").block();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		});
 		
 		
-		// On received message
-		
-		client.getEventDispatcher().on(MessageCreateEvent.class).log().subscribe(event -> {
-			if(RuntimeVariables.IS_DEBUG) {
-				System.out.println("Event received!");
-			}
-			messageReceivedHandler.onMessageReceived(event);
-		});
 		
 		
-		client.login().block();
+		//client.login().block();
 		
 		
 

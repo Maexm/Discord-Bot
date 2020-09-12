@@ -3,14 +3,9 @@ package japanese;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-//import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 
-import reactor.netty.http.client.HttpClientResponse;
-//
 import com.google.gson.Gson;
-//
 import services.HTTPRequests;
 import services.Markdown;
 

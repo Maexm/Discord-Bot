@@ -1,13 +1,13 @@
 package japanese;
 
-import discord4j.core.object.entity.MessageChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import services.Markdown;
 
 public class RomajiPreparer {
 	
 	//KEYWORDS: #smallTSU
 	
-	private final static String WARN_V = "HINWEIS: Dein Wort enthält ein 'v', bitte ersetze es durch 'f', wenn es als 'f' ausgesprochen wird! Aktuell wird das 'v' als 'w' ausgesprochen!";
+	private final static String WARN_V = "HINWEIS: Dein Wort enthï¿½lt ein 'v', bitte ersetze es durch 'f', wenn es als 'f' ausgesprochen wird! Aktuell wird das 'v' als 'w' ausgesprochen!";
 
 	public static String getPrepared(String work, MessageChannel channel){
 		work = work.toLowerCase();
@@ -123,7 +123,7 @@ public class RomajiPreparer {
 						i++;
 						continue;
 					}
-					else if((!RomajiPreparer.isLastChar(text, i) && text[i+1] != 't') || i == text.length-1){//Häng ein TO an, wenn Nachfolger ungleich t ODER wenn letter Buchstabe
+					else if((!RomajiPreparer.isLastChar(text, i) && text[i+1] != 't') || i == text.length-1){//Hï¿½ng ein TO an, wenn Nachfolger ungleich t ODER wenn letter Buchstabe
 						work = work + "to";
 						continue;
 					}
@@ -145,7 +145,7 @@ public class RomajiPreparer {
 				}
 				//ACHTUNG NORMALFALL!!!!!
 				else if(!RomajiPreparer.isLastChar(text, i) && isVowel(text[i+1])){//NORMAL-Fall
-					work = work+text[i]+text[i+1];//Konsonant + Vokal - sonst u anhängen (siehe unterhalb else if)
+					work = work+text[i]+text[i+1];//Konsonant + Vokal - sonst u anhï¿½ngen (siehe unterhalb else if)
 					i++;
 					continue;
 				}//ENDE NORMALFALL
