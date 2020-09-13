@@ -12,7 +12,7 @@ public class Help {
 			+ "**MegRomaji AUSDRUCK**: Ich wandle Hiragana und Katakana (KEINE KANJI!) in die dir vertraute Schrift um! :sa: --> :abc:\n"
 			+ "**MegKatakana TEXT**: Ich konvertiere (so gut ich kann) deinen Text in ästhetische, japanische Katakana! :flag_jp:\n"
 			+ "**MegZeit**: Ich nenne dir die aktuelle Uhrzeit und das Datum (deutsche Zeit)! :clock1:\n"
-			+ "**MegStatus**: Aktuelle Statusinformationen zu meiner Existenz :signal_strength\n"
+			+ "**MegStatus**: Aktuelle Statusinformationen zu meiner Existenz :signal_strength:\n"
 			+ "**MegSchreiben/Sprechen TEXT**: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
 			+ "**MegHelp**: Siehst du gerade vor dir, baka!\n"
 			+ "\n"
