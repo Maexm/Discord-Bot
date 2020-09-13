@@ -11,8 +11,9 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 
 
-# Eclipse
+# IDE
 
 .settings/
 .classpath
 .project
+.factorypath
