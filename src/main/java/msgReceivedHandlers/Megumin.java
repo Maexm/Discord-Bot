@@ -28,15 +28,9 @@ import survey.Survey;
 
 public class Megumin extends ResponseType {
 
-	public Megumin(boolean useStandardRedirect, GatewayDiscordClient client, AudioProvider audioProvider,
+	public Megumin(GatewayDiscordClient client, AudioProvider audioProvider,
 			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler) {
-		super(useStandardRedirect, client, audioProvider, surveys, audioEventHandler);
-	}
-
-	@Override
-	protected void customRedirect() {
-		// TODO Auto-generated method stub
-
+		super(client, audioProvider, surveys, audioEventHandler);
 	}
 
 	@Override

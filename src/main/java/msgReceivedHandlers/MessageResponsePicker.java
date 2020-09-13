@@ -26,6 +26,7 @@ public final class MessageResponsePicker {
 	private final LinkedList<AudioTrack> trackList;
 	private final LinkedList<MusicTrackInfo> addInfo;
 	private final AudioEventHandler playerEventHandler;
+	private final ArrayList<Middleware> middlewareBefore = new ArrayList<Middleware>();
 	
 	public MessageResponsePicker(final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
 		this.trackList = new LinkedList<AudioTrack>();
@@ -37,7 +38,10 @@ public final class MessageResponsePicker {
 		this.audioProvider = audioProvider;
 		this.playerEventHandler = new AudioEventHandler(this.player, playerManager, this.trackScheduler, trackList, addInfo);
 		this.player.addListener(playerEventHandler);
-		this.responseSet = new Megumin(true, client, this.audioProvider, this.surveys, this.playerEventHandler);
+
+		// ########## RESPONSE SETS ##########
+		this.middlewareBefore.add(new MusicRecommendation(client, this.audioProvider, this.surveys, this.playerEventHandler));
+		this.responseSet = new Megumin(client, this.audioProvider, this.surveys, this.playerEventHandler);
 	}
 	
 	/**
@@ -47,7 +51,23 @@ public final class MessageResponsePicker {
 	 */
 	public void onMessageReceived(MessageCreateEvent msgEvent) {
 		if(!msgEvent.getMessage().getAuthor().get().getId().equals(client.getSelfId())) {
-			this.responseSet.acceptEvent(msgEvent);
+
+			boolean shouldContinue = true;
+
+			// ########## MIDDLEWARE BEFORE ##########
+			for(Middleware middleware: this.middlewareBefore){
+				shouldContinue = middleware.acceptEvent(msgEvent);
+				if(!shouldContinue){
+					return;
+				}
+			}
+
+			// ########## RESPONSE TYPE ##########
+			shouldContinue = this.responseSet.acceptEvent(msgEvent);
+
+			if(!shouldContinue){
+				return;
+			}
 		}
 	}
 
