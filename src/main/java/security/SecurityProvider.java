@@ -6,7 +6,6 @@ import discord4j.core.object.entity.User;
 import exceptions.NoPermissionException;
 import snowflakes.GuildID;
 import snowflakes.RoleID;
-import snowflakes.UserID;
 
 public class SecurityProvider {
 	/**
@@ -15,8 +14,8 @@ public class SecurityProvider {
 	 * @param required The required SecurityLevel
 	 * @return True if the users SecurityLevel is equal or higher compared to the required SecurityLevel.
 	 */
-	public static boolean hasPermission(User user, int required) {
-		return SecurityProvider.getPermissionLevel(user) >= required;
+	public static boolean hasPermission(User user, int required, Snowflake ownerId) {
+		return SecurityProvider.getPermissionLevel(user, ownerId) >= required;
 	}
 	/**
 	 * Works just like hasPermission does, but instead of returning a boolean,
@@ -25,8 +24,8 @@ public class SecurityProvider {
 	 * @param required
 	 * @throws NoPermissionException
 	 */
-	public static void checkPermission(User user, int required) throws NoPermissionException {
-		int lvl = SecurityProvider.getPermissionLevel(user);
+	public static void checkPermission(User user, int required, Snowflake ownerId) throws NoPermissionException {
+		int lvl = SecurityProvider.getPermissionLevel(user, ownerId);
 		if(lvl < required) {
 			throw new NoPermissionException("'"+user.getUsername()+"' has no permission to do a certain action. "+required+" was required, but user had "+lvl);
 		}
@@ -37,9 +36,9 @@ public class SecurityProvider {
 	 * @param user
 	 * @return The user's SecurityLevel, based on values from SecurityLevel.
 	 */
-	public static int getPermissionLevel(User user) {
+	public static int getPermissionLevel(User user, Snowflake ownerId) {
 		//	Me. The developer me
-		if(user.getId().equals(UserID.MAXIM)) {
+		if(user.getId().equals(ownerId)) {
 			return SecurityLevel.DEV;
 		}
 		

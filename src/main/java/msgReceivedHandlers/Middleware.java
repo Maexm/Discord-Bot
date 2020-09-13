@@ -332,7 +332,11 @@ public abstract class Middleware {
 
     protected final Presence getMemberPresence(Snowflake userId, Snowflake guildId){
         return this.getMember(userId, guildId).getPresence().block();
-    }
+	}
+	
+	protected final User getOwner(){
+		return this.getAppInfo().getOwner().block();
+	}
 
 	// ########## INTERACTIVE METHODS ##########
 

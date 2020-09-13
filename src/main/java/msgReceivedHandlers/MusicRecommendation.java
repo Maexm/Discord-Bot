@@ -2,13 +2,13 @@ package msgReceivedHandlers;
 
 import java.util.ArrayList;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.presence.Status;
 import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
 import services.Markdown;
 import snowflakes.ChannelID;
-import snowflakes.UserID;
 import survey.Survey;
 
 public class MusicRecommendation extends Middleware {
@@ -21,18 +21,20 @@ public class MusicRecommendation extends Middleware {
     @Override
     public boolean handle() {
 
-        if (this.msgContent.contains(this.getMember(UserID.MAXIM, this.getMessageGuild().getId()).getMention())
+        final Snowflake ownerId = this.getOwner().getId();
+        if (this.msgContent.contains(this.getMember(ownerId, this.getMessageGuild().getId()).getMention())
                 && this.msgObject.getChannelId().equals(ChannelID.MUSIK) && this.msgAuthorObject != null
-                && !this.msgAuthorObject.getId().equals(UserID.MAXIM)
-                && this.getMemberPresence(UserID.MAXIM, this.getMessageGuild().getId()).getStatus()
+                && !this.msgAuthorObject.getId().equals(ownerId)
+                && this.getMemberPresence(ownerId, this.getMessageGuild().getId()).getStatus()
                         .compareTo(Status.ONLINE) != 0) {
             this.sendAnswer(
-                    "Danke für deine Musikempfehlung! Maxim ist aktuell beschäftigt, ich habe ihm aber die Nachricht weitergeschickt, damit er alles auf einem Blick hat!");
+                    "Danke für deine Musikempfehlung! "+this.getOwner().asMember(this.getMessageGuild().getId()).block().getDisplayName()
+                    +"ist aktuell beschäftigt, ich habe ihm aber die Nachricht weitergeschickt, damit er alles auf einem Blick hat!");
 
             String msg = Markdown.toBold(this.getMessageAuthorName()) + " hat dir eine Musikempfehlung hinterlassen!\n"
                     + Markdown.toMultilineBlockQuotes(this.msgContent);
 
-            this.getMember(UserID.MAXIM, this.getMessageGuild().getId()).getPrivateChannel().block().createMessage(msg)
+            this.getMember(ownerId, this.getMessageGuild().getId()).getPrivateChannel().block().createMessage(msg)
                     .block();
         }
         return true;

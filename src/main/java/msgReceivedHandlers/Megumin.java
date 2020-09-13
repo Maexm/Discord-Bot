@@ -397,7 +397,7 @@ public class Megumin extends ResponseType {
 				+ this.getResponseTime() + "ms\n" + Markdown.toBold("Online seit: ")
 				+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
 				+ Markdown.toBold("Mein Entwickler: ")
-				+ this.getAppInfo().getOwner().block().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
+				+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
 				+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " "
 				+ (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "")+"\n"
 				+ Markdown.toBold("GitHub: ")+ RuntimeVariables.GIT_URL);
