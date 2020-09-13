@@ -29,7 +29,7 @@ public class MusicRecommendation extends Middleware {
                     "Danke für deine Musikempfehlung! Maxim ist aktuell beschäftigt, ich habe ihm aber die Nachricht weitergeschickt, damit er alles auf einem Blick hat!");
 
                     String msg = Markdown.toBold(this.getMessageAuthorName())+" hat dir eine Musikempfehlung hinterlassen!\n"
-                    + Markdown.toBlockQuotes(this.msgContent);
+                    + Markdown.toMultilineBlockQuotes(this.msgContent);
 
                     this.getMember(UserID.MAXIM, this.getMessageGuild().getId()).getPrivateChannel().block().createMessage(msg).block();
         }
