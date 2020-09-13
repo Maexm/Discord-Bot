@@ -1,3 +1,5 @@
+# STOP: DIE README IST DEPRECATED UND MUSS AKTUALISIERT WERDEN
+
 # Megumin-Bot
 
 # Wie verwende ich diesen Bot?
