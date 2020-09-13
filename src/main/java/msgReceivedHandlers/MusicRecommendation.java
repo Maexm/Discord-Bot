@@ -21,17 +21,19 @@ public class MusicRecommendation extends Middleware {
     @Override
     public boolean handle() {
 
-        if (this.msgContent.contains(UserID.MAXIM.toString()) && this.msgObject.getChannelId().equals(ChannelID.MUSIK)
-                && this.msgAuthorObject != null && !this.msgAuthorObject.getId().equals(UserID.MAXIM)
+        if (this.msgContent.contains(this.getMember(UserID.MAXIM, this.getMessageGuild().getId()).getMention())
+                && this.msgObject.getChannelId().equals(ChannelID.MUSIK) && this.msgAuthorObject != null
+                && !this.msgAuthorObject.getId().equals(UserID.MAXIM)
                 && this.getMemberPresence(UserID.MAXIM, this.getMessageGuild().getId()).getStatus()
                         .compareTo(Status.ONLINE) != 0) {
             this.sendAnswer(
                     "Danke für deine Musikempfehlung! Maxim ist aktuell beschäftigt, ich habe ihm aber die Nachricht weitergeschickt, damit er alles auf einem Blick hat!");
 
-                    String msg = Markdown.toBold(this.getMessageAuthorName())+" hat dir eine Musikempfehlung hinterlassen!\n"
+            String msg = Markdown.toBold(this.getMessageAuthorName()) + " hat dir eine Musikempfehlung hinterlassen!\n"
                     + Markdown.toMultilineBlockQuotes(this.msgContent);
 
-                    this.getMember(UserID.MAXIM, this.getMessageGuild().getId()).getPrivateChannel().block().createMessage(msg).block();
+            this.getMember(UserID.MAXIM, this.getMessageGuild().getId()).getPrivateChannel().block().createMessage(msg)
+                    .block();
         }
         return true;
     }
