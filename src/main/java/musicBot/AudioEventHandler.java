@@ -1,5 +1,6 @@
 package musicBot;
 
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -205,11 +206,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 	void ended() {
 		System.out.println("Music ended!");
 		this.active = false;
+		this.parent.leaveVoiceChannel();
+		//Message oldMessage = this.radioMessage;
+		
 		this.radioMessage.edit(spec -> {
 			spec.setContent(":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!");
 		}).block();
 		this.radioMessage = null;
-		this.parent.leaveVoiceChannel();
 	}
 
 	@Override
@@ -305,7 +308,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (this.radioMessage != null) {
 			// System.out.println("updating message");
 			try {
-				this.radioMessage.edit(spec -> {
+				this.radioMessage = this.radioMessage.edit(spec -> {
 					spec.setContent(this.buildInfoText(this.player.getPlayingTrack()));
 				}).block();
 			} catch (Exception e) {
