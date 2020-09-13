@@ -22,7 +22,8 @@ public class MusicRecommendation extends Middleware {
     public boolean handle() {
 
         final Snowflake ownerId = this.getOwner().getId();
-        if (this.msgContent.contains(this.getMember(ownerId, this.getMessageGuild().getId()).getMention())
+        if (this.msgContent.contains(this.getOwner().getMention())
+                && !this.isPrivate()
                 && this.msgObject.getChannelId().equals(ChannelID.MUSIK) && this.msgAuthorObject != null
                 && !this.msgAuthorObject.getId().equals(ownerId)
                 && this.getMemberPresence(ownerId, this.getMessageGuild().getId()).getStatus()
