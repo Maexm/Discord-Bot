@@ -27,7 +27,6 @@ public class Jisho {
 			e.printStackTrace();
 		}
 		String url = Jisho.jishoURLLookup+keyword;
-		System.out.println(url);
 		
 			String response = HTTPRequests.get(url);
 			if(response == null) {
