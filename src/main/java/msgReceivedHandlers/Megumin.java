@@ -40,7 +40,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onLogout() {
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM)) {
+		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
 			this.sendInSameChannel("Bis bald!");
 			this.audioEventHandler.clearList();
 			if (this.audioEventHandler.isPlaying()) {
@@ -74,7 +74,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onHelp() {
 		this.sendPrivateAnswer(Help.HELPTEXT);
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM)) {
+		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
 			this.sendPrivateAnswer(Help.ADMHELP);
 		}
 	}
@@ -216,7 +216,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onTest() {
 		try {
-			SecurityProvider.checkPermission(getMessageAuthorObject(), SecurityLevel.DEV);
+			SecurityProvider.checkPermission(getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId());
 
 			
 
@@ -366,7 +366,7 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.audioEventHandler.getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM)) {
+		} else if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
 				this.audioEventHandler.setVolume(vol);
@@ -405,7 +405,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onDeleteMessages() {
-		if(SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM)) {
+		if(SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
 			if(this.getArgumentSection().equals("")){
 				this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
 			}
