@@ -284,7 +284,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				+ "\n"
 				+ progressBar
 				+ "\n"
-				+ "Der Track wurde vorgeschlagen von: "
+				+ "Der Track wurde hinzugefügt von: "
 				+ Markdown.toBold(userName)
 				+ "\n"
 				+ ytSearch + "Link: " + track.getInfo().uri;
