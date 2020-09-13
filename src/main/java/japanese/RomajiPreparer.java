@@ -7,7 +7,7 @@ public class RomajiPreparer {
 	
 	//KEYWORDS: #smallTSU
 	
-	private final static String WARN_V = "HINWEIS: Dein Wort enth�lt ein 'v', bitte ersetze es durch 'f', wenn es als 'f' ausgesprochen wird! Aktuell wird das 'v' als 'w' ausgesprochen!";
+	private final static String WARN_V = "HINWEIS: Dein Wort enthält ein 'v', bitte ersetze es durch 'f', wenn es als 'f' ausgesprochen wird! Aktuell wird das 'v' als 'w' ausgesprochen!";
 
 	public static String getPrepared(String work, MessageChannel channel){
 		work = work.toLowerCase();
