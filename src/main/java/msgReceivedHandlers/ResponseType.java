@@ -545,7 +545,7 @@ public abstract class ResponseType {
 	public final void leaveVoiceChannel() {
 		try {
 			if (this.isVoiceConnected()) {
-				this.voiceConnection.disconnect();
+				this.voiceConnection.disconnect().block();
 				this.voiceConnection = null;
 			}
 		} catch (Exception e) {
