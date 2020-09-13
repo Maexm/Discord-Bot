@@ -19,7 +19,6 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
-import discord4j.core.object.presence.Status;
 import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
@@ -78,8 +77,6 @@ public abstract class Middleware {
 			this.msgAuthorName = this.msgAuthorObject != null? this.msgAuthorObject.getUsername(): "";
 			this.argumentSection = "";
 			this.commandSection = "";
-			System.out.println("Received message '" + this.msgContent + "' by '" + this.msgAuthorName + "' with "
-					+ this.msgAuthorObject.getId() + " at " + this.msgObject.getTimestamp());
 		} catch (Exception e) {
 			System.out.println("Something went wrong, while accepting event!");
 			e.printStackTrace();

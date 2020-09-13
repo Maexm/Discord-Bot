@@ -40,6 +40,7 @@ public final class MessageResponsePicker {
 		this.player.addListener(playerEventHandler);
 
 		// ########## RESPONSE SETS ##########
+		this.middlewareBefore.add(new Logger(client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new MusicRecommendation(client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.responseSet = new Megumin(client, this.audioProvider, this.surveys, this.playerEventHandler);
 	}
