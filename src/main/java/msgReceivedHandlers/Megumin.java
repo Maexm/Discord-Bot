@@ -400,7 +400,7 @@ public class Megumin extends ResponseType {
 				+ this.getAppInfo().getOwner().block().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
 				+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " "
 				+ (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "")+"\n"
-				+ Markdown.toBold("GitHub: ")+ "https://github.com/Maexm/Megumin-Bot");
+				+ Markdown.toBold("GitHub: ")+ RuntimeVariables.GIT_URL);
 	}
 
 	@Override

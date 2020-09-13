@@ -10,5 +10,6 @@ public class RuntimeVariables {
 	public static boolean IS_DEBUG = false;
 	public final static String VERSION = "1.0.3.4";
 	public final static String MESSAGE_PREFIX = "MEG";
+	public final static String GIT_URL = "https://github.com/Maexm/Discord-Bot";
 	
 }

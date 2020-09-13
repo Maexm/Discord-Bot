@@ -23,7 +23,7 @@ public class Help {
 			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
 			+ "\n"
 			+ "Fragen, Anregungen und Vorschläge können gerne Maxim oder auf GitHub gestellt werden:\n"
-			+ "https://github.com/Maexm/Megumin-Bot/issues";
+			+ RuntimeVariables.GIT_URL;
 	
 	public final static String MUSICHELPTEXT = ">>> Du möchtest deine Freunde mit deiner furchtbaren Musik nerven? Ich helfe dir dabei! :musical_note:\n\n"
 			+ "*Du musst für alle Befehle selber im VoiceChannel sein!*\n"
