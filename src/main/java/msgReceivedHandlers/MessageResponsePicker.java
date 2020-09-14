@@ -58,7 +58,13 @@ public final class MessageResponsePicker {
 
 			// ########## MIDDLEWARE BEFORE ##########
 			for(Middleware middleware: this.middlewareBefore){
-				shouldContinue = middleware.acceptEvent(msgEvent);
+				try{
+					shouldContinue = middleware.acceptEvent(msgEvent);
+				}
+				catch(Exception e){
+					System.out.println("Error while using middleware: '"+middleware+"'");
+					System.out.println(e);
+				}
 				if(!shouldContinue){
 					return;
 				}
