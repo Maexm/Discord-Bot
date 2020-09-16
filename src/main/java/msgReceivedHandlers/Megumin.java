@@ -1,5 +1,6 @@
 package msgReceivedHandlers;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
@@ -15,6 +16,7 @@ import japanese.ToKatakanaConverter;
 import japanese.ToRomajiConverter;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
+import reactor.core.publisher.Mono;
 import security.SecurityLevel;
 import security.SecurityProvider;
 import services.Emoji;
@@ -218,6 +220,10 @@ public class Megumin extends ResponseType {
 		try {
 			SecurityProvider.checkPermission(getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId());
 
+			int dur = 20;
+			this.sendAnswer("**Async test** - Blockiere für "+dur+" Sekunden");
+			
+			Mono.just("Finished!").delayElement(Duration.ofSeconds(dur)).subscribe(result -> System.out.println(result));
 			
 
 		} catch (NoPermissionException e) {
