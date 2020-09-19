@@ -220,10 +220,14 @@ public class Megumin extends ResponseType {
 		try {
 			SecurityProvider.checkPermission(getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId());
 
-			int dur = 20;
-			this.sendAnswer("**Async test** - Blockiere für "+dur+" Sekunden");
+			//this.sendAnswer("Keine Testfunktion angegeben!");
+			System.out.println(this.getChannelByID(ChannelID.MEGUMIN, GuildID.UNSER_SERVER).getRestChannel().getData().block());
+			//int dur = 20;
+			//this.sendAnswer("**Async test** - Blockiere für "+dur+" Sekunden");
 			
-			Mono.just("Finished!").delayElement(Duration.ofSeconds(dur)).subscribe(result -> System.out.println(result));
+			//Mono.just("Finished!").delayElement(Duration.ofSeconds(dur)).subscribe(result -> System.out.println(result));
+
+			//this.getChannelByID(ChannelID.MEGUMIN, GuildID.UNSER_SERVER).s
 			
 
 		} catch (NoPermissionException e) {
@@ -375,12 +379,12 @@ public class Megumin extends ResponseType {
 		} else if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
-				this.audioEventHandler.setVolume(vol);
 				if (vol > 200) {
 					vol = 200;
 				} else if (vol < 0) {
 					vol = 0;
 				}
+				this.audioEventHandler.setVolume(vol);
 				this.sendAnswer("Lautstärke wurde auf " + vol + " gestellt! " + Emoji.getVol(vol));
 			} catch (Exception e) {
 				this.sendAnswer("konnte die Zahl nicht auslesen!");
