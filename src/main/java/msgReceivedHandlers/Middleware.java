@@ -1,6 +1,5 @@
 package msgReceivedHandlers;
 
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +14,7 @@ import discord4j.core.object.entity.GuildEmoji;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.GuildMessageChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
@@ -322,8 +322,8 @@ public abstract class Middleware {
 		return this.client.getGuildById(guildID).block();
 	}
 
-	protected final MessageChannel getChannelByID(Snowflake channelID, Snowflake guildID) {
-		return (MessageChannel) this.getGuildByID(guildID).getChannelById(channelID).block();
+	protected final GuildMessageChannel getChannelByID(Snowflake channelID, Snowflake guildID) {
+		return (GuildMessageChannel) this.getGuildByID(guildID).getChannelById(channelID).block();
     }
 
     protected final Member getMember(Snowflake userId, Snowflake guildId){
