@@ -437,10 +437,11 @@ public abstract class Middleware {
 	 */
 	public final void leaveVoiceChannel() {
 		try {
-			this.getClient().getVoiceConnectionRegistry().disconnect(this.voiceConnection.getGuildId()).timeout(Duration.ofSeconds(5l)).subscribe();
-				//this.voiceConnection.disconnect().block();
+			this.getClient().getVoiceConnectionRegistry().disconnect(this.voiceConnection.getGuildId()).doOnTerminate(() -> {
+				System.out.println("Left voice channel");
 				this.voiceConnection = null;
-				
+			})
+			.subscribe();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
