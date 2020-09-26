@@ -218,14 +218,14 @@ public class Megumin extends ResponseType {
 		try {
 			SecurityProvider.checkPermission(getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId());
 
-			//this.sendAnswer("Keine Testfunktion angegeben!");
-			System.out.println(this.getChannelByID(ChannelID.MEGUMIN, GuildID.UNSER_SERVER).getRestChannel().getData().block());
+			this.sendAnswer("Keine Testfunktion angegeben!");
+
 			//int dur = 20;
 			//this.sendAnswer("**Async test** - Blockiere für "+dur+" Sekunden");
 			
 			//Mono.just("Finished!").delayElement(Duration.ofSeconds(dur)).subscribe(result -> System.out.println(result));
 
-			//this.getChannelByID(ChannelID.MEGUMIN, GuildID.UNSER_SERVER).s
+			//this.getChannelByID(ChannelID.MEGUMIN, GuildID.UNSER_SERVER).getRestChannel().
 			
 
 		} catch (NoPermissionException e) {
