@@ -13,6 +13,7 @@ import java.util.Scanner;
 
 public class HTTPRequests {
 
+	@Deprecated
 	/**
 	 * Sends a simple HTTPRequest to a given url and returns its response as string.
 	 * Does NOT support additional parameters or authentication.
@@ -40,7 +41,7 @@ public class HTTPRequests {
 		}
 	}
 
-	public static String get2(final String URL) {
+	public static String getModern(final String URL) {
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).build();
 
@@ -48,15 +49,11 @@ public class HTTPRequests {
 		try {
 			body = client.send(req, BodyHandlers.ofString()).body();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		finally{
-			return body;
-		}
+		return body;
 	}
 
 	public static String getTest(final String URL){
