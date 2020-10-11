@@ -15,6 +15,7 @@ import japanese.ToKatakanaConverter;
 import japanese.ToRomajiConverter;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
+import musicBot.MusicVariables;
 import security.SecurityLevel;
 import security.SecurityProvider;
 import services.Emoji;
@@ -28,8 +29,8 @@ import survey.Survey;
 
 public class Megumin extends ResponseType {
 
-	public Megumin(GatewayDiscordClient client, AudioProvider audioProvider,
-			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler) {
+	public Megumin(GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+			AudioEventHandler audioEventHandler) {
 		super(client, audioProvider, surveys, audioEventHandler);
 	}
 
@@ -51,8 +52,7 @@ public class Megumin extends ResponseType {
 			}
 			try {
 				this.deleteAllMessages(ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			this.logOut();
@@ -97,87 +97,90 @@ public class Megumin extends ResponseType {
 
 		boolean isMulti = this.getCommandSection().equals("multiumfrage");
 		switch (arguments.length) {
-		// All surveys
-		case 0:
-			this.sendAnswer("diese Funktion ist noch nicht verfügbar!");
-			break;
-		// Current results/ delete all votes
-		case 1:
-			// View stats (TODO)
-			this.sendAnswer("diese Funktion ist noch nicht verfügbar!");
-			break;
-		// Submit result
-		case 2:
-			String surveyKey = arguments[0];
-			if (this.surveyExists(surveyKey)) {
-				Survey survey = this.getSurveyForKey(surveyKey);
-				String surveyOption = survey.getOptionTextFromIndex(arguments[1]);
-				if (survey.optionExists(surveyOption)) {
-					boolean inPrivate = this.isPrivate();
-					if (!inPrivate) {
-						this.deleteReceivedMessage();
-						this.sendPrivateAnswer(
-								"Du hast öffentlich für eine Umfrage abgestimmt. Ich habe diese Nachricht gelöscht,\n"
-										+ "eventuell hat aber jemand schon deine tiefsten Geheimnisse gesehen! :cold_sweat:");
+			// All surveys
+			case 0:
+				this.sendAnswer("diese Funktion ist noch nicht verfügbar!");
+				break;
+			// Current results/ delete all votes
+			case 1:
+				// View stats (TODO)
+				this.sendAnswer("diese Funktion ist noch nicht verfügbar!");
+				break;
+			// Submit result
+			case 2:
+				String surveyKey = arguments[0];
+				if (this.surveyExists(surveyKey)) {
+					Survey survey = this.getSurveyForKey(surveyKey);
+					String surveyOption = survey.getOptionTextFromIndex(arguments[1]);
+					if (survey.optionExists(surveyOption)) {
+						boolean inPrivate = this.isPrivate();
+						if (!inPrivate) {
+							this.deleteReceivedMessage();
+							this.sendPrivateAnswer(
+									"Du hast öffentlich für eine Umfrage abgestimmt. Ich habe diese Nachricht gelöscht,\n"
+											+ "eventuell hat aber jemand schon deine tiefsten Geheimnisse gesehen! :cold_sweat:");
+						}
+						String resp = this.getSurveyForKey(surveyKey).receiveVote(getMessageAuthorObject(),
+								surveyOption);
+						switch (resp) {
+							case Survey.VOTE_ADDED:
+								this.sendPrivateAnswer("Du hast für die Umfrage '"
+										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
+										+ " abgestimmt!\nDu hast abgestimmt für: '" + Markdown.toBold(surveyOption)
+										+ "'\nDanke für die Teilnahme!");
+								break;
+							case Survey.VOTE_DELETED:
+								this.sendPrivateAnswer("Deine Stimme aus der Umfrage '"
+										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
+										+ " wurde entfernt!\nDu hattest vorher '" + Markdown.toBold(surveyOption)
+										+ "' gewählt. ");
+								break;
+							case Survey.VOTE_REJECTED:
+								// Not currently used
+								this.sendPrivateAnswer(
+										"Mehrfache Antworten sind ausgeschaltet.\nDeine Stimme aus der Umfrage '"
+												+ Markdown
+														.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
+												+ " ist also nicht gültig.\nWenn du deine Antwort ändern möchtest, musst du sie zunächst löschen (für die zu löschende Auswahl nochmal abstimmen!)");
+								break;
+							case Survey.VOTE_CHANGED:
+								this.sendPrivateAnswer("Du hast für die Umfrage '"
+										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
+										+ " bereits abgestimmt, aber mehrfache Antworten sind nicht erlaubt!\n"
+										+ "Deine alte Stimme wurde gelöscht. Du hast jetzt für '"
+										+ Markdown.toBold(surveyOption) + "' abgestimmt!");
+								break;
+							default:
+								throw new IllegalMagicException("Invalid vote response '" + resp + "' received!");
+						}
+					} else {
+						this.sendAnswer("diese Option existiert nicht!");
 					}
-					String resp = this.getSurveyForKey(surveyKey).receiveVote(getMessageAuthorObject(), surveyOption);
-					switch (resp) {
-					case Survey.VOTE_ADDED:
-						this.sendPrivateAnswer("Du hast für die Umfrage '"
-								+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
-								+ " abgestimmt!\nDu hast abgestimmt für: '" + Markdown.toBold(surveyOption)
-								+ "'\nDanke für die Teilnahme!");
-						break;
-					case Survey.VOTE_DELETED:
-						this.sendPrivateAnswer("Deine Stimme aus der Umfrage '"
-								+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
-								+ " wurde entfernt!\nDu hattest vorher '" + Markdown.toBold(surveyOption)
-								+ "' gewählt. ");
-						break;
-					case Survey.VOTE_REJECTED:
-						// Not currently used
-						this.sendPrivateAnswer("Mehrfache Antworten sind ausgeschaltet.\nDeine Stimme aus der Umfrage '"
-								+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
-								+ " ist also nicht gültig.\nWenn du deine Antwort ändern möchtest, musst du sie zunächst löschen (für die zu löschende Auswahl nochmal abstimmen!)");
-						break;
-					case Survey.VOTE_CHANGED:
-						this.sendPrivateAnswer("Du hast für die Umfrage '"
-								+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
-								+ " bereits abgestimmt, aber mehrfache Antworten sind nicht erlaubt!\n"
-								+ "Deine alte Stimme wurde gelöscht. Du hast jetzt für '"
-								+ Markdown.toBold(surveyOption) + "' abgestimmt!");
-						break;
-					default:
-						throw new IllegalMagicException("Invalid vote response '" + resp + "' received!");
-					}
+
 				} else {
-					this.sendAnswer("diese Option existiert nicht!");
+					this.sendAnswer("diese Umfrage existiert nicht!");
 				}
+				break;
+			// Create new survey
+			case 3:
 
-			} else {
-				this.sendAnswer("diese Umfrage existiert nicht!");
-			}
-			break;
-		// Create new survey
-		case 3:
+				final String[] options = arguments[1].split(";");
+				final String description = arguments[0];
+				final String duration = arguments[2];
 
-			final String[] options = arguments[1].split(";");
-			final String description = arguments[0];
-			final String duration = arguments[2];
-
-			try {
-				new Survey(description, options, Integer.parseInt(duration), this.getMessageChannel(),
-						this.getMessageAuthorObject(), this.surveys, isMulti);
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-				this.sendAnswer("das letzte Argument (Anzahl Minuten bis Ende) ist falsch!");
-			} catch (SurveyCreateIllegalDurationException e) {
-				e.printStackTrace();
-				this.sendAnswer("eine Umfrage muss mindestens eine Minute dauern!");
-			}
-			break;
-		default:
-			this.sendAnswer("falsche Argumente!");
+				try {
+					new Survey(description, options, Integer.parseInt(duration), this.getMessageChannel(),
+							this.getMessageAuthorObject(), this.surveys, isMulti);
+				} catch (NumberFormatException e) {
+					e.printStackTrace();
+					this.sendAnswer("das letzte Argument (Anzahl Minuten bis Ende) ist falsch!");
+				} catch (SurveyCreateIllegalDurationException e) {
+					e.printStackTrace();
+					this.sendAnswer("eine Umfrage muss mindestens eine Minute dauern!");
+				}
+				break;
+			default:
+				this.sendAnswer("falsche Argumente!");
 		}
 	}
 
@@ -220,13 +223,14 @@ public class Megumin extends ResponseType {
 
 			this.sendAnswer("Keine Testfunktion angegeben!");
 
-			//int dur = 20;
-			//this.sendAnswer("**Async test** - Blockiere für "+dur+" Sekunden");
-			
-			//Mono.just("Finished!").delayElement(Duration.ofSeconds(dur)).subscribe(result -> System.out.println(result));
+			// int dur = 20;
+			// this.sendAnswer("**Async test** - Blockiere für "+dur+" Sekunden");
 
-			//this.getChannelByID(ChannelID.MEGUMIN, GuildID.UNSER_SERVER).getRestChannel().
-			
+			// Mono.just("Finished!").delayElement(Duration.ofSeconds(dur)).subscribe(result
+			// -> System.out.println(result));
+
+			// this.getChannelByID(ChannelID.MEGUMIN,
+			// GuildID.UNSER_SERVER).getRestChannel().
 
 		} catch (NoPermissionException e) {
 			this.noPermission();
@@ -249,7 +253,8 @@ public class Megumin extends ResponseType {
 
 		if (this.isAuthorVoiceConnected()) {
 			if (this.getArgumentSection().equals("")) {
-				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!");
+				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
+						+ "Schreib " + Markdown.toBlockQuotes("MegMusikListe") + " für Anregungen!");
 			} else {
 				if (!this.isVoiceConnected()
 						|| !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
@@ -374,7 +379,8 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.audioEventHandler.getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+		} else if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM,
+				this.getOwner().getId())) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
 				if (vol > 200) {
@@ -399,44 +405,55 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onStatus() {
-		this.sendInSameChannel(Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ")
-				+ this.getAppInfo().getName() + "\n" + Markdown.toBold("Beschreibung: ")
-				+ this.getAppInfo().getDescription() + "\n" + Markdown.toBold("Ping: ")
-				+ this.getResponseTime() + "ms\n" + Markdown.toBold("Online seit: ")
-				+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
-				+ Markdown.toBold("Mein Entwickler: ")
-				+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
-				+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " "
-				+ (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "")+"\n"
-				+ Markdown.toBold("GitHub: ")+ RuntimeVariables.GIT_URL);
+		this.sendInSameChannel(
+				Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ") + this.getAppInfo().getName()
+						+ "\n" + Markdown.toBold("Beschreibung: ") + this.getAppInfo().getDescription() + "\n"
+						+ Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" + Markdown.toBold("Online seit: ")
+						+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
+						+ Markdown.toBold("Mein Entwickler: ")
+						+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
+						+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " "
+						+ (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
+						+ Markdown.toBold("GitHub: ") + RuntimeVariables.GIT_URL);
 	}
 
 	@Override
 	protected void onDeleteMessages() {
-		if(SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
-			if(this.getArgumentSection().equals("")){
+		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
-			}
-			else {
+			} else {
 				this.deleteReceivedMessage();
 				try {
 					int amount = Integer.parseInt(this.getArgumentSection());
-					
+
 					// Calculate response
-					final int deleted = this.deleteMessages(this.getMessageChannel().getId(), this.getMessageGuild().getId(), amount);
-					if(deleted == 1) {
+					final int deleted = this.deleteMessages(this.getMessageChannel().getId(),
+							this.getMessageGuild().getId(), amount);
+					if (deleted == 1) {
 						this.sendAnswer("eine Nachricht gelöscht!");
-					}
-					else {
-						this.sendAnswer(deleted+" Nachrichten gelöscht!");
+					} else {
+						this.sendAnswer(deleted + " Nachrichten gelöscht!");
 					}
 				} catch (NumberFormatException e) {
 					this.sendAnswer("konnte deine Zahl nicht auslesen!");
 				}
 			}
-		}
-		else {
+		} else {
 			this.noPermission();
 		}
 	}
+
+	@Override
+	protected void onMusicIdea() {
+	// 	if (MusicVariables.trackLinks.length == 0) {
+	// 		this.sendAnswer("seltsam, es gibt keine Musiktipps...\n" + this.getOwner().getMention()
+	// 				+ ", kannst du das bitte prüfen?");
+	// 	} else {
+	// 		String msg = "Hier sind einige Anregungen. Du kannst uns auch gerne Anregungen für diese Liste empfehlen!\n\n";
+	// 		for (TrackLink element : MusicVariables.trackLinks) {
+	// 			msg += element. 
+	// 		}
+	// 	}
+	// }
 }
