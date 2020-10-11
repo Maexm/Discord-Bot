@@ -55,14 +55,4 @@ public class HTTPRequests {
 		}
 		return body;
 	}
-
-	public static String getTest(final String URL){
-		// Object resp = HttpClient.create()
-		// .baseUrl(URL)
-		// .get()
-		// .responseSingle((res, content) -> Mono.just(content))
-		// .block()
-		// .block();
-		return null;
-	}
 }
