@@ -296,7 +296,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				+ Markdown.toBold(TimePrint.msToPretty(track.getDuration()));
 
 		// ########## RETURNING ##########
-		return StringPresets.getUnderScore(40) + "\n" + ":musical_note: Es wird abgespielt: "
+		return 	":musical_note: Es wird abgespielt: "
 				+ Markdown.toBold(track.getInfo().title) + " von " + Markdown.toBold(track.getInfo().author) + "\n\n"
 				+ status + "\n" + volume + "\n" + queueInfo + "\n" + "\n" + progressBar + "\n"
 				+ "Der Track wurde hinzugefügt von: " + Markdown.toBold(userName) + "\n" + ytSearch + "Link: "
