@@ -14,7 +14,7 @@ Die Version muss ggf. in der pom.xml entsprechend angepasst werden:
 ## Kompilierung und Ausführung
 
 1. Repo klonen
-2. a) `mvn install` und dann `maven build clean compile assembly:single` ausführen. Eine executable jar befindet sich dann unter **./target/meguminBot-{version}-jar-with-dependencies.jar**. Diese kann mit `java -jar ./target/meguminBot-{version}-jar-with-dependencies.jar` ausgeführt werden. Tipp: Als erstes Argument kann direkt der Token mitgegeben werden.
+2. a) Im Repoordner `mvn install` und dann `maven build clean compile assembly:single` ausführen. Eine executable jar befindet sich dann unter **./target/meguminBot-{version}-jar-with-dependencies.jar**. Diese kann mit `java -jar ./target/meguminBot-{version}-jar-with-dependencies.jar` ausgeführt werden. Tipp: Als erstes Argument kann direkt der Token mitgegeben werden.
 
 **ODER**
 
@@ -48,4 +48,4 @@ Die Idee dahinter ist, dass die **ResponseType** Instanz während der Laufzeit g
 Nimmt Musiktracks auf und übergibt diese an den **TrackLoader**. Zudem wird hier auf MusikEvents reagiert und entsprechende Nachrichten werden verfasst.
 
 ## Survey
-Umfragen werden im **MessageResponsePicker** in einer ArrayList verwaltet. Solange eine Survey Instanz existiert, kann sie Antworten entgegennehmen und verarbeiten (Stimmen hinzufügen, löschen, überschreiben etc.), wobei live die Discord Nachricht zur Umfrage aktualisiert wird. In einer Umfrage befindet sich auch ein Timer Objekt, welcher nach Ablauf der Zeit eine Zusammenfassung auf Discord posted und die Umfrage aus der am Anfang erwähnten ArrayList löscht. Damit wird auch die verwendete Umfrage-ID wieder frei (Umfragen nehmen bei der Erstellung automatisch die nächstkleinere, freie ID.
+Umfragen werden im **MessageResponsePicker** in einer ArrayList verwaltet. Solange eine Survey Instanz existiert, kann sie Antworten entgegennehmen und verarbeiten (Stimmen hinzufügen, löschen, überschreiben etc.), wobei live die Discord Nachricht zur Umfrage aktualisiert wird. In einer Umfrage befindet sich auch ein Timer Objekt, welcher nach Ablauf der Zeit eine Zusammenfassung auf Discord posted und die Umfrage aus der am Anfang erwähnten ArrayList löscht. Damit wird auch die verwendete Umfrage-ID wieder frei (Umfragen nehmen bei der Erstellung automatisch die nächstkleinere, freie ID).
