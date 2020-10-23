@@ -15,7 +15,6 @@ import japanese.ToKatakanaConverter;
 import japanese.ToRomajiConverter;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
-import musicBot.MusicVariables;
 import security.SecurityLevel;
 import security.SecurityProvider;
 import services.Emoji;

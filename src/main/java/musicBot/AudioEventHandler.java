@@ -14,7 +14,6 @@ import discord4j.core.object.entity.Message;
 import msgReceivedHandlers.ResponseType;
 import services.Emoji;
 import services.Markdown;
-import services.StringPresets;
 import services.TimePrint;
 import snowflakes.ChannelID;
 import snowflakes.GuildID;
