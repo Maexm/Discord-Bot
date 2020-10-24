@@ -3,10 +3,14 @@
 # Wie verwende ich diesen Bot?
 
 ## Voraussetzungen
-Mindestens Java 8, damit das Projekt kompiliert.\
-Mindestens Java 11, damit das Projekt vernünftig läuft.
+- **Java**\
+Mindestens Version 8, damit das Projekt kompiliert.\
+Mindestens Version 11, damit das Projekt vernünftig läuft.
 
-Die Version muss ggf. in der pom.xml entsprechend angepasst werden:
+- **Maven**\
+Weiß leider nicht, welche Version...
+
+Die Version in der pom.xml muss ggf. an die Java Version angepasst werden:
 ```xml
 <maven.compiler.source>11</maven.compiler.source>
 <maven.compiler.target>11</maven.compiler.target>
@@ -14,7 +18,7 @@ Die Version muss ggf. in der pom.xml entsprechend angepasst werden:
 ## Kompilierung und Ausführung
 
 1. Repo klonen
-2. a) Im Repoordner `mvn install` und dann `mvn build clean compile assembly:single` ausführen. Eine executable jar befindet sich dann unter **./target/meguminBot-{version}-jar-with-dependencies.jar**. Diese kann mit `java -jar ./target/meguminBot-{version}-jar-with-dependencies.jar` ausgeführt werden. Tipp: Als erstes Argument kann direkt der Token mitgegeben werden.
+2. a) Im Repoordner `mvn install` und dann `mvn clean compile assembly:single` ausführen. Eine executable jar befindet sich dann unter **./target/meguminBot-{version}-jar-with-dependencies.jar**. Diese kann mit `java -jar ./target/meguminBot-{version}-jar-with-dependencies.jar` ausgeführt werden. Tipp: Als erstes Argument kann direkt der Token mitgegeben werden.
 
 **ODER**
 
