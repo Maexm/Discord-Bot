@@ -50,7 +50,9 @@ public class Megumin extends ResponseType {
 				this.leaveVoiceChannel();
 			}
 			try {
+				System.out.println("Deleting messages in info channel...");
 				this.deleteAllMessages(ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
+				System.out.println("Messages deleted!");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
