@@ -11,6 +11,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.channel.MessageChannel;
 import msgReceivedHandlers.ResponseType;
 import services.Emoji;
 import services.Markdown;
@@ -173,14 +174,18 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
+			// this.ended();
+			// return;
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
-				failedTrackMsg.getChannel().block().createMessage(
-						failedTrack.getSubmittedByUser().getMention() + ", konnte deinen Track leider nicht laden!")
-						.block();
+				failedTrackMsg.getChannel()
+				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!"))
+				.subscribe();
 			} else if (this.radioMessage != null) {
-				this.radioMessage.getChannel().block().createMessage("Konnte einen Track nicht abspielen!").block();
+				this.radioMessage.getChannel()
+				.flatMap(channel -> channel.createMessage("Während der Wiedergabe eines Tracks ist ein Fehler aufgetreten!"))
+				.subscribe();
 			}
 		}
 
@@ -197,6 +202,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		// NO MORE TRACKS IN QUEUE -> STOPPING
 		else {
+			System.out.println("Ending");
 			this.ended();
 		}
 	}
