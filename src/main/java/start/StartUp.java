@@ -1,7 +1,7 @@
 package start;
 
+import java.io.Console;
 import java.util.List;
-import java.util.Scanner;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -35,10 +35,9 @@ public class StartUp {
 		if (args.length >= 1) {
 			TOKEN = args[0];
 		} else {
-			System.out.println("Please enter a token: ");
-			Scanner sc = new Scanner(System.in);
-			TOKEN = sc.nextLine(); // JOptionPane.showInputDialog("Ich benötige zum Starten einen Token!");
-			sc.close();
+			System.out.println("Please enter a token (won't be displayed): ");
+			Console console = System.console();
+			TOKEN = new String(console.readPassword());
 			if (TOKEN == null || TOKEN.equals("")) {
 				System.out.println("User did not provide a token. There is no reason to continue - TERMINATING");
 				System.exit(0);
