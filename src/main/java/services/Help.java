@@ -1,5 +1,6 @@
 package services;
 
+import musicBot.AudioEventHandler;
 import start.RuntimeVariables;
 
 public class Help {
@@ -29,7 +30,8 @@ public class Help {
 			+ "*Du musst für alle Befehle selber im VoiceChannel sein!*\n"
 			+ "**MegMusik YTSUCHE/URL**: Ich spiele Musik anhand eines Youtube- SoundCloud- oder Bandcamp-Links ab! Alternativ kannst du auch einfach ein Wort eingeben "
 			+ "und ich werde danach auf YouTube suchen!"
-			+ "\n"
+			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN : "")
+			+ "\n\n"
 			+ "**MegMusikNext OPT.ANZAHL**: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"

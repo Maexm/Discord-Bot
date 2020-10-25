@@ -11,7 +11,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.MessageChannel;
 import msgReceivedHandlers.ResponseType;
 import services.Emoji;
 import services.Markdown;
@@ -23,6 +22,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	private final AudioPlayer player;
 	private final LinkedList<AudioTrack> tracks;
+	public final static String MUSIC_WARN = ":warning: Wiedergabe und Suche von YouTube Tracks funktioniert aktuell unzuverlässig!";
 	/**
 	 * A list containing MusicTrackInfo (mainly who submitted this track). This
 	 * instance is shared with a TrackLoader.
@@ -202,7 +202,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		// NO MORE TRACKS IN QUEUE -> STOPPING
 		else {
-			System.out.println("Ending");
 			this.ended();
 		}
 	}
@@ -305,7 +304,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 				+ Markdown.toBold(track.getInfo().title) + " von " + Markdown.toBold(track.getInfo().author) + "\n\n"
 				+ status + "\n" + volume + "\n" + queueInfo + "\n" + "\n" + progressBar + "\n"
 				+ "Der Track wurde hinzugefügt von: " + Markdown.toBold(userName) + "\n" + ytSearch + "Link: "
-				+ track.getInfo().uri;
+				+ track.getInfo().uri
+				+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n\n"+AudioEventHandler.MUSIC_WARN : "");
 	}
 
 	private void updateInfoMsg() {

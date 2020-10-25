@@ -264,7 +264,7 @@ public class Megumin extends ResponseType {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
 							this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject());
 					this.audioEventHandler.schedule(musicTrack, this);
-					this.sendAnswer("dein Track wurde hinzugefügt!");
+					this.sendAnswer("dein Track wurde hinzugefügt!"+(AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN: ""));
 					this.deleteReceivedMessage();
 
 				} catch (Exception e) {
