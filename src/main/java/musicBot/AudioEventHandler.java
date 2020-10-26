@@ -22,7 +22,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	private final AudioPlayer player;
 	private final LinkedList<AudioTrack> tracks;
-	public final static String MUSIC_WARN = ":warning: Wiedergabe und Suche von YouTube Tracks funktioniert aktuell unzuverlässig!";
+	public final static String MUSIC_WARN = "";//":warning: Wiedergabe und Suche von YouTube Tracks funktioniert aktuell unzuverlässig!";
 	/**
 	 * A list containing MusicTrackInfo (mainly who submitted this track). This
 	 * instance is shared with a TrackLoader.
