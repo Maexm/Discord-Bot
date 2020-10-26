@@ -51,34 +51,56 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "sprechen":
 			case "schreiben":
+			case "echo":
+			case "print":
 				this.onRepeat();
 				break;
+			case "hilfe":
+			case "h":
 			case "help":
 				this.onHelp();
 				break;
 			case "katakana":
 				this.onConvertToKatakana();
 				break;
+			case "music":
 			case "musik":
 				this.onReceiveMusicRequest();
 				break;
+			case "pause":
+			case "musicpause":
 			case "musikpause":
 				this.onPauseMusic();
 				break;
+			case "play":
 			case "musikplay":
 				this.onResumeMusic();
 				break;
+			case "stop":
 			case "musikstop":
 				this.onStopMusic();
 				break;
+			case "musiknxt":
+			case "musicnxt":
+			case "musikskip":
+			case "musicskip":
+			case "next":
+			case "nxt":
+			case "skip":
+			case "skp":
 			case "musiknext":
+			case "musicnext":
 				this.onNextMusic();
 				break;
 			case "musikhelp":
+			case "musichelp":
 			case "helpmusik":
+			case "helpmusic":
 				this.onMusicHelp();
 				break;
+			case "vol":
 			case "musikvol":
+			case "musicvol":
 				this.onMusicVol();
 				break;
 			case "musikliste":
@@ -110,6 +132,8 @@ public abstract class ResponseType extends Middleware {
 				this.onRomaji();
 				break;
 			case "status":
+			case "stat":
+			case "stats":
 				this.onStatus();
 				break;
 			case "test":
@@ -118,6 +142,7 @@ public abstract class ResponseType extends Middleware {
 			case "delete":
 			case "löschen":
 			case "vernebeln":
+			case "del":
 				this.onDeleteMessages();
 				break;
 			default:
