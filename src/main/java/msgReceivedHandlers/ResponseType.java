@@ -155,6 +155,12 @@ public abstract class ResponseType extends Middleware {
 			case "del":
 				this.onDeleteMessages();
 				break;
+			case "announce":
+			case "psa":
+			case "announcement":
+			case "public":
+				this.onPSA();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -251,5 +257,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onStatus();
 
 	protected abstract void onDeleteMessages();
+
+	protected abstract void onPSA();
 
 }

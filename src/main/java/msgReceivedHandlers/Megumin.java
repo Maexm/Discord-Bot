@@ -492,4 +492,20 @@ public class Megumin extends ResponseType {
 			this.sendAnswer("es läuft aktuell keine Musik!");
 		}
 	}
+
+	@Override
+	protected void onPSA() {
+		if(SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId())){
+			if(this.getArgumentSection().equals("")){
+				this.sendAnswer("keine Nachricht angegeben!");
+			}
+			else{
+				this.sendInChannel(this.getArgumentSection(), ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
+			}
+		}
+		else{
+			this.noPermission();
+		}
+
+	}
 }
