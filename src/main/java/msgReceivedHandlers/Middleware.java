@@ -250,7 +250,7 @@ public abstract class Middleware {
 	 */
 	protected final VoiceChannel getMyVoiceChannel() {
 		if (this.isVoiceConnected()) {
-			return this.client.getSelf().block().asMember(this.getMessageGuild().getId()).block().getVoiceState()
+			return this.client.getSelf().block().asMember(this.getMessageGuild().getId()).block().getVoiceState()//TODO handle case voicestate == null
 					.block().getChannel().block();
 		} else {
 			return null;
