@@ -53,6 +53,7 @@ public abstract class ResponseType extends Middleware {
 			case "schreiben":
 			case "echo":
 			case "print":
+			case "say":
 				this.onRepeat();
 				break;
 			case "hilfe":
@@ -74,10 +75,12 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "play":
 			case "musikplay":
+			case "musicplay":
 				this.onResumeMusic();
 				break;
 			case "stop":
 			case "musikstop":
+			case "musicstop":
 				this.onStopMusic();
 				break;
 			case "musiknxt":
@@ -141,6 +144,7 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "delete":
 			case "löschen":
+			case "loeschen":
 			case "vernebeln":
 			case "del":
 				this.onDeleteMessages();
