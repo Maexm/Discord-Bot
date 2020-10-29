@@ -112,6 +112,12 @@ public abstract class ResponseType extends Middleware {
 			case "musikideen":
 				this.onMusicIdea();
 				break;
+			case "queue":
+			case "musicqueue":
+			case "musikqueue":
+			case "warteschlange":
+				this.onMusicQueue();
+				break;
 			case "multiumfrage":
 			case "umfrage":
 				this.onSurvey();
@@ -198,6 +204,8 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onStopMusic();
 
 	protected abstract void onNextMusic();
+
+	protected abstract void onMusicQueue();
 
 	/**
 	 * Start new survey

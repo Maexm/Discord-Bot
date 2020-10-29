@@ -2,7 +2,10 @@ package msgReceivedHandlers;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.Locale;
+
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
@@ -458,4 +461,35 @@ public class Megumin extends ResponseType {
 	// 	}
 	// }
    }
+
+	@Override
+	protected void onMusicQueue() {
+		if(this.isVoiceConnected()){
+			AudioTrack curTrack = this.audioEventHandler.getCurrentAudioTrack();
+			// Leave if no track is playing (this should not happen)
+			if(curTrack == null){
+				throw new NullPointerException("There is no current track!");
+			}
+			// Build String
+
+			String out = "aktuell wird abgespielt:\n"+ Markdown.toBold(curTrack.getInfo().title)+" von "
+			+ Markdown.toBold(curTrack.getInfo().author)+"\n\n"+this.audioEventHandler.getQueueInfoString();
+
+			out += this.audioEventHandler.getListSize() > 0 ? "\n" : ""; 
+
+			final LinkedList<AudioTrack> list = this.audioEventHandler.getDeepListCopy();
+			final int MAX_OUT = 10;
+			for(int i = 0; i < list.size() && i < MAX_OUT; i++){
+				final AudioTrack track = list.get(i);
+				out += Markdown.toBold(i+1+".")+" "+Markdown.toBold(track.getInfo().title)+" von " + Markdown.toBold(track.getInfo().author)+"\n";
+			}
+			if(list.size() < MAX_OUT){
+				out += "\n"+"Es gibt noch "+(MAX_OUT-list.size())+" weitere Ergebnisse!";
+			}
+			this.sendAnswer(out);
+		}
+		else{
+			this.sendAnswer("es läuft aktuell keine Musik!");
+		}
+	}
 }
