@@ -18,6 +18,7 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
+import exceptions.StartUpException;
 import msgReceivedHandlers.MessageResponsePicker;
 import musicBot.AudioProviderLavaPlayer;
 import services.Markdown;
@@ -39,8 +40,7 @@ public class StartUp {
 			Console console = System.console();
 			TOKEN = new String(console.readPassword());
 			if (TOKEN == null || TOKEN.equals("")) {
-				System.out.println("User did not provide a token. There is no reason to continue - TERMINATING");
-				System.exit(0);
+				throw new StartUpException("Token missing");
 			}
 		}
 		// Retrieve debug info, if available
