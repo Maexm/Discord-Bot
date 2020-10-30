@@ -48,7 +48,7 @@ public class TimePrint {
 
 		}
 		if(val >= 3600000) {
-			h = (int) ((val/3600000)%60);
+			h = (int) (val/3600000);
 
 		}		
 		if(h != 0) {
