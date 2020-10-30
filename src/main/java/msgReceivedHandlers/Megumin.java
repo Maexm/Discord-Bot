@@ -344,7 +344,7 @@ public class Megumin extends ResponseType {
 							// Failed to parse -> skipping 1 track
 						}
 					}
-					this.sendAnswer("Überspringe Musik...");
+					this.sendAnswer("überspringe Musik...");
 				}
 				this.audioEventHandler.next(count);// Count = 1, unless a different number was parsed
 			}
