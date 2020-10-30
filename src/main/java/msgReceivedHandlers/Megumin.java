@@ -43,7 +43,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onLogout() {
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+		if (this.hasPermission(SecurityLevel.ADM)) {
 			this.sendInSameChannel("Bis bald!");
 			this.audioEventHandler.clearList();
 			if (this.audioEventHandler.isPlaying()) {
@@ -78,7 +78,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onHelp() {
 		this.sendPrivateAnswer(Help.HELPTEXT);
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+		if (this.hasPermission(SecurityLevel.ADM)) {
 			this.sendPrivateAnswer(Help.ADMHELP);
 		}
 	}
@@ -383,8 +383,7 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.audioEventHandler.getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM,
-				this.getOwner().getId())) {
+		} else if (this.hasPermission(SecurityLevel.ADM)){
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
 				if (vol > 200) {
@@ -423,7 +422,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onDeleteMessages() {
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+		if (this.hasPermission(SecurityLevel.ADM)) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
 			} else {
@@ -495,7 +494,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onPSA() {
-		if(SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId())){
+		if(this.hasPermission(SecurityLevel.DEV)){
 			if(this.getArgumentSection().equals("")){
 				this.sendAnswer("keine Nachricht angegeben!");
 			}

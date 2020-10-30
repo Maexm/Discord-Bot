@@ -22,6 +22,7 @@ import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
+import security.SecurityProvider;
 import survey.Survey;
 
 
@@ -503,5 +504,9 @@ public abstract class Middleware {
 			}
 		}
 		return null;
+	}
+
+	protected final boolean hasPermission(int required){
+		return SecurityProvider.hasPermission(this.getMessageAuthorObject(), required, this.getOwner().getId());
 	}
 }
