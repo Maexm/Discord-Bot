@@ -411,7 +411,7 @@ public class Megumin extends ResponseType {
 		this.sendInSameChannel(
 				Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ") + this.getAppInfo().getName()
 						+ "\n" + Markdown.toBold("Beschreibung: ") + this.getAppInfo().getDescription() + "\n"
-						+ Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" + Markdown.toBold("Online seit: ")
+						/*+ Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" */+ Markdown.toBold("Online seit: ")
 						+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
 						+ Markdown.toBold("Mein Entwickler: ")
 						+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
