@@ -195,7 +195,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				.subscribe();
 			} else if (this.radioMessage != null) {
 				this.radioMessage.getChannel()
-				.flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beended!"))
+				.flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!"))
 				.subscribe();
 			}
 		}
