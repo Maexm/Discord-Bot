@@ -174,8 +174,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
-			// this.ended();
-			// return;
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
@@ -185,6 +183,19 @@ public class AudioEventHandler extends AudioEventAdapter {
 			} else if (this.radioMessage != null) {
 				this.radioMessage.getChannel()
 				.flatMap(channel -> channel.createMessage("Während der Wiedergabe eines Tracks ist ein Fehler aufgetreten!"))
+				.subscribe();
+			}
+		}
+		else if(endReason == AudioTrackEndReason.CLEANUP){
+			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
+			if (failedTrack != null) {
+				Message failedTrackMsg = failedTrack.userRequestMessage;
+				failedTrackMsg.getChannel()
+				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!"))
+				.subscribe();
+			} else if (this.radioMessage != null) {
+				this.radioMessage.getChannel()
+				.flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beended!"))
 				.subscribe();
 			}
 		}
