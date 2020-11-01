@@ -53,6 +53,7 @@ public abstract class ResponseType extends Middleware {
 			case "schreiben":
 			case "echo":
 			case "print":
+			case "say":
 				this.onRepeat();
 				break;
 			case "hilfe":
@@ -74,10 +75,12 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "play":
 			case "musikplay":
+			case "musicplay":
 				this.onResumeMusic();
 				break;
 			case "stop":
 			case "musikstop":
+			case "musicstop":
 				this.onStopMusic();
 				break;
 			case "musiknxt":
@@ -103,11 +106,22 @@ public abstract class ResponseType extends Middleware {
 			case "musicvol":
 				this.onMusicVol();
 				break;
-			case "musikliste":
-			case "musiklist":
 			case "musikidee":
 			case "musikideen":
 				this.onMusicIdea();
+				break;
+			case "musikliste":
+			case "musiklist":
+			case "musiclist":
+			case "musicliste":
+			case "list":
+			case "lst":
+			case "ls":
+			case "queue":
+			case "musicqueue":
+			case "musikqueue":
+			case "warteschlange":
+				this.onMusicQueue();
 				break;
 			case "multiumfrage":
 			case "umfrage":
@@ -141,9 +155,16 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "delete":
 			case "löschen":
+			case "loeschen":
 			case "vernebeln":
 			case "del":
 				this.onDeleteMessages();
+				break;
+			case "announce":
+			case "psa":
+			case "announcement":
+			case "public":
+				this.onPSA();
 				break;
 			default:
 				// Nothing, user typed in a command that does not exist
@@ -195,6 +216,8 @@ public abstract class ResponseType extends Middleware {
 
 	protected abstract void onNextMusic();
 
+	protected abstract void onMusicQueue();
+
 	/**
 	 * Start new survey
 	 */
@@ -239,5 +262,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onStatus();
 
 	protected abstract void onDeleteMessages();
+
+	protected abstract void onPSA();
 
 }

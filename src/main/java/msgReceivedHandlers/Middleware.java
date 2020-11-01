@@ -22,6 +22,7 @@ import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
+import security.SecurityProvider;
 import survey.Survey;
 
 
@@ -250,7 +251,7 @@ public abstract class Middleware {
 	 */
 	protected final VoiceChannel getMyVoiceChannel() {
 		if (this.isVoiceConnected()) {
-			return this.client.getSelf().block().asMember(this.getMessageGuild().getId()).block().getVoiceState()
+			return this.client.getSelf().block().asMember(this.getMessageGuild().getId()).block().getVoiceState()//TODO handle case voicestate == null
 					.block().getChannel().block();
 		} else {
 			return null;
@@ -503,5 +504,9 @@ public abstract class Middleware {
 			}
 		}
 		return null;
+	}
+
+	protected final boolean hasPermission(int required){
+		return SecurityProvider.hasPermission(this.getMessageAuthorObject(), required, this.getOwner().getId());
 	}
 }

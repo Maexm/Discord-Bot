@@ -2,7 +2,10 @@ package msgReceivedHandlers;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.Locale;
+
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
@@ -40,7 +43,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onLogout() {
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+		if (this.hasPermission(SecurityLevel.ADM)) {
 			this.sendInSameChannel("Bis bald!");
 			this.audioEventHandler.clearList();
 			if (this.audioEventHandler.isPlaying()) {
@@ -75,7 +78,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onHelp() {
 		this.sendPrivateAnswer(Help.HELPTEXT);
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+		if (this.hasPermission(SecurityLevel.ADM)) {
 			this.sendPrivateAnswer(Help.ADMHELP);
 		}
 	}
@@ -341,7 +344,7 @@ public class Megumin extends ResponseType {
 							// Failed to parse -> skipping 1 track
 						}
 					}
-					this.sendAnswer("Überspringe Musik...");
+					this.sendAnswer("überspringe Musik...");
 				}
 				this.audioEventHandler.next(count);// Count = 1, unless a different number was parsed
 			}
@@ -380,8 +383,7 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.audioEventHandler.getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM,
-				this.getOwner().getId())) {
+		} else if (this.hasPermission(SecurityLevel.ADM)){
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
 				if (vol > 200) {
@@ -409,7 +411,7 @@ public class Megumin extends ResponseType {
 		this.sendInSameChannel(
 				Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ") + this.getAppInfo().getName()
 						+ "\n" + Markdown.toBold("Beschreibung: ") + this.getAppInfo().getDescription() + "\n"
-						+ Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" + Markdown.toBold("Online seit: ")
+						/*+ Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" */+ Markdown.toBold("Online seit: ")
 						+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
 						+ Markdown.toBold("Mein Entwickler: ")
 						+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
@@ -420,7 +422,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onDeleteMessages() {
-		if (SecurityProvider.hasPermission(this.getMessageAuthorObject(), SecurityLevel.ADM, this.getOwner().getId())) {
+		if (this.hasPermission(SecurityLevel.ADM)) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
 			} else {
@@ -458,4 +460,59 @@ public class Megumin extends ResponseType {
 	// 	}
 	// }
    }
+
+	@Override
+	protected void onMusicQueue() {
+		if(this.isVoiceConnected()){
+			AudioTrack curTrack = this.audioEventHandler.getCurrentAudioTrack();
+			// Leave if no track is playing (this should not happen)
+			if(curTrack == null){
+				throw new NullPointerException("There is no current track!");
+			}
+			String curTrackUser = AudioEventHandler.getSubmittedByUserName(curTrack, this.getMessageGuild().getId());
+			// Build String
+
+			String out = "aktuell wird abgespielt:\n"+ Markdown.toBold(curTrack.getInfo().title)+" von "
+			+ Markdown.toBold(curTrack.getInfo().author)
+			+ (curTrackUser != null ? ", vorgeschlagen von "+Markdown.toBold(curTrackUser) : "")
+			+"\n\n"+this.audioEventHandler.getQueueInfoString();
+
+			out += this.audioEventHandler.getListSize() > 0 ? "\n" : ""; 
+
+			final LinkedList<AudioTrack> list = this.audioEventHandler.getDeepListCopy();
+			final int MAX_OUT = 5;
+			for(int i = 0; i < list.size() && i < MAX_OUT; i++){
+				final AudioTrack track = list.get(i);
+				String trackUser = AudioEventHandler.getSubmittedByUserName(track, this.getMessageGuild().getId());
+
+				out += Markdown.toBold(i+1+".")+" "+Markdown.toBold(track.getInfo().title)+" von " + Markdown.toBold(track.getInfo().author)
+				+ (trackUser != null ? " vorgeschlagen von "+Markdown.toBold(trackUser) : "") + "\n\n";
+			}
+			if(list.size() > MAX_OUT){
+				final int diff = list.size()-MAX_OUT;
+
+				out += "\nEs gibt noch "+(diff == 1 ? Markdown.toBold("einen")+ " weiteren Track!" : Markdown.toBold(""+diff)+" weitere Tracks!");
+			}
+			this.sendAnswer(out);
+		}
+		else{
+			this.sendAnswer("es läuft aktuell keine Musik!");
+		}
+	}
+
+	@Override
+	protected void onPSA() {
+		if(this.hasPermission(SecurityLevel.DEV)){
+			if(this.getArgumentSection().equals("")){
+				this.sendAnswer("keine Nachricht angegeben!");
+			}
+			else{
+				this.sendInChannel(this.getArgumentSection(), ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
+			}
+		}
+		else{
+			this.noPermission();
+		}
+
+	}
 }

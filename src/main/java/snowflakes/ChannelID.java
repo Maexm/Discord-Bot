@@ -11,4 +11,6 @@ public class ChannelID {
 	public final static Snowflake MUSIK = Snowflake.of(253611386595180545l);
 
 	public final static Snowflake VOICE = Snowflake.of(212543344742629378l);
+
+	public final static Snowflake ANKUENDIGUNGEN = Snowflake.of(232452166139248640l);
 }

@@ -10,7 +10,9 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import msgReceivedHandlers.ResponseType;
 import services.Emoji;
 import services.Markdown;
@@ -174,8 +176,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
-			// this.ended();
-			// return;
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
@@ -185,6 +185,19 @@ public class AudioEventHandler extends AudioEventAdapter {
 			} else if (this.radioMessage != null) {
 				this.radioMessage.getChannel()
 				.flatMap(channel -> channel.createMessage("Während der Wiedergabe eines Tracks ist ein Fehler aufgetreten!"))
+				.subscribe();
+			}
+		}
+		else if(endReason == AudioTrackEndReason.CLEANUP){
+			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
+			if (failedTrack != null) {
+				Message failedTrackMsg = failedTrack.userRequestMessage;
+				failedTrackMsg.getChannel()
+				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!"))
+				.subscribe();
+			} else if (this.radioMessage != null) {
+				this.radioMessage.getChannel()
+				.flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!"))
 				.subscribe();
 			}
 		}
@@ -260,17 +273,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 		// Volume
 		String volume = "Lautstärke: " + Markdown.toBold(this.getVolume() + "% ") + Emoji.getVol(this.getVolume());
 
-		// Queue info
-		String queueInfo = "";
-		if (this.tracks.size() == 0) {
-			queueInfo = "Die Warteschlange ist " + Markdown.toBold("leer") + "!";
-		} else if (this.tracks.size() == 1) {
-			queueInfo = "Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
-		} else {
-			queueInfo = "Es befinden sich " + Markdown.toBold(Integer.toString(this.tracks.size()))
-					+ " Lieder in der Warteschlange!";
-		}
-
 		// ytSearch and userName
 		String ytSearch = "";
 		String userName = "FEHLER";
@@ -302,10 +304,23 @@ public class AudioEventHandler extends AudioEventAdapter {
 		// ########## RETURNING ##########
 		return 	":musical_note: Es wird abgespielt: "
 				+ Markdown.toBold(track.getInfo().title) + " von " + Markdown.toBold(track.getInfo().author) + "\n\n"
-				+ status + "\n" + volume + "\n" + queueInfo + "\n" + "\n" + progressBar + "\n"
+				+ status + "\n" + volume + "\n" + this.getQueueInfoString() + "\n" + "\n" + progressBar + "\n"
 				+ "Der Track wurde hinzugefügt von: " + Markdown.toBold(userName) + "\n" + ytSearch + "Link: "
 				+ track.getInfo().uri
 				+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n\n"+AudioEventHandler.MUSIC_WARN : "");
+	}
+
+	public String getQueueInfoString(){
+		String queueInfo = "";
+		if (this.tracks.size() == 0) {
+			queueInfo = "Die Warteschlange ist " + Markdown.toBold("leer") + "!";
+		} else if (this.tracks.size() == 1) {
+			queueInfo = "Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
+		} else {
+			queueInfo = "Es befinden sich " + Markdown.toBold(Integer.toString(this.tracks.size()))
+					+ " Lieder in der Warteschlange!";
+		}
+		return queueInfo;
 	}
 
 	private void updateInfoMsg() {
@@ -320,6 +335,23 @@ public class AudioEventHandler extends AudioEventAdapter {
 				System.out.println(e);
 			}
 		}
+	}
+
+	public LinkedList<AudioTrack> getDeepListCopy(){
+		LinkedList<AudioTrack> ret = new LinkedList<>();
+		for(AudioTrack track: this.tracks){
+			ret.add(track.makeClone());
+		}
+		return ret;
+	}
+
+	public static User getSubmittedByUser(AudioTrack track){
+		MusicTrackInfo trackInfo = track.getUserData(MusicTrackInfo.class);
+		return trackInfo != null ? trackInfo.getSubmittedByUser() : null;
+	}
+	public static String getSubmittedByUserName(AudioTrack track, Snowflake guildId){
+		MusicTrackInfo trackInfo = track.getUserData(MusicTrackInfo.class);
+		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getNickname()).block().orElse("FEHLER") : null;
 	}
 
 }

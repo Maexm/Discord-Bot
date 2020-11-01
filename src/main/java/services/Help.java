@@ -6,20 +6,16 @@ import start.RuntimeVariables;
 public class Help {
 
 	public final static String HELPTEXT = ">>> Ich verstehe folgende Befehle:\n"
-			+ "**Hey Megumin**: Lass dich von mir begrüßen! :smile:\n"
-			+ "**MegHelpMusik**: Alles zu Musik! :musical_note:\n"
-			+ "**MegHelpUmfrage**: Alles zu Umfragen! :bar_chart:\n"
-			+ "**MegJisho WORT**: Ich übersetze ENGLISCHE(!) Wörter ins Japanische und umgekehrt (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n"
-			+ "**MegRomaji AUSDRUCK**: Ich wandle Hiragana und Katakana (KEINE KANJI!) in die dir vertraute Schrift um! :sa: --> :abc:\n"
-			+ "**MegKatakana TEXT**: Ich konvertiere (so gut ich kann) deinen Text in ästhetische, japanische Katakana! :flag_jp:\n"
-			+ "**MegZeit**: Ich nenne dir die aktuelle Uhrzeit und das Datum (deutsche Zeit)! :clock1:\n"
-			+ "**MegStatus**: Aktuelle Statusinformationen zu meiner Existenz :signal_strength:\n"
-			+ "**MegSchreiben/Sprechen TEXT**: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
-			+ "**MegHelp**: Siehst du gerade vor dir, baka!\n"
-			+ "\n"
-			+ "***HINWEIS:***\n"
-			+ "Es werden künftig mehr Funktionen hinzukommen. "
-			+ "Schau hier also regelmäßig rein! :relaxed:\n"
+			+ "`Hey Megumin`: Lass dich von mir begrüßen! :smile:\n"
+			+ "`MegHelpMusik`: Alles zu Musik! :musical_note:\n"
+			+ "`MegHelpUmfrage`: Alles zu Umfragen! :bar_chart:\n"
+			+ "`MegJisho WORT`: Englisch <-> Japanisch Wörterbuch (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n"
+			+ "`MegRomaji TEXT`: Hiragana/Katakana <-> Lateinisches Alphabet :sa: --> :abc:\n"
+			+ "`MegKatakana TEXT`: Lateinisches Alphabet <-> Katakana :flag_jp:\n"
+			+ "`MegZeit`: Aktuelle Uhrzeit und aktuelles Datum (deutsche Zeit)! :clock1:\n"
+			+ "`MegStatus`: Aktuelle Statusinformationen zu meiner Existenz :signal_strength:\n"
+			+ "`MegSchreiben/Sprechen TEXT`: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
+			+ "`MegHelp`: Siehst du gerade vor dir, baka!\n"
 			+ "\n"
 			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
 			+ "\n"
@@ -27,26 +23,28 @@ public class Help {
 			+ RuntimeVariables.GIT_URL;
 	
 	public final static String MUSICHELPTEXT = ">>> Du möchtest deine Freunde mit deiner furchtbaren Musik nerven? Ich helfe dir dabei! :musical_note:\n\n"
-			+ "*Du musst für alle Befehle selber im VoiceChannel sein!*\n"
-			+ "**MegMusik YTSUCHE/URL**: Ich spiele Musik anhand eines Youtube- SoundCloud- oder Bandcamp-Links ab! Alternativ kannst du auch einfach ein Wort eingeben "
+			+ "*Du musst für die meisten Befehle selber im VoiceChannel sein!*\n"
+			+ "`MegMusik YTSUCHE/URL`: Ich spiele Musik anhand eines Youtube- SoundCloud- oder Bandcamp-Links ab! Alternativ kannst du auch einfach ein Wort eingeben "
 			+ "und ich werde danach auf YouTube suchen!"
-			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN : "")
-			+ "\n\n"
-			+ "**MegMusikNext OPT.ANZAHL**: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
+			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN+"\n" : "")
+			+ "\n"
+			+ "`MegMusikNext OPT.ANZAHL`: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"
-			+ "**MegMusikPause**: Ich pausiere die Musik :pause_button:"
+			+ "`MegMusikPause`: Pausiere die Musik! :pause_button:"
 			+ "\n"
-			+ "**MegMusikPlay**: Ich spiele pausierte Musik weiter ab :arrow_forward:"
+			+ "`MegMusikPlay`: Antipausiere die Musik! :arrow_forward:"
 			+ "\n"
-			+ "**MegMusikStop**: Ich beende die Musikwiedergabe und lösche die Warteschlange :stop_button:"
+			+ "`MegMusikStop`: Beende die Musikwiedergabe und lösche die Warteschlange :stop_button:"
 			+ "\n"
-			+ "**MegMusikVol**: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist Admins vorbehalten)";
+			+ "`MegMusikQueue`: Aktuelle Wiedergabe und Warteschlange"
+			+ "\n"
+			+ "`MegMusikVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist Admins vorbehalten)";
 	
 	public final static String ADMHELP = ">>> Du hast Zugriffsrechte auf Admin Befehle! :man_office_worker:\n"
-			+ "**MegLogout**: Ich melde mich ab und terminiere :skull_crossbones:"
+			+ "`MegLogout`: Ich melde mich ab und terminiere (bitte nur im Notfall verwenden) :skull_crossbones:"
 			+ "\n"
-			+ "**MegMusikVol ZAHL**: Ich ändere meine Lautstärke!";
+			+ "`MegMusikVol ZAHL`: Ich ändere meine Lautstärke!";
 	
 	public final static String SURVEYHELPTEXT = ">>> So nutzt du die Macht der Umfragen!"
 			+ "\n"
