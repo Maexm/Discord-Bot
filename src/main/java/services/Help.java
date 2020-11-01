@@ -26,8 +26,8 @@ public class Help {
 			+ "*Du musst für die meisten Befehle selber im VoiceChannel sein!*\n"
 			+ "`MegMusik YTSUCHE/URL`: Ich spiele Musik anhand eines Youtube- SoundCloud- oder Bandcamp-Links ab! Alternativ kannst du auch einfach ein Wort eingeben "
 			+ "und ich werde danach auf YouTube suchen!"
-			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN : "")
-			+ "\n\n"
+			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN+"\n" : "")
+			+ "\n"
 			+ "`MegMusikNext OPT.ANZAHL`: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"
@@ -38,6 +38,7 @@ public class Help {
 			+ "`MegMusikStop`: Beende die Musikwiedergabe und lösche die Warteschlange :stop_button:"
 			+ "\n"
 			+ "`MegMusikQueue`: Aktuelle Wiedergabe und Warteschlange"
+			+ "\n"
 			+ "`MegMusikVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist Admins vorbehalten)";
 	
 	public final static String ADMHELP = ">>> Du hast Zugriffsrechte auf Admin Befehle! :man_office_worker:\n"

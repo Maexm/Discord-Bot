@@ -469,21 +469,29 @@ public class Megumin extends ResponseType {
 			if(curTrack == null){
 				throw new NullPointerException("There is no current track!");
 			}
+			String curTrackUser = AudioEventHandler.getSubmittedByUserName(curTrack, this.getMessageGuild().getId());
 			// Build String
 
 			String out = "aktuell wird abgespielt:\n"+ Markdown.toBold(curTrack.getInfo().title)+" von "
-			+ Markdown.toBold(curTrack.getInfo().author)+"\n\n"+this.audioEventHandler.getQueueInfoString();
+			+ Markdown.toBold(curTrack.getInfo().author)
+			+ (curTrackUser != null ? ", vorgeschlagen von "+Markdown.toBold(curTrackUser) : "")
+			+"\n\n"+this.audioEventHandler.getQueueInfoString();
 
 			out += this.audioEventHandler.getListSize() > 0 ? "\n" : ""; 
 
 			final LinkedList<AudioTrack> list = this.audioEventHandler.getDeepListCopy();
-			final int MAX_OUT = 10;
+			final int MAX_OUT = 5;
 			for(int i = 0; i < list.size() && i < MAX_OUT; i++){
 				final AudioTrack track = list.get(i);
-				out += Markdown.toBold(i+1+".")+" "+Markdown.toBold(track.getInfo().title)+" von " + Markdown.toBold(track.getInfo().author)+"\n";
+				String trackUser = AudioEventHandler.getSubmittedByUserName(track, this.getMessageGuild().getId());
+
+				out += Markdown.toBold(i+1+".")+" "+Markdown.toBold(track.getInfo().title)+" von " + Markdown.toBold(track.getInfo().author)
+				+ (trackUser != null ? " vorgeschlagen von "+Markdown.toBold(trackUser) : "") + "\n\n";
 			}
-			if(list.size() < MAX_OUT){
-				out += "\n"+"Es gibt noch "+(MAX_OUT-list.size())+" weitere Ergebnisse!";
+			if(list.size() > MAX_OUT){
+				final int diff = list.size()-MAX_OUT;
+
+				out += "\nEs gibt noch "+(diff == 1 ? Markdown.toBold("einen")+ " weiteren Track!" : Markdown.toBold(""+diff)+" weitere Tracks!");
 			}
 			this.sendAnswer(out);
 		}

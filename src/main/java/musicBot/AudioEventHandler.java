@@ -10,7 +10,9 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import msgReceivedHandlers.ResponseType;
 import services.Emoji;
 import services.Markdown;
@@ -341,6 +343,15 @@ public class AudioEventHandler extends AudioEventAdapter {
 			ret.add(track.makeClone());
 		}
 		return ret;
+	}
+
+	public static User getSubmittedByUser(AudioTrack track){
+		MusicTrackInfo trackInfo = track.getUserData(MusicTrackInfo.class);
+		return trackInfo != null ? trackInfo.getSubmittedByUser() : null;
+	}
+	public static String getSubmittedByUserName(AudioTrack track, Snowflake guildId){
+		MusicTrackInfo trackInfo = track.getUserData(MusicTrackInfo.class);
+		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getNickname()).block().orElse("FEHLER") : null;
 	}
 
 }
