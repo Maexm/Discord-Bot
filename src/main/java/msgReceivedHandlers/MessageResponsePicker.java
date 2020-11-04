@@ -13,6 +13,8 @@ import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
 import musicBot.TrackLoader;
+import security.SecurityLevel;
+import start.RuntimeVariables;
 import survey.Survey;
 
 public final class MessageResponsePicker {
@@ -41,6 +43,8 @@ public final class MessageResponsePicker {
 
 		// ########## RESPONSE SETS ##########
 		this.middlewareBefore.add(new Logger(client, this.audioProvider, this.surveys, this.playerEventHandler));
+		this.middlewareBefore.add(new RoleFilter(client, this.audioProvider, this.surveys, this.playerEventHandler,
+							() -> !RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "Meine Dienste sind im Preview Modus nicht verfügbar!"));
 		this.middlewareBefore.add(new VoiceGuard(client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new MusicRecommendation(client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.responseSet = new Megumin(client, this.audioProvider, this.surveys, this.playerEventHandler);
