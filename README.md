@@ -22,7 +22,7 @@ Die Version in der pom.xml muss ggf. an die Java Version angepasst werden:
 ## Kompilierung und Ausführung
 
 1. Repo klonen
-2. a) Im Repoordner `mvn install` und dann `mvn clean compile assembly:single` ausführen. Eine executable jar befindet sich dann unter **./target/meguminBot-{version}-jar-with-dependencies.jar**. Diese kann mit `java -jar ./target/meguminBot-{version}-jar-with-dependencies.jar` ausgeführt werden. Tipp: Als erstes Argument kann direkt der Token mitgegeben werden.
+2. a) Im Repoordner `mvn install` ausführen. Wenn alle Dependencies bereits installiert sind, kann auch `mvn clean compile assembly:single` ausgeführt werden. Beim Build werden noch Tests ausgeführt, dabei können SLF4J Fehler auftreten, diese können ignoriert werden. Eine executable jar befindet sich nach erfolgreichem Build unter **./target/meguminBot-{version}-jar-with-dependencies.jar**. Diese kann mit `java -jar ./target/meguminBot-{version}-jar-with-dependencies.jar` ausgeführt werden. Tipp: Als erstes Argument kann direkt der Token mitgegeben werden.
 
 **ODER**
 
