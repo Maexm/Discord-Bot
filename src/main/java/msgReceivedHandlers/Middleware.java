@@ -3,6 +3,7 @@ package msgReceivedHandlers;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -38,24 +39,25 @@ public abstract class Middleware {
 	protected String commandSection = "";
 	protected String argumentSection = "";
 	protected final ArrayList<Survey> surveys;
+	private final BooleanSupplier mayAccept;
 
 	// AUDIO
 	protected final AudioEventHandler audioEventHandler;
 
 	protected final AudioProvider audioProvider;
 
-	/**
-	 * Creates a Middleware object
-	 * 
-	 * @param client              The discord client object representing this bot
-	 * @param audioProvider       The audioProvider for this bot
-	 */
 	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
 			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
+		this(client, audioProvider, surveys, audioEventHandler, () -> true);
+	}
+
+	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
+			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final BooleanSupplier mayAccept) {
 		this.client = client;
 		this.audioEventHandler = audioEventHandler;
 		this.audioProvider = audioProvider;
 		this.surveys = surveys;
+		this.mayAccept = mayAccept;
 	}
 
 	/**
@@ -65,6 +67,10 @@ public abstract class Middleware {
 	 * @param messageEvent
 	 */
 	public final boolean acceptEvent(final MessageCreateEvent messageEvent) {
+
+		if(!this.mayAccept.getAsBoolean()){
+			return true; // Skip if this Middleware may not handle event
+		}
 
 		boolean fetchSuccess = true;
 		boolean ret = true;
