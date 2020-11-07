@@ -66,7 +66,29 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "music":
 			case "musik":
-				this.onReceiveMusicRequest();
+				this.onReceiveMusicRequest(false);
+				break;
+			case "prio":
+			case "musicprio":
+			case "musikprio":
+			case "priomusic":
+			case "priomusik":
+			case "push":
+			case "musicpush":
+			case "musikpush":
+			case "pushmusic":
+			case "pushmusik":
+			case "front":
+			case "musicfront":
+			case "musikfront":
+				this.onReceiveMusicRequest(true);
+				break;
+			case "clear":
+			case "musicclear":
+			case "musikclear":
+			case "clearmusic":
+			case "clearmusik":
+				this.onClearMusicQueue();
 				break;
 			case "pause":
 			case "musicpause":
@@ -206,7 +228,7 @@ public abstract class ResponseType extends Middleware {
 	/**
 	 * Receives a link to a music source and adds it to the music queue
 	 */
-	protected abstract void onReceiveMusicRequest();
+	protected abstract void onReceiveMusicRequest(boolean isPrio);
 
 	protected abstract void onPauseMusic();
 
@@ -217,6 +239,8 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onNextMusic();
 
 	protected abstract void onMusicQueue();
+
+	protected abstract void onClearMusicQueue();
 
 	/**
 	 * Start new survey
