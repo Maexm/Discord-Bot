@@ -94,7 +94,11 @@ public class AudioEventHandler extends AudioEventAdapter {
 	public void setVolume(int vol) {
 		this.player.setVolume(vol);
 	}
-
+	/**
+	 * Indicates whether or not a music session is actve. A music session is active when the first song has been added, until the
+	 * ended() method has been invoked (which also deletes the music info message on discord)
+	 * @return True if player is music session is on going (!= player is actually playing). False otherwise.
+	 */
 	public boolean isActive() {
 		return this.active;
 	}
