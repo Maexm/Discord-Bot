@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Random;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -253,37 +254,39 @@ public class Megumin extends ResponseType {
 	}
 
 	@Override
-	protected void onReceiveMusicRequest() {
+	protected void onReceiveMusicRequest(boolean isPrio) {
 
-		if (this.isAuthorVoiceConnected()) {
-			if (this.getArgumentSection().equals("")) {
-				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
-						+ "Schreib " + Markdown.toBlockQuotes("MegMusikListe") + " für Anregungen!");
-			} else {
-				// Join authors voice channel, if bot is not connected to voice or not to the same channel
-				if (!this.isVoiceConnected()
-						|| !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
-					this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
-				}
-				// MUSIC PLAYBACK
-				try {
-					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
-							this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject());
-					this.audioEventHandler.schedule(musicTrack, this);
-					this.sendAnswer("dein Track wurde hinzugefügt!"+(AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN: ""));
-					this.deleteReceivedMessage();
-
-				} catch (Exception e) {
-					// Should not occur
-					this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/ Bandcamp-Link!");
-					if (!this.audioEventHandler.isPlaying()) {
-						this.leaveVoiceChannel();
+		if(!this.audioEventHandler.isActive() && this.hasMusicRights(true)){
+			if (this.isAuthorVoiceConnected()) {
+				if (this.getArgumentSection().equals("")) {
+					this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
+							+ "Schreib " + Markdown.toBlockQuotes("MegMusikListe") + " für Anregungen!");
+				} else {
+					// Join authors voice channel, if bot is not connected to voice or not to the same channel (only true if player was not active before)
+					if (!this.isVoiceConnected()
+							|| !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
+						this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
 					}
-					e.printStackTrace();
+					// MUSIC PLAYBACK
+					try {
+						MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
+								this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject());
+						this.audioEventHandler.schedule(musicTrack, this, false);
+						this.sendAnswer("dein Track wurde hinzugefügt!"+(AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN: ""));
+						this.deleteReceivedMessage();
+
+					} catch (Exception e) {
+						// Should not occur
+						this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/ Bandcamp-Link!");
+						if (!this.audioEventHandler.isPlaying()) {
+							this.leaveVoiceChannel();
+						}
+						e.printStackTrace();
+					}
 				}
+			} else {
+				this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			}
-		} else {
-			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 		}
 	}
 
@@ -527,5 +530,27 @@ public class Megumin extends ResponseType {
 			this.noPermission();
 		}
 
+	}
+
+	@Override
+	protected void onClearMusicQueue() {
+		if(this.hasMusicRights(true)){
+			// List already empty
+			if(this.audioEventHandler.getListSize() == 0){
+				final String[] responses = {
+					"Warteschlange wird gele- Moment, die Liste ist schon leer!",
+					"Leerer als leer kann die Liste glaub ich nicht werden!",
+					"Your call was absorbed by the darkness.",
+					"Die Warteschlange ist bereits leer!"
+				};
+				Random rand = new Random();
+				this.sendAnswer(responses[rand.nextInt(responses.length)]);
+			}
+			// Clear list
+			else{
+				this.audioEventHandler.clearList();
+				this.sendAnswer("Die Musikqueue ist nun leer!");
+			}
+		}
 	}
 }
