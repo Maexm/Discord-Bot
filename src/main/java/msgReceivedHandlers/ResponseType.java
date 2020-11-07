@@ -143,6 +143,9 @@ public abstract class ResponseType extends Middleware {
 			case "musicqueue":
 			case "musikqueue":
 			case "warteschlange":
+			case "schlange":
+			case "musikschlange":
+			case "musicschlange":
 				this.onMusicQueue();
 				break;
 			case "multiumfrage":
