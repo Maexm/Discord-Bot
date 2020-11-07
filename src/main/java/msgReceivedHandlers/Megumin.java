@@ -260,6 +260,7 @@ public class Megumin extends ResponseType {
 				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
 						+ "Schreib " + Markdown.toBlockQuotes("MegMusikListe") + " für Anregungen!");
 			} else {
+				// Join authors voice channel, if bot is not connected to voice or not to the same channel
 				if (!this.isVoiceConnected()
 						|| !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
 					this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
@@ -288,7 +289,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onPauseMusic() {
-		if (this.checkMusicRights()) {
+		if (this.hasMusicRights(true)) {
 			if (!this.audioEventHandler.isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
 			} else if (!this.audioEventHandler.isPaused()) {
@@ -302,7 +303,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onResumeMusic() {
-		if (this.checkMusicRights()) {
+		if (this.hasMusicRights(true)) {
 			if (!this.audioEventHandler.isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
 			} else if (this.audioEventHandler.isPaused()) {
@@ -316,7 +317,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onStopMusic() {
-		if (this.checkMusicRights()) {
+		if (this.hasMusicRights(true)) {
 			this.audioEventHandler.clearList();
 			this.audioEventHandler.stop();
 			this.sendAnswer("Musikwiedergabe wurde komplett gestoppt! :stop_button:");
@@ -325,7 +326,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onNextMusic() {
-		if (this.checkMusicRights()) {
+		if (this.hasMusicRights(true)) {
 			if (!this.audioEventHandler.isPlaying()) {
 				this.sendAnswer("es wird nichts abgespielt!");
 			} else {
@@ -352,12 +353,24 @@ public class Megumin extends ResponseType {
 
 	}
 
-	protected boolean checkMusicRights() {
+	protected boolean hasMusicRights(boolean requireSameChannel) {
+		// Author not connected to voice
 		if (!this.isVoiceConnected()) {
 			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
 			return false;
+		// Bot not connected to voice
 		} else if (!this.isAuthorVoiceConnected()) {
 			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
+			return false;
+		}
+		// Private chat
+		else if(this.isPrivate()){
+			this.sendAnswer("Diese Funktion ist im Privatchat nicht verfügbar!");
+			return false;
+		}
+		// Author connected to different voice channel
+		else if(requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())){
+			this.sendAnswer("Du musst dafür im selben VoiceChannel wie ich sein!");
 			return false;
 		}
 		return true;
