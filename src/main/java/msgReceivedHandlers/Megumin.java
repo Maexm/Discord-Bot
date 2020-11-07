@@ -270,8 +270,8 @@ public class Megumin extends ResponseType {
 					// MUSIC PLAYBACK
 					try {
 						MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
-								this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject());
-						this.audioEventHandler.schedule(musicTrack, this, false);
+								this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject(), isPrio);
+						this.audioEventHandler.schedule(musicTrack, this);
 						this.sendAnswer("dein Track wurde hinzugefügt!"+(AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN: ""));
 						this.deleteReceivedMessage();
 
@@ -368,7 +368,7 @@ public class Megumin extends ResponseType {
 		}
 		// Private chat
 		else if(this.isPrivate()){
-			this.sendAnswer("Diese Funktion ist im Privatchat nicht verfügbar!");
+			this.notInPrivate();
 			return false;
 		}
 		// Author connected to different voice channel
@@ -441,7 +441,11 @@ public class Megumin extends ResponseType {
 		if (this.hasPermission(SecurityLevel.ADM)) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
-			} else {
+			}
+			else if(this.isPrivate()){
+				this.notInPrivate();
+			}
+			else {
 				this.deleteReceivedMessage();
 				try {
 					int amount = Integer.parseInt(this.getArgumentSection());
@@ -552,5 +556,10 @@ public class Megumin extends ResponseType {
 				this.sendAnswer("Die Musikqueue ist nun leer!");
 			}
 		}
+	}
+
+	@Override
+	protected void notInPrivate() {
+		this.sendAnswer("Diese Funktion ist im Privatchat nicht nutzbar!");
 	}
 }

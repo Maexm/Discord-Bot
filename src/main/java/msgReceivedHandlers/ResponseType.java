@@ -215,6 +215,8 @@ public abstract class ResponseType extends Middleware {
 
 	protected abstract void noPermission();
 
+	protected abstract void notInPrivate();
+
 	/**
 	 * Sends a list of existing commands
 	 */
