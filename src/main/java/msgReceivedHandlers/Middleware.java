@@ -373,10 +373,12 @@ public abstract class Middleware {
 	}
 
 	/**
-	 * Deletes the message that was received
+	 * Deletes the message that was received, if not in private channel
 	 */
 	protected final void deleteReceivedMessage() {
-		this.getMessageObject().delete().block();
+		if(!this.isPrivate()){
+			this.getMessageObject().delete().block();
+		}
 	}
 
 	/**
