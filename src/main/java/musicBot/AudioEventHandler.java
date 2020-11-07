@@ -13,6 +13,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.rest.http.client.ClientException;
 import msgReceivedHandlers.ResponseType;
 import services.Emoji;
 import services.Markdown;
@@ -59,13 +60,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.parent = parent;
 		// Only load track, if only one track is in the loading queue
 		if (loadRightNow) {
-			System.out.println("Loading track (AudioEventHandler");
+			System.out.println("Loading track");
+			// Track will load IMMEDIATELY
 			this.playerManager.loadItemOrdered(track, track.getURL(), this.loadScheduler);
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null && loadRightNow) {
-			this.radioMessage = parent.sendInChannel(":musical_note: Musikwiedergabe wird gestartet...",
-					ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
+			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...");
 		}
 		// Update radioMessage, if one does already exist.
 		else {
@@ -118,8 +119,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.player.stopTrack();
 	}
 
-	public void clearList() {
+	public int clearList() {
+		int ret = this.tracks.size();
 		this.tracks.clear();
+		return ret;
 	}
 
 	public int getListSize() {
@@ -228,10 +231,14 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.active = false;
 		this.parent.leaveVoiceChannel();
 		//Message oldMessage = this.radioMessage;
-		
-		this.radioMessage.edit(spec -> {
+		try{
+			this.radioMessage.edit(spec -> {
 			spec.setContent(":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!");
-		}).block();
+			}).block();
+		}catch(Exception e){
+			System.out.println("Could not edit radio message while ending music session");
+		}
+		
 		this.radioMessage = null;
 	}
 
@@ -334,7 +341,14 @@ public class AudioEventHandler extends AudioEventAdapter {
 				this.radioMessage = this.radioMessage.edit(spec -> {
 					spec.setContent(this.buildInfoText(this.player.getPlayingTrack()));
 				}).block();
-			} catch (Exception e) {
+			}
+			catch(ClientException clientException){
+				if(clientException.getStatus().code() == 404){
+					System.out.println("Could not find radio message, creating new one!");
+					this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
+				}
+			} 
+			catch (Exception e) {
 				System.out.println("Failed to update radio message!");
 				System.out.println(e);
 			}
@@ -355,7 +369,20 @@ public class AudioEventHandler extends AudioEventAdapter {
 	}
 	public static String getSubmittedByUserName(AudioTrack track, Snowflake guildId){
 		MusicTrackInfo trackInfo = track.getUserData(MusicTrackInfo.class);
-		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getNickname()).block().orElse("FEHLER") : null;
+		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getDisplayName()).block() : null;
+	}
+
+	private Message createRadioMessage(String msg){
+		Message ret = null;
+		try{
+			ret = parent.sendInChannel(msg, ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
+			this.radioMessage = ret;
+		}
+		catch(Exception e){
+			System.out.println("Failed to create a new radio message!");
+		}
+		
+		return ret;
 	}
 
 }
