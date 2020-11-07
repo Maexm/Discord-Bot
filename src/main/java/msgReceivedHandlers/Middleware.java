@@ -21,8 +21,8 @@ import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
-import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
+import reactor.core.publisher.Mono;
 import security.SecurityProvider;
 import survey.Survey;
 
@@ -34,7 +34,7 @@ public abstract class Middleware {
 	protected Message msgObject;
 	protected String msgAuthorName;
 	protected User msgAuthorObject;
-	protected VoiceConnection voiceConnection = null;
+	//protected VoiceConnection voiceConnection = null;
 	protected final GatewayDiscordClient client;
 	protected String commandSection = "";
 	protected String argumentSection = "";
@@ -256,16 +256,13 @@ public abstract class Middleware {
 	 * @return The voice channel, the bot is currently connected to
 	 */
 	protected final VoiceChannel getMyVoiceChannel() {
-		if (this.isVoiceConnected()) {
-			return this.client.getSelf().block().asMember(this.getMessageGuild().getId()).block().getVoiceState()//TODO handle case voicestate == null
-					.block().getChannel().block();
-		} else {
-			return null;
-		}
+		return this.getMyVoiceChannelAsync().block();
 	}
-
-	protected final VoiceConnection getMyVoiceConnection() {
-		return this.voiceConnection;
+	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
+		return this.client.getSelf()
+			.flatMap(self -> self.asMember(this.getMessageGuild().getId()))
+			.flatMap(member -> member.getVoiceState())
+			.flatMap(voiceState -> voiceState != null ? voiceState.getChannel() : null);
 	}
 
 	/**
@@ -274,7 +271,7 @@ public abstract class Middleware {
 	 * @return
 	 */
 	protected final boolean isVoiceConnected() {
-		return this.voiceConnection != null;
+		return this.getMyVoiceChannel() != null;
 	}
 
 	/**
@@ -433,7 +430,7 @@ public abstract class Middleware {
 				System.out.println("Already connected to same channel '" + CHANNEL_NAME + "'!");
 			}
 			System.out.println("Trying to connect to voice channel '" + CHANNEL_NAME + "'");
-			this.voiceConnection = channel.join(spec -> spec.setProvider(audioProvider)).log().block(Duration.ofSeconds(30l));
+			channel.sendConnectVoiceState(false, false).block(Duration.ofSeconds(30l));
 			System.out.println("Connected to voice channel '" + CHANNEL_NAME + "'");
 		}
 	}
@@ -443,10 +440,13 @@ public abstract class Middleware {
 	 * that may occur.
 	 */
 	public final void leaveVoiceChannel() {
+		if(!this.isVoiceConnected()){
+			System.out.println("Cannot leave voice channel, when not connected!");
+			return;
+		}
 		try {
-			this.getClient().getVoiceConnectionRegistry().disconnect(this.voiceConnection.getGuildId()).doOnTerminate(() -> {
+			this.getMyVoiceChannelAsync().flatMap(channel -> channel.sendDisconnectVoiceState()).doOnTerminate(() -> {
 				System.out.println("Left voice channel");
-				this.voiceConnection = null;
 			})
 			.subscribe();
 		} catch (Exception e) {
