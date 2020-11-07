@@ -560,6 +560,22 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void notInPrivate() {
-		this.sendAnswer("Diese Funktion ist im Privatchat nicht nutzbar!");
+		this.sendAnswer("diese Funktion ist im Privatchat nicht nutzbar!");
+	}
+
+	@Override
+	protected void onChangeName() {
+		if(this.hasPermission(SecurityLevel.DEV)){
+			if(this.argumentSection.equals("")){
+				this.sendAnswer("du hast keinen Namen angegeben!");
+			}
+			else{
+				this.getMessageGuild().changeSelfNickname(this.argumentSection).block();
+				this.sendAnswer("Name erfolgreich geändert!");
+			}
+		}
+		else{
+			this.noPermission();
+		}
 	}
 }
