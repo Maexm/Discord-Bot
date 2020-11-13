@@ -19,7 +19,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
 import exceptions.StartUpException;
-import system.MessageResponsePicker;
+import system.BotHeart;
 import musicBot.AudioProviderLavaPlayer;
 import services.Markdown;
 import snowflakes.ChannelID;
@@ -60,7 +60,7 @@ public class StartUp {
 
 		final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build().login().block();
 
-		final MessageResponsePicker messageReceivedHandler = new MessageResponsePicker(client, provider, player,
+		final BotHeart messageReceivedHandler = new BotHeart(client, provider, player,
 				playerManager);
 
 		// ########## On client login ##########

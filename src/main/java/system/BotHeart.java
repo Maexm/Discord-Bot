@@ -17,7 +17,7 @@ import security.SecurityLevel;
 import start.RuntimeVariables;
 import survey.Survey;
 
-public final class MessageResponsePicker {
+public final class BotHeart {
 	
 	private ResponseType responseSet;
 	private final GatewayDiscordClient client;
@@ -30,7 +30,7 @@ public final class MessageResponsePicker {
 	private final AudioEventHandler playerEventHandler;
 	private final ArrayList<Middleware> middlewareBefore = new ArrayList<Middleware>();
 	
-	public MessageResponsePicker(final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
+	public BotHeart(final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
 		this.trackList = new LinkedList<AudioTrack>();
 		this.addInfo = new LinkedList<MusicTrackInfo>();
 		this.client = client;
