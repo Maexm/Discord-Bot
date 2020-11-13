@@ -19,7 +19,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
 import exceptions.StartUpException;
-import msgReceivedHandlers.MessageResponsePicker;
+import system.MessageResponsePicker;
 import musicBot.AudioProviderLavaPlayer;
 import services.Markdown;
 import snowflakes.ChannelID;

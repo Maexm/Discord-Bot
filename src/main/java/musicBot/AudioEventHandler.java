@@ -14,7 +14,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.rest.http.client.ClientException;
-import msgReceivedHandlers.ResponseType;
+import system.ResponseType;
 import services.Emoji;
 import services.Markdown;
 import services.TimePrint;
