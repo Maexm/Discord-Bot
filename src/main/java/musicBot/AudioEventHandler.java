@@ -35,6 +35,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private final AudioPlayerManager playerManager;
 	private final TrackLoader loadScheduler;
 	private Timer refreshTimer;
+	private TimerTask refreshTask;
 	private boolean active = false;
 	/**
 	 * Required for voice channel disconnect
@@ -179,7 +180,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		System.out.println("Track finished with reason: '" + endReason + "'");
-		this.refreshTimer.cancel();
+		this.refreshTask.cancel();
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
@@ -230,6 +231,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		System.out.println("Music ended!");
 		this.active = false;
 		this.parent.leaveVoiceChannel();
+		this.refreshTimer.cancel();
 		//Message oldMessage = this.radioMessage;
 		try{
 			this.radioMessage.edit(spec -> {
@@ -251,7 +253,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 			return;
 		}
 		final AudioEventHandler timerParent = this;
-		TimerTask task = new TimerTask() {
+		this.refreshTask = new TimerTask() {
 
 			@Override
 			public void run() {
@@ -261,10 +263,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 			}
 
 		};
-		this.refreshTimer = new Timer("MegMusikBot", true);// Create new Timer instance, since old timers won't work
-															// anymore
-		this.refreshTimer = new Timer();
-		this.refreshTimer.schedule(task, 0, 1000);
+		if(this.refreshTimer == null){
+			this.refreshTimer = new Timer("MegMusikBot", true);// Create new timer instance, if it doesnt exist
+		}
+		else{
+			this.refreshTimer.purge(); // Remove old canceled tasks
+		}
+		this.refreshTimer.schedule(this.refreshTask, 0, 1000);
 		if (this.radioMessage != null) {
 			this.updateInfoMsg();
 		} else {
