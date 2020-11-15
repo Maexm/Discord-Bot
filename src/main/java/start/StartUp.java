@@ -46,7 +46,7 @@ public class StartUp {
 		// Retrieve debug info, if available
 		if (args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
 			RuntimeVariables.IS_DEBUG = true;
-			// reactor.util.Loggers.useJdkLoggers();
+			reactor.util.Loggers.useJdkLoggers();
 		}
 
 		// Music components
@@ -72,23 +72,34 @@ public class StartUp {
 			client.updatePresence(Presence
 					.online(Activity.playing(RuntimeVariables.IS_DEBUG ? "EXPERIMENTELL" : "Schreib 'MegHelp'!")))
 					.block();
-			try {
-				List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
-						.blockFirst();
-				String emojiFormat = "";
-				for (GuildEmoji emoji : emojis) {
-					if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
-						emojiFormat = emoji.asFormat();
-						break;
-					}
-				}
-				MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
-						.getChannelById(ChannelID.MEGUMIN).block();
 
-				channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
-						+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
-			} catch (Exception e) {
-				e.printStackTrace();
+			if(RuntimeVariables.firstLogin){
+				try {
+					List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
+							.blockFirst();
+					String emojiFormat = "";
+					for (GuildEmoji emoji : emojis) {
+						if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
+							emojiFormat = emoji.asFormat();
+							break;
+						}
+					}
+					MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
+							.getChannelById(ChannelID.MEGUMIN).block();
+	
+					channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
+							+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				RuntimeVariables.firstLogin = false;
+			}
+			else{
+				System.out.println("Reconnected!");
+				MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
+							.getChannelById(ChannelID.MEGUMIN).block();
+	
+					channel.createMessage(":warning: Ein Verbindungsfehler ist aufgetreten... Jetzt bin ich aber wieder verbunden!").block();
 			}
 		});
 

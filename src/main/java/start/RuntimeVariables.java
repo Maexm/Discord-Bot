@@ -11,5 +11,6 @@ public class RuntimeVariables {
 	public final static String VERSION = "1.0.4.2";
 	public final static String MESSAGE_PREFIX = "MEG";
 	public final static String GIT_URL = "https://github.com/Maexm/Discord-Bot";
+	public static boolean firstLogin = true;
 	
 }
