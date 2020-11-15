@@ -9,12 +9,13 @@ public class Help {
 			+ "`Hey Megumin`: Lass dich von mir begrüßen! :smile:\n"
 			+ "`MegHelpMusik`: Alles zu Musik! :musical_note:\n"
 			+ "`MegHelpUmfrage`: Alles zu Umfragen! :bar_chart:\n"
-			+ "`MegJisho WORT`: Englisch <-> Japanisch Wörterbuch (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n"
-			+ "`MegRomaji TEXT`: Hiragana/Katakana <-> Lateinisches Alphabet :sa: --> :abc:\n"
-			+ "`MegKatakana TEXT`: Lateinisches Alphabet <-> Katakana :flag_jp:\n"
+			+ "`MegJisho WORT`: Englisch <--> Japanisch Wörterbuch (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n"
+			+ "`MegRomaji TEXT`: Hiragana/Katakana -> Lateinisches Alphabet :sa: --> :abc:\n"
+			+ "`MegKatakana TEXT`: Lateinisches Alphabet -> Katakana :flag_jp:\n"
 			+ "`MegZeit`: Aktuelle Uhrzeit und aktuelles Datum (deutsche Zeit)! :clock1:\n"
 			+ "`MegStatus`: Aktuelle Statusinformationen zu meiner Existenz :signal_strength:\n"
 			+ "`MegSchreiben/Sprechen TEXT`: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
+			+ "`MegWetter STADT`: Aktuelle Wetterlage in irgendeiner Stadt weltweit :white_sun_cloud:\n"
 			+ "`MegHelp`: Siehst du gerade vor dir, baka!\n"
 			+ "\n"
 			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
@@ -28,6 +29,7 @@ public class Help {
 			+ "und ich werde danach auf YouTube suchen!"
 			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN+"\n" : "")
 			+ "\n"
+			+ "`MegMusikPrio YTSUCHE/URL`: Wie MegMusik, nur dass der Track vorne an die Warteschlange eingefügt wird"
 			+ "`MegMusikNext OPT.ANZAHL`: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"
@@ -39,10 +41,14 @@ public class Help {
 			+ "\n"
 			+ "`MegMusikQueue`: Aktuelle Wiedergabe und Warteschlange"
 			+ "\n"
+			+ "`MegMusikClear`: Lösche die aktuelle Warteschlange"
+			+ "\n"
 			+ "`MegMusikVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist Admins vorbehalten)";
 	
 	public final static String ADMHELP = ">>> Du hast Zugriffsrechte auf Admin Befehle! :man_office_worker:\n"
 			+ "`MegLogout`: Ich melde mich ab und terminiere (bitte nur im Notfall verwenden) :skull_crossbones:"
+			+ "\n"
+			+"`MegKill`: Terminiert im Gegensatz zu 'MegLogout' unverzüglich und ohne Nachrichten CleanUp (für den Fall, dass 'MegLogout' nicht funktioniert)."
 			+ "\n"
 			+ "`MegMusikVol ZAHL`: Ich ändere meine Lautstärke!";
 	

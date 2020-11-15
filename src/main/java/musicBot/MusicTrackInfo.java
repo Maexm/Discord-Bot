@@ -11,13 +11,15 @@ public class MusicTrackInfo {
 	private final static String[] MUSIC_URL_PREFIXES = {"youtube.com", "youtu.be", "soundcloud.com"};
 	public final AudioEventHandler audioEventHandler;
 	public final Message userRequestMessage;
+	private final boolean isPrio;
 	
-	public MusicTrackInfo(String url, final User submittedByUser, final AudioEventHandler audioEventHandler, final Message userRequestMessage) {
+	public MusicTrackInfo(String url, final User submittedByUser, final AudioEventHandler audioEventHandler, final Message userRequestMessage, final boolean isPrio) {
 		
 		this.url = this.adjustURL(url);
 		this.submittedByUser = submittedByUser;
 		this.audioEventHandler = audioEventHandler;
 		this.userRequestMessage = userRequestMessage;
+		this.isPrio = isPrio;
 	}
 	
 	private String adjustURL(String url) {
@@ -51,11 +53,14 @@ public class MusicTrackInfo {
 	public final User getSubmittedByUser() {
 		return this.submittedByUser;
 	}
+	public boolean isPrio(){
+		return this.isPrio;
+	}
 	public String toString() {
 		return "'"+this.url+"' - submitted by "+this.getSubmittedByUser().getId();
 	}
 	
 	public MusicTrackInfo clone() {
-		return new MusicTrackInfo(this.url, this.submittedByUser, this.audioEventHandler, this.userRequestMessage);
+		return new MusicTrackInfo(this.url, this.submittedByUser, this.audioEventHandler, this.userRequestMessage, this.isPrio);
 	}
 }

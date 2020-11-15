@@ -1,10 +1,11 @@
-package msgReceivedHandlers;
+package system;
 
 import java.util.ArrayList;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
+import security.SecurityLevel;
 import start.RuntimeVariables;
 import survey.Survey;
 
@@ -44,10 +45,14 @@ public abstract class ResponseType extends Middleware {
 				this.commandSection = this.msgContent.toLowerCase().replaceFirst(PREFIX, "");
 			}
 
-			// Redirect
+			// Redirect // TODO: Outsource
 			switch (this.commandSection) {
 			case "logout":
 				this.onLogout();
+				break;
+			case "kill":
+			case "terminate":
+				this.kill();
 				break;
 			case "sprechen":
 			case "schreiben":
@@ -66,7 +71,29 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "music":
 			case "musik":
-				this.onReceiveMusicRequest();
+				this.onReceiveMusicRequest(false);
+				break;
+			case "prio":
+			case "musicprio":
+			case "musikprio":
+			case "priomusic":
+			case "priomusik":
+			case "push":
+			case "musicpush":
+			case "musikpush":
+			case "pushmusic":
+			case "pushmusik":
+			case "front":
+			case "musicfront":
+			case "musikfront":
+				this.onReceiveMusicRequest(true);
+				break;
+			case "clear":
+			case "musicclear":
+			case "musikclear":
+			case "clearmusic":
+			case "clearmusik":
+				this.onClearMusicQueue();
 				break;
 			case "pause":
 			case "musicpause":
@@ -121,6 +148,9 @@ public abstract class ResponseType extends Middleware {
 			case "musicqueue":
 			case "musikqueue":
 			case "warteschlange":
+			case "schlange":
+			case "musikschlange":
+			case "musicschlange":
 				this.onMusicQueue();
 				break;
 			case "multiumfrage":
@@ -166,11 +196,32 @@ public abstract class ResponseType extends Middleware {
 			case "public":
 				this.onPSA();
 				break;
+			case "update":
+			case "updateinfo":
+				this.onUpdatePSA();
+				break;
+			case "name":
+				this.onChangeName();
+				break;
+			case "wetter":
+			case "weather":
+			case "wetta":
+			case "weter":
+			case "weta":
+			case "tenki":
+				this.onWeather();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
 		}
 		return true;
+	}
+
+	private void kill(){
+		if(this.hasPermission(SecurityLevel.ADM)){
+			System.exit(1);
+		}
 	}
 
 	// ########## ABSTRACT RESPONSE METHODS ##########
@@ -193,6 +244,8 @@ public abstract class ResponseType extends Middleware {
 
 	protected abstract void noPermission();
 
+	protected abstract void notInPrivate();
+
 	/**
 	 * Sends a list of existing commands
 	 */
@@ -206,7 +259,7 @@ public abstract class ResponseType extends Middleware {
 	/**
 	 * Receives a link to a music source and adds it to the music queue
 	 */
-	protected abstract void onReceiveMusicRequest();
+	protected abstract void onReceiveMusicRequest(boolean isPrio);
 
 	protected abstract void onPauseMusic();
 
@@ -217,6 +270,8 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onNextMusic();
 
 	protected abstract void onMusicQueue();
+
+	protected abstract void onClearMusicQueue();
 
 	/**
 	 * Start new survey
@@ -264,5 +319,11 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onDeleteMessages();
 
 	protected abstract void onPSA();
+
+	protected abstract void onUpdatePSA();
+
+	protected abstract void onChangeName();
+
+	protected abstract void onWeather();
 
 }

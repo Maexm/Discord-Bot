@@ -19,7 +19,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
 import exceptions.StartUpException;
-import msgReceivedHandlers.MessageResponsePicker;
+import system.BotHeart;
 import musicBot.AudioProviderLavaPlayer;
 import services.Markdown;
 import snowflakes.ChannelID;
@@ -43,11 +43,18 @@ public class StartUp {
 				throw new StartUpException("Token missing");
 			}
 		}
-		// Retrieve debug info, if available
-		if (args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
-			RuntimeVariables.IS_DEBUG = true;
-			// reactor.util.Loggers.useJdkLoggers();
+
+		// Retrieve weather api key
+		if (args.length >= 2) {
+			RuntimeVariables.WEATHER_API_KEY = args[1];
 		}
+
+		// Retrieve debug info, if available
+		if (args.length >= 3 && args[2].toUpperCase().equals("DEBUG")) {
+			RuntimeVariables.IS_DEBUG = true;
+			
+		}
+		//reactor.util.Loggers.useJdkLoggers();
 
 		// Music components
 		final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
@@ -60,7 +67,7 @@ public class StartUp {
 
 		final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build().login().block();
 
-		final MessageResponsePicker messageReceivedHandler = new MessageResponsePicker(client, provider, player,
+		final BotHeart messageReceivedHandler = new BotHeart(client, provider, player,
 				playerManager);
 
 		// ########## On client login ##########
@@ -72,23 +79,34 @@ public class StartUp {
 			client.updatePresence(Presence
 					.online(Activity.playing(RuntimeVariables.IS_DEBUG ? "EXPERIMENTELL" : "Schreib 'MegHelp'!")))
 					.block();
-			try {
-				List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
-						.blockFirst();
-				String emojiFormat = "";
-				for (GuildEmoji emoji : emojis) {
-					if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
-						emojiFormat = emoji.asFormat();
-						break;
-					}
-				}
-				MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
-						.getChannelById(ChannelID.MEGUMIN).block();
 
-				channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
-						+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
-			} catch (Exception e) {
-				e.printStackTrace();
+			if(RuntimeVariables.firstLogin){
+				try {
+					List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
+							.blockFirst();
+					String emojiFormat = "";
+					for (GuildEmoji emoji : emojis) {
+						if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
+							emojiFormat = emoji.asFormat();
+							break;
+						}
+					}
+					MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
+							.getChannelById(ChannelID.MEGUMIN).block();
+	
+					channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
+							+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				RuntimeVariables.firstLogin = false;
+			}
+			else{
+				System.out.println("Reconnected!");
+				MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
+							.getChannelById(ChannelID.MEGUMIN).block();
+	
+					channel.createMessage(":warning: Ein Verbindungsfehler ist aufgetreten... Jetzt bin ich aber wieder verbunden!").block();
 			}
 		});
 

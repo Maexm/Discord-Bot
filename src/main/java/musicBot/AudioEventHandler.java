@@ -13,7 +13,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import msgReceivedHandlers.ResponseType;
+import discord4j.rest.http.client.ClientException;
+import system.ResponseType;
 import services.Emoji;
 import services.Markdown;
 import services.TimePrint;
@@ -25,6 +26,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private final AudioPlayer player;
 	private final LinkedList<AudioTrack> tracks;
 	public final static String MUSIC_WARN = "";//":warning: Wiedergabe und Suche von YouTube Tracks funktioniert aktuell unzuverlässig!";
+	public final static String MUSIC_LOADING = ":musical_note: Musik wird geladen..."; 
+	public final static String MUSIC_STOPPED = ":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!";
+	public final static String MUSIC_INFO_PREFIX = ":musical_note: Es wird abgespielt:";
 	/**
 	 * A list containing MusicTrackInfo (mainly who submitted this track). This
 	 * instance is shared with a TrackLoader.
@@ -34,6 +38,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private final AudioPlayerManager playerManager;
 	private final TrackLoader loadScheduler;
 	private Timer refreshTimer;
+	private TimerTask refreshTask;
 	private boolean active = false;
 	/**
 	 * Required for voice channel disconnect
@@ -59,13 +64,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.parent = parent;
 		// Only load track, if only one track is in the loading queue
 		if (loadRightNow) {
-			System.out.println("Loading track (AudioEventHandler");
+			System.out.println("Loading track");
+			// Track will load IMMEDIATELY
 			this.playerManager.loadItemOrdered(track, track.getURL(), this.loadScheduler);
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null && loadRightNow) {
-			this.radioMessage = parent.sendInChannel(":musical_note: Musikwiedergabe wird gestartet...",
-					ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
+			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...");
 		}
 		// Update radioMessage, if one does already exist.
 		else {
@@ -94,7 +99,11 @@ public class AudioEventHandler extends AudioEventAdapter {
 	public void setVolume(int vol) {
 		this.player.setVolume(vol);
 	}
-
+	/**
+	 * Indicates whether or not a music session is actve. A music session is active when the first song has been added, until the
+	 * ended() method has been invoked (which also deletes the music info message on discord)
+	 * @return True if player is music session is on going (!= player is actually playing). False otherwise.
+	 */
 	public boolean isActive() {
 		return this.active;
 	}
@@ -114,8 +123,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.player.stopTrack();
 	}
 
-	public void clearList() {
+	public int clearList() {
+		int ret = this.tracks.size();
 		this.tracks.clear();
+		return ret;
 	}
 
 	public int getListSize() {
@@ -172,7 +183,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		System.out.println("Track finished with reason: '" + endReason + "'");
-		this.refreshTimer.cancel();
+		this.refreshTask.cancel();
+		this.refreshTimer.purge();
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
@@ -192,13 +204,15 @@ public class AudioEventHandler extends AudioEventAdapter {
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
-				failedTrackMsg.getChannel()
-				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!"))
-				.subscribe();
+				this.parent.getOwnerMentionAsync().flatMap(ownerMention -> 
+					failedTrackMsg.getChannel()
+					.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\n"+ownerMention+", das könnte ein Bug sein!"))
+				).subscribe();
 			} else if (this.radioMessage != null) {
-				this.radioMessage.getChannel()
-				.flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!"))
-				.subscribe();
+				this.parent.getOwnerMentionAsync().flatMap(ownerMention -> 
+					this.radioMessage.getChannel()
+					.flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\n"+ownerMention+", das könnte ein Bug sein!"))
+				).subscribe();
 			}
 		}
 
@@ -223,11 +237,19 @@ public class AudioEventHandler extends AudioEventAdapter {
 		System.out.println("Music ended!");
 		this.active = false;
 		this.parent.leaveVoiceChannel();
+		this.refreshTask.cancel();
+		this.refreshTimer.purge();
+		this.refreshTimer.cancel();
+		this.refreshTimer = null;
 		//Message oldMessage = this.radioMessage;
+		try{
+			this.radioMessage.edit(spec -> {
+			spec.setContent(AudioEventHandler.MUSIC_STOPPED);
+			}).block();
+		}catch(Exception e){
+			System.out.println("Could not edit radio message while ending music session");
+		}
 		
-		this.radioMessage.edit(spec -> {
-			spec.setContent(":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!");
-		}).block();
 		this.radioMessage = null;
 	}
 
@@ -240,20 +262,21 @@ public class AudioEventHandler extends AudioEventAdapter {
 			return;
 		}
 		final AudioEventHandler timerParent = this;
-		TimerTask task = new TimerTask() {
+		this.refreshTask = new TimerTask() {
 
 			@Override
 			public void run() {
-				if (timerParent.radioMessage != null) {
-					timerParent.updateInfoMsg();
-				}
+				timerParent.updateInfoMsg();
 			}
 
 		};
-		this.refreshTimer = new Timer("MegMusikBot", true);// Create new Timer instance, since old timers won't work
-															// anymore
-		this.refreshTimer = new Timer();
-		this.refreshTimer.schedule(task, 0, 1000);
+		if(this.refreshTimer == null){
+			this.refreshTimer = new Timer("MegMusikBot", true);// Create new timer instance, if it doesnt exist
+		}
+		else{
+			this.refreshTimer.purge(); // Remove old canceled tasks
+		}
+		this.refreshTimer.schedule(this.refreshTask, 0, 1000);
 		if (this.radioMessage != null) {
 			this.updateInfoMsg();
 		} else {
@@ -267,7 +290,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (this.isPaused()) {
 			status = "Die Wiedergabe ist " + Markdown.toBold("pausiert") + "!";
 		} else if (!this.isPlaying()) {
-			return ":musical_note: Musik wird geladen...";
+			return AudioEventHandler.MUSIC_LOADING;
 		}
 
 		// Volume
@@ -302,7 +325,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				+ Markdown.toBold(TimePrint.msToPretty(track.getDuration()));
 
 		// ########## RETURNING ##########
-		return 	":musical_note: Es wird abgespielt: "
+		return 	AudioEventHandler.MUSIC_INFO_PREFIX + " "
 				+ Markdown.toBold(track.getInfo().title) + " von " + Markdown.toBold(track.getInfo().author) + "\n\n"
 				+ status + "\n" + volume + "\n" + this.getQueueInfoString() + "\n" + "\n" + progressBar + "\n"
 				+ "Der Track wurde hinzugefügt von: " + Markdown.toBold(userName) + "\n" + ytSearch + "Link: "
@@ -330,7 +353,14 @@ public class AudioEventHandler extends AudioEventAdapter {
 				this.radioMessage = this.radioMessage.edit(spec -> {
 					spec.setContent(this.buildInfoText(this.player.getPlayingTrack()));
 				}).block();
-			} catch (Exception e) {
+			}
+			catch(ClientException clientException){
+				if(clientException.getStatus().code() == 404){
+					System.out.println("Could not find radio message, creating new one!");
+					this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
+				}
+			} 
+			catch (Exception e) {
 				System.out.println("Failed to update radio message!");
 				System.out.println(e);
 			}
@@ -351,7 +381,20 @@ public class AudioEventHandler extends AudioEventAdapter {
 	}
 	public static String getSubmittedByUserName(AudioTrack track, Snowflake guildId){
 		MusicTrackInfo trackInfo = track.getUserData(MusicTrackInfo.class);
-		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getNickname()).block().orElse("FEHLER") : null;
+		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getDisplayName()).block() : null;
+	}
+
+	private Message createRadioMessage(String msg){
+		Message ret = null;
+		try{
+			ret = parent.sendInChannel(msg, ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
+			this.radioMessage = ret;
+		}
+		catch(Exception e){
+			System.out.println("Failed to create a new radio message!");
+		}
+		
+		return ret;
 	}
 
 }

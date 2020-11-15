@@ -1,8 +1,9 @@
-package msgReceivedHandlers;
+package system;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -20,9 +21,10 @@ import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
-import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
+import reactor.core.publisher.Mono;
 import security.SecurityProvider;
+import snowflakes.GuildID;
 import survey.Survey;
 
 
@@ -33,29 +35,30 @@ public abstract class Middleware {
 	protected Message msgObject;
 	protected String msgAuthorName;
 	protected User msgAuthorObject;
-	protected VoiceConnection voiceConnection = null;
+	//protected VoiceConnection voiceConnection = null;
 	protected final GatewayDiscordClient client;
 	protected String commandSection = "";
 	protected String argumentSection = "";
 	protected final ArrayList<Survey> surveys;
+	private final BooleanSupplier mayAccept;
 
 	// AUDIO
 	protected final AudioEventHandler audioEventHandler;
 
 	protected final AudioProvider audioProvider;
 
-	/**
-	 * Creates a Middleware object
-	 * 
-	 * @param client              The discord client object representing this bot
-	 * @param audioProvider       The audioProvider for this bot
-	 */
 	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
 			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
+		this(client, audioProvider, surveys, audioEventHandler, () -> true);
+	}
+
+	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
+			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final BooleanSupplier mayAccept) {
 		this.client = client;
 		this.audioEventHandler = audioEventHandler;
 		this.audioProvider = audioProvider;
 		this.surveys = surveys;
+		this.mayAccept = mayAccept;
 	}
 
 	/**
@@ -65,6 +68,10 @@ public abstract class Middleware {
 	 * @param messageEvent
 	 */
 	public final boolean acceptEvent(final MessageCreateEvent messageEvent) {
+
+		if(!this.mayAccept.getAsBoolean()){
+			return true; // Skip if this Middleware may not handle event
+		}
 
 		boolean fetchSuccess = true;
 		boolean ret = true;
@@ -250,16 +257,13 @@ public abstract class Middleware {
 	 * @return The voice channel, the bot is currently connected to
 	 */
 	protected final VoiceChannel getMyVoiceChannel() {
-		if (this.isVoiceConnected()) {
-			return this.client.getSelf().block().asMember(this.getMessageGuild().getId()).block().getVoiceState()//TODO handle case voicestate == null
-					.block().getChannel().block();
-		} else {
-			return null;
-		}
+		return this.getMyVoiceChannelAsync().block();
 	}
-
-	protected final VoiceConnection getMyVoiceConnection() {
-		return this.voiceConnection;
+	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
+		return this.client.getSelf()
+			.flatMap(self -> self.asMember(this.getMessageGuild().getId()))
+			.flatMap(member -> member.getVoiceState())
+			.flatMap(voiceState -> voiceState != null ? voiceState.getChannel() : null);
 	}
 
 	/**
@@ -268,7 +272,7 @@ public abstract class Middleware {
 	 * @return
 	 */
 	protected final boolean isVoiceConnected() {
-		return this.voiceConnection != null;
+		return this.getMyVoiceChannel() != null;
 	}
 
 	/**
@@ -339,6 +343,10 @@ public abstract class Middleware {
 		return this.getAppInfo().getOwner().block();
 	}
 
+	public final Mono<String> getOwnerMentionAsync(){
+		return this.getAppInfo().getOwner().map(owner -> owner.getMention());
+	}
+
 	// ########## INTERACTIVE METHODS ##########
 
 	/**
@@ -370,10 +378,12 @@ public abstract class Middleware {
 	}
 
 	/**
-	 * Deletes the message that was received
+	 * Deletes the message that was received, if not in private channel
 	 */
 	protected final void deleteReceivedMessage() {
-		this.getMessageObject().delete().block();
+		if(!this.isPrivate()){
+			this.getMessageObject().delete().block();
+		}
 	}
 
 	/**
@@ -427,7 +437,8 @@ public abstract class Middleware {
 				System.out.println("Already connected to same channel '" + CHANNEL_NAME + "'!");
 			}
 			System.out.println("Trying to connect to voice channel '" + CHANNEL_NAME + "'");
-			this.voiceConnection = channel.join(spec -> spec.setProvider(audioProvider)).log().block(Duration.ofSeconds(30l));
+			/*this.voiceConnection = */channel.join(spec -> spec.setProvider(audioProvider)).log().block(Duration.ofSeconds(30l));
+			//channel.sendConnectVoiceState(false, false).block(Duration.ofSeconds(30l));
 			System.out.println("Connected to voice channel '" + CHANNEL_NAME + "'");
 		}
 	}
@@ -437,12 +448,12 @@ public abstract class Middleware {
 	 * that may occur.
 	 */
 	public final void leaveVoiceChannel() {
+		// if(!this.isVoiceConnected()){
+		// 	System.out.println("Cannot leave voice channel, when not connected!");
+		// 	return;
+		// }
 		try {
-			this.getClient().getVoiceConnectionRegistry().disconnect(this.voiceConnection.getGuildId()).doOnTerminate(() -> {
-				System.out.println("Left voice channel");
-				this.voiceConnection = null;
-			})
-			.subscribe();
+			this.getClient().getVoiceConnectionRegistry().disconnect(GuildID.UNSER_SERVER).doOnTerminate(() -> {System.out.println("Left voice channel");}).subscribe();
 		} catch (Exception e) {
 			System.out.println(e);
 		}

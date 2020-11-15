@@ -98,15 +98,22 @@ public class TrackLoader implements AudioLoadResultHandler {
 
 	private void digestTrack(AudioTrack track, MusicTrackInfo info) {
 		track.setUserData(info);
+		// Play track immediately, if nothing is playing
 		if (this.player.getPlayingTrack() == null) {
 			this.playTrack(track, info);
-		} else {
+		}
+		// Add track to queue, if something is already playing. Differentiate between isPrio and !isPrio
+		else if(info.isPrio()){
+			this.trackList.addFirst(track);
+		}
+		else {
 			this.trackList.add(track);
 		}
 		this.loadNext();
 	}
 
 	private void digestMultipleTracks(AudioPlaylist playlist) {
+		// Retrieve first track and its info
 		MusicTrackInfo info = null;
 		AudioTrack first = null;
 		if (playlist.getTracks().size() != 0) {
@@ -115,30 +122,40 @@ public class TrackLoader implements AudioLoadResultHandler {
 		} else {
 			throw new IllegalMagicException("Received playlist with a size of 0, how is this even possible?!");
 		}
-		// If nothing is playing, remove first from playlist (first track will be played
-		// later, but we need to keep the queue up to date!)
+		// If nothing is playing, remove first from playlist and play it immediately
 		if (this.player.getPlayingTrack() == null) {
 			playlist.getTracks().remove(0);
 			first.setUserData(info);
-		}
-		// Add loaded list to queue
-		for (AudioTrack track : playlist.getTracks()) {
-			track.setUserData(info);
-			this.trackList.add(track);
-		}
-		if (this.player.getPlayingTrack() == null) {
 			this.playTrack(first, info);
+		}
+		// Add loaded list to queue. First track will be included, if playingTrack was not null
+		for (int i = 0; i < playlist.getTracks().size(); i++) {
+			AudioTrack track = playlist.getTracks().get(i);
+			track.setUserData(info);
+			// Differentiate between isPrio & !isPrio - If first track is prio then every ttrack in this playlist is prio
+			if(info.isPrio()){
+				this.trackList.add(i, track);
+			}
+			else{
+				this.trackList.add(track);
+			}
 		}
 		this.loadNext();
 	}
-
+	/**
+	 * Load next track from loading queue
+	 */
 	private void loadNext() {
 		if (!this.loadingQueue.isEmpty()) {
 			System.out.println("Loading next from queue");
 			this.playerManager.loadItem(this.loadingQueue.getFirst().getURL(), this);
 		}
 	}
-
+	/**
+	 * Play a track
+	 * @param track The track to be played
+	 * @param info MusicInfo, required in order to access the audioEventHandler
+	 */
 	private void playTrack(AudioTrack track, MusicTrackInfo info) {
 		if (info.audioEventHandler.isActive()) {
 			this.player.playTrack(track);
