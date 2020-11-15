@@ -9,6 +9,7 @@ import java.util.Random;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.object.entity.Message;
 import discord4j.voice.AudioProvider;
 import exceptions.IllegalMagicException;
 import exceptions.NoPermissionException;
@@ -45,7 +46,10 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onLogout() {
 		if (this.hasPermission(SecurityLevel.ADM)) {
-			this.sendInSameChannel("Bis bald!");
+			final String logoutText = "Logout wird ausgeführt...";
+
+			// ########## CLEAN MUSIC SESSION ##########
+			Message logOutMsg = this.sendInSameChannel(logoutText+"\n"+"Musik Session wird beendet...");
 			this.audioEventHandler.clearList();
 			if (this.audioEventHandler.isPlaying()) {
 				this.audioEventHandler.stop();
@@ -53,13 +57,29 @@ public class Megumin extends ResponseType {
 			if (this.isVoiceConnected()) {
 				this.leaveVoiceChannel();
 			}
+
+			// ########## CLEAN INFO CHANNEL ##########
+			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText+"\n"+"Lösche Botnachrichten...")).block();
+			
 			try {
 				System.out.println("Deleting messages in info channel...");
 				this.deleteAllMessages(ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
 				System.out.println("Messages deleted!");
 			} catch (Exception e) {
 				e.printStackTrace();
+				this.sendInSameChannel("Beim Löschen von Botnachrichten ist ein Fehler aufgetreten!");
 			}
+
+			// ########## STOP SURVEYS ##########
+			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText+"\n"+"Beende existierende Umfragen...")).block();
+
+			this.surveys.forEach(survey -> {
+				survey.stop();
+			});
+
+			// ########## LOGOUT ##########
+			logOutMsg = logOutMsg.edit(edit -> edit.setContent("Bis bald!")).block();
+
 			this.logOut();
 		} else {
 			this.noPermission();
