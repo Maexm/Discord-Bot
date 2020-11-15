@@ -43,11 +43,18 @@ public class StartUp {
 				throw new StartUpException("Token missing");
 			}
 		}
-		// Retrieve debug info, if available
-		if (args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
-			RuntimeVariables.IS_DEBUG = true;
-			reactor.util.Loggers.useJdkLoggers();
+
+		// Retrieve weather api key
+		if (args.length >= 2) {
+			RuntimeVariables.WEATHER_API_KEY = args[1];
 		}
+
+		// Retrieve debug info, if available
+		if (args.length >= 3 && args[2].toUpperCase().equals("DEBUG")) {
+			RuntimeVariables.IS_DEBUG = true;
+			
+		}
+		reactor.util.Loggers.useJdkLoggers();
 
 		// Music components
 		final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
