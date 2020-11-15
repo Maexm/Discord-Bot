@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import exceptions.IllegalMagicException;
 
+@SuppressWarnings("rawtypes")
 public abstract class RefinedTimerTask extends TimerTask {
     
     private final Long delay;
