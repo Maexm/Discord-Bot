@@ -276,8 +276,6 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onReceiveMusicRequest(boolean isPrio) {
-
-		if(!this.audioEventHandler.isActive() && this.hasMusicRights(true)){
 			if (this.isAuthorVoiceConnected()) {
 				if (this.getArgumentSection().equals("")) {
 					this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
@@ -308,7 +306,6 @@ public class Megumin extends ResponseType {
 			} else {
 				this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			}
-		}
 	}
 
 	@Override
