@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
+import security.SecurityLevel;
 import start.RuntimeVariables;
 import survey.Survey;
 
@@ -48,6 +49,10 @@ public abstract class ResponseType extends Middleware {
 			switch (this.commandSection) {
 			case "logout":
 				this.onLogout();
+				break;
+			case "kill":
+			case "terminate":
+				this.kill();
 				break;
 			case "sprechen":
 			case "schreiben":
@@ -203,6 +208,12 @@ public abstract class ResponseType extends Middleware {
 			}
 		}
 		return true;
+	}
+
+	private void kill(){
+		if(this.hasPermission(SecurityLevel.ADM)){
+			System.exit(1);
+		}
 	}
 
 	// ########## ABSTRACT RESPONSE METHODS ##########
