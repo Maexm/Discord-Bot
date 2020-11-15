@@ -203,9 +203,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
-				failedTrackMsg.getChannel()
-				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!"))
-				.subscribe();
+				this.parent.getOwnerMentionAsync().flatMap(ownerMention -> 
+					failedTrackMsg.getChannel()
+					.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\n"+ownerMention+", das könnte ein Bug sein!"))
+				).subscribe();
 			} else if (this.radioMessage != null) {
 				this.parent.getOwnerMentionAsync().flatMap(ownerMention -> 
 					this.radioMessage.getChannel()
