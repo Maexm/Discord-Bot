@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import exceptions.IllegalMagicException;
 
-public class TaskManager {
+public class TaskManager<TaskType extends RefinedTimerTask> {
     
-    private HashMap<UUID, RefinedTimerTask> tasks;
+    private HashMap<UUID, TaskType> tasks;
     private Timer timer;
     private final boolean isDaemon;
 
@@ -31,7 +31,7 @@ public class TaskManager {
         return ret;
     }
 
-    public void addTask(RefinedTimerTask task){
+    public void addTask(TaskType task){
 
         task.setUUID(this.getFreeUUID());
 
@@ -64,7 +64,7 @@ public class TaskManager {
         this.tasks.put(task.getUUID(), task); // Won't be added to tasks, if scheduling failed
     }
 
-    public RefinedTimerTask getTaskByUUID(UUID uuid){
+    public TaskType getTaskByUUID(UUID uuid){
         return this.tasks.get(uuid);
     }
 
