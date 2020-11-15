@@ -184,6 +184,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		System.out.println("Track finished with reason: '" + endReason + "'");
 		this.refreshTask.cancel();
+		this.refreshTimer.purge();
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
@@ -236,7 +237,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		System.out.println("Music ended!");
 		this.active = false;
 		this.parent.leaveVoiceChannel();
+		this.refreshTask.cancel();
+		this.refreshTimer.purge();
 		this.refreshTimer.cancel();
+		this.refreshTimer = null;
 		//Message oldMessage = this.radioMessage;
 		try{
 			this.radioMessage.edit(spec -> {
@@ -262,9 +266,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 			@Override
 			public void run() {
-				if (timerParent.radioMessage != null) {
-					timerParent.updateInfoMsg();
-				}
+				timerParent.updateInfoMsg();
 			}
 
 		};

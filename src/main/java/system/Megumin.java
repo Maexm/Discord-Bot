@@ -50,6 +50,7 @@ public class Megumin extends ResponseType {
 			final String logoutText = "Logout wird ausgeführt...";
 
 			// ########## CLEAN MUSIC SESSION ##########
+			System.out.println("Cleaning up mussic session...");
 			Message logOutMsg = this.sendInSameChannel(logoutText+"\n"+"Musik Session wird beendet...");
 			this.audioEventHandler.clearList();
 			if (this.audioEventHandler.isPlaying()) {
@@ -60,10 +61,10 @@ public class Megumin extends ResponseType {
 			}
 
 			// ########## CLEAN INFO CHANNEL ##########
+			System.out.println("Deleting messages in info channel...");
 			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText+"\n"+"Lösche Botnachrichten...")).block();
 			
 			try {
-				System.out.println("Deleting messages in info channel...");
 				this.deleteAllMessages(ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
 				System.out.println("Messages deleted!");
 			} catch (Exception e) {
@@ -72,6 +73,7 @@ public class Megumin extends ResponseType {
 			}
 
 			// ########## STOP SURVEYS ##########
+			System.out.println("Stopping surveys...");
 			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText+"\n"+"Beende existierende Umfragen...")).block();
 
 			this.surveys.forEach(survey -> {
@@ -79,6 +81,7 @@ public class Megumin extends ResponseType {
 			});
 
 			// ########## LOGOUT ##########
+			System.out.println("Cleanup finished, logging out!");
 			logOutMsg = logOutMsg.edit(edit -> edit.setContent("Bis bald!")).block();
 
 			this.logOut();
@@ -375,8 +378,13 @@ public class Megumin extends ResponseType {
 	}
 
 	protected boolean hasMusicRights(boolean requireSameChannel) {
+		// Private chat
+		if(this.isPrivate()){
+			this.notInPrivate();
+			return false;
+		}
 		// Author not connected to voice
-		if (!this.isVoiceConnected()) {
+		else if (!this.isVoiceConnected()) {
 			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
 			return false;
 		// Bot not connected to voice
@@ -384,14 +392,9 @@ public class Megumin extends ResponseType {
 			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			return false;
 		}
-		// Private chat
-		else if(this.isPrivate()){
-			this.notInPrivate();
-			return false;
-		}
 		// Author connected to different voice channel
 		else if(requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())){
-			this.sendAnswer("Du musst dafür im selben VoiceChannel wie ich sein!");
+			this.sendAnswer("du musst dafür im selben VoiceChannel wie ich sein!");
 			return false;
 		}
 		return true;

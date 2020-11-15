@@ -21,10 +21,10 @@ import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
-import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
 import reactor.core.publisher.Mono;
 import security.SecurityProvider;
+import snowflakes.GuildID;
 import survey.Survey;
 
 
@@ -448,16 +448,12 @@ public abstract class Middleware {
 	 * that may occur.
 	 */
 	public final void leaveVoiceChannel() {
-		if(!this.isVoiceConnected()){
-			System.out.println("Cannot leave voice channel, when not connected!");
-			return;
-		}
+		// if(!this.isVoiceConnected()){
+		// 	System.out.println("Cannot leave voice channel, when not connected!");
+		// 	return;
+		// }
 		try {
-			this.getClient().getVoiceConnectionRegistry().disconnect(this.getMyVoiceChannel().getGuildId()).doOnTerminate(() -> {
-				System.out.println("Left voice channel");
-				//this.voiceConnection = null;
-			})
-			.subscribe();
+			this.getClient().getVoiceConnectionRegistry().disconnect(GuildID.UNSER_SERVER).doOnTerminate(() -> {System.out.println("Left voice channel");}).subscribe();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
