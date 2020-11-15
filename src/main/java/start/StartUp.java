@@ -54,7 +54,7 @@ public class StartUp {
 			RuntimeVariables.IS_DEBUG = true;
 			
 		}
-		reactor.util.Loggers.useJdkLoggers();
+		//reactor.util.Loggers.useJdkLoggers();
 
 		// Music components
 		final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
