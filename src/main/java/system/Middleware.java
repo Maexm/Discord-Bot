@@ -21,6 +21,7 @@ import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
+import discord4j.voice.VoiceConnection;
 import musicBot.AudioEventHandler;
 import reactor.core.publisher.Mono;
 import security.SecurityProvider;
@@ -436,7 +437,8 @@ public abstract class Middleware {
 				System.out.println("Already connected to same channel '" + CHANNEL_NAME + "'!");
 			}
 			System.out.println("Trying to connect to voice channel '" + CHANNEL_NAME + "'");
-			channel.sendConnectVoiceState(false, false).block(Duration.ofSeconds(30l));
+			/*this.voiceConnection = */channel.join(spec -> spec.setProvider(audioProvider)).log().block(Duration.ofSeconds(30l));
+			//channel.sendConnectVoiceState(false, false).block(Duration.ofSeconds(30l));
 			System.out.println("Connected to voice channel '" + CHANNEL_NAME + "'");
 		}
 	}
@@ -451,8 +453,9 @@ public abstract class Middleware {
 			return;
 		}
 		try {
-			this.getMyVoiceChannelAsync().flatMap(channel -> channel.sendDisconnectVoiceState()).doOnTerminate(() -> {
+			this.getClient().getVoiceConnectionRegistry().disconnect(this.getMyVoiceChannel().getGuildId()).doOnTerminate(() -> {
 				System.out.println("Left voice channel");
+				//this.voiceConnection = null;
 			})
 			.subscribe();
 		} catch (Exception e) {
