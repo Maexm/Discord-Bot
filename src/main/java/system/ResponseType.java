@@ -45,7 +45,7 @@ public abstract class ResponseType extends Middleware {
 				this.commandSection = this.msgContent.toLowerCase().replaceFirst(PREFIX, "");
 			}
 
-			// Redirect
+			// Redirect // TODO: Outsource
 			switch (this.commandSection) {
 			case "logout":
 				this.onLogout();
@@ -203,6 +203,14 @@ public abstract class ResponseType extends Middleware {
 			case "name":
 				this.onChangeName();
 				break;
+			case "wetter":
+			case "weather":
+			case "wetta":
+			case "weter":
+			case "weta":
+			case "tenki":
+				this.onWeather();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -315,5 +323,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onUpdatePSA();
 
 	protected abstract void onChangeName();
+
+	protected abstract void onWeather();
 
 }

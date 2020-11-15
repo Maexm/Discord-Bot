@@ -30,6 +30,7 @@ import snowflakes.ChannelID;
 import snowflakes.GuildID;
 import start.RuntimeVariables;
 import survey.Survey;
+import weather.Weather;
 
 public class Megumin extends ResponseType {
 
@@ -612,5 +613,13 @@ public class Megumin extends ResponseType {
 		else{
 			this.noPermission();
 		}
+	}
+
+	@Override
+	protected void onWeather() {
+		String city = this.getArgumentSection().equals("") ? RuntimeVariables.HOME_TOWN : this.getArgumentSection();
+
+		String resp = Weather.buildMessage(Weather.getWeatherResponse(city));
+		this.sendAnswer(resp);
 	}
 }
