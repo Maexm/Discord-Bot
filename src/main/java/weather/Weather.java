@@ -58,7 +58,7 @@ public class Weather {
                     +"\n"
                     +Markdown.toCodeBlock("Luftdruck:")+" "+Markdown.toBold(resp.main.pressure+"hPa")
                     +"\n"
-                    +Markdown.toCodeBlock("Wind: ")+" "+Markdown.toBold(resp.wind.speed+" m/s") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))+".";
+                    +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(resp.wind.speed+" m/s") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))+".";
         return ret;
     }
 
