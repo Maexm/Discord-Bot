@@ -15,6 +15,7 @@ public class Help {
 			+ "`MegZeit`: Aktuelle Uhrzeit und aktuelles Datum (deutsche Zeit)! :clock1:\n"
 			+ "`MegStatus`: Aktuelle Statusinformationen zu meiner Existenz :signal_strength:\n"
 			+ "`MegSchreiben/Sprechen TEXT`: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
+			+ "`MegWetter STADT`: Aktuelle Wetterlage in irgendeiner Stadt weltweit :white_sun_cloud:\n"
 			+ "`MegHelp`: Siehst du gerade vor dir, baka!\n"
 			+ "\n"
 			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
@@ -28,6 +29,7 @@ public class Help {
 			+ "und ich werde danach auf YouTube suchen!"
 			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN+"\n" : "")
 			+ "\n"
+			+ "`MegMusikPrio YTSUCHE/URL`: Wie MegMusik, nur dass der Track vorne an die Warteschlange eingefügt wird"
 			+ "`MegMusikNext OPT.ANZAHL`: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"
@@ -38,6 +40,8 @@ public class Help {
 			+ "`MegMusikStop`: Beende die Musikwiedergabe und lösche die Warteschlange :stop_button:"
 			+ "\n"
 			+ "`MegMusikQueue`: Aktuelle Wiedergabe und Warteschlange"
+			+ "\n"
+			+ "`MegMusikClear`: Lösche die aktuelle Warteschlange"
 			+ "\n"
 			+ "`MegMusikVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist Admins vorbehalten)";
 	
