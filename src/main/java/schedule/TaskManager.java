@@ -43,7 +43,7 @@ public class TaskManager<TaskType extends RefinedTimerTask> {
                 this.timer.schedule(task, task.getStartTime());
             }
             else if(task.getDelay() != null){
-                this.timer.schedule(task, task.getDelay());
+                this.timer.schedule(task, task.getDelay().longValue());
             }
             else{
                 throw new IllegalMagicException("RefinedTimerTask delay and startDate properties are both null, how did this happen?!");
@@ -52,10 +52,10 @@ public class TaskManager<TaskType extends RefinedTimerTask> {
             // ########## Periodic task ##########
         else{
             if(task.getStartTime() != null){
-                this.timer.scheduleAtFixedRate(task, task.getStartTime(), task.getPeriod());
+                this.timer.scheduleAtFixedRate(task, task.getStartTime(), task.getPeriod().longValue());
             }
             else if(task.getDelay() != null){
-                this.timer.scheduleAtFixedRate(task, task.getDelay(), task.getPeriod());
+                this.timer.scheduleAtFixedRate(task, task.getDelay().longValue(), task.getPeriod().longValue());
             }
             else{
                 throw new IllegalMagicException("RefinedTimerTask delay and startDate properties are both null, how did this happen?!");
