@@ -342,6 +342,10 @@ public abstract class Middleware {
 		return this.getAppInfo().getOwner().block();
 	}
 
+	public final Mono<String> getOwnerMentionAsync(){
+		return this.getAppInfo().getOwner().map(owner -> owner.getMention());
+	}
+
 	// ########## INTERACTIVE METHODS ##########
 
 	/**
