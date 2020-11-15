@@ -24,6 +24,7 @@ public class Survey {
 	 */
 	public final ArrayList<SurveyOption> options;
 	private final Timer timer;
+	private final TimerTask endTask;
 	private final Calendar endTime;
 	public final User createdBy;
 	public final Message publicMessage;
@@ -84,7 +85,7 @@ public class Survey {
 		this.publicMessage = publicMessage;
 
 		Survey timerParent = this;
-		TimerTask task = new TimerTask() {
+		this.endTask = new TimerTask() {
 
 			@Override
 			public void run() {
@@ -115,17 +116,19 @@ public class Survey {
 				publicMessage.delete().block();
 
 				surveyList.remove(timerParent);
+
+				this.cancel();
+				timer.purge();
+				timer.cancel();
 			}
 
 		};
 		this.surveyList.add(this);
-		this.timer.schedule(task, this.endTime.getTime());
+		this.timer.schedule(endTask, this.endTime.getTime());
 	}
 
 	public void stop() {
-		this.timer.cancel();
-		this.publicMessage.delete();
-		this.surveyList.remove(this);
+		this.endTask.run();
 	}
 
 	public Calendar getEndTime() {
