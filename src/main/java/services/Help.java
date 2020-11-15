@@ -9,9 +9,9 @@ public class Help {
 			+ "`Hey Megumin`: Lass dich von mir begrüßen! :smile:\n"
 			+ "`MegHelpMusik`: Alles zu Musik! :musical_note:\n"
 			+ "`MegHelpUmfrage`: Alles zu Umfragen! :bar_chart:\n"
-			+ "`MegJisho WORT`: Englisch <-> Japanisch Wörterbuch (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n"
-			+ "`MegRomaji TEXT`: Hiragana/Katakana <-> Lateinisches Alphabet :sa: --> :abc:\n"
-			+ "`MegKatakana TEXT`: Lateinisches Alphabet <-> Katakana :flag_jp:\n"
+			+ "`MegJisho WORT`: Englisch <--> Japanisch Wörterbuch (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n"
+			+ "`MegRomaji TEXT`: Hiragana/Katakana -> Lateinisches Alphabet :sa: --> :abc:\n"
+			+ "`MegKatakana TEXT`: Lateinisches Alphabet -> Katakana :flag_jp:\n"
 			+ "`MegZeit`: Aktuelle Uhrzeit und aktuelles Datum (deutsche Zeit)! :clock1:\n"
 			+ "`MegStatus`: Aktuelle Statusinformationen zu meiner Existenz :signal_strength:\n"
 			+ "`MegSchreiben/Sprechen TEXT`: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
@@ -43,6 +43,8 @@ public class Help {
 	
 	public final static String ADMHELP = ">>> Du hast Zugriffsrechte auf Admin Befehle! :man_office_worker:\n"
 			+ "`MegLogout`: Ich melde mich ab und terminiere (bitte nur im Notfall verwenden) :skull_crossbones:"
+			+ "\n"
+			+"`MegKill`: Terminiert im Gegensatz zu 'MegLogout' unverzüglich und ohne Nachrichten CleanUp (für den Fall, dass 'MegLogout' nicht funktioniert)."
 			+ "\n"
 			+ "`MegMusikVol ZAHL`: Ich ändere meine Lautstärke!";
 	
