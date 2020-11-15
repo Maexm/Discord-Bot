@@ -21,6 +21,7 @@ public class Jisho {
 	 * @return The response body of the HTTP request (https://jisho.org/api/v1/search/words?keyword=KEYWORD) as a JishoResponse instance.
 	 */
 	public static JishoResponse lookUpKeyWord(String keyword) {
+		keyword = HTTPRequests.neutralize(keyword);
 		try {
 			keyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8.name());
 		} catch (UnsupportedEncodingException e) {

@@ -55,4 +55,10 @@ public class HTTPRequests {
 		}
 		return body;
 	}
+
+	public static String neutralize(String s){
+		return s.replace(":", "").replace("/", "").replace("?", "").replace("#", "").replace("[", "").replace("]", "")
+		.replace("@", "").replace("!", "").replace("$", "").replace("&", "").replace("'", "").replace("(", "").replace(")", "")
+		.replace("*", "").replace("+", "").replace(",", "").replace(";", "").replace("=", "");
+	}
 }
