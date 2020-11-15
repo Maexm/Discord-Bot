@@ -36,7 +36,7 @@ public final class BotHeart {
 	private final LinkedList<MusicTrackInfo> addInfo;
 	private final AudioEventHandler playerEventHandler;
 	private final ArrayList<Middleware> middlewareBefore = new ArrayList<Middleware>();
-	private final TaskManager<RefinedTimerTask> systemTasks = new TaskManager<>();
+	//private final TaskManager<RefinedTimerTask> systemTasks = new TaskManager<>();
 	
 	public BotHeart(final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
 		this.trackList = new LinkedList<AudioTrack>();
@@ -59,36 +59,36 @@ public final class BotHeart {
 
 		// ########## TASKS ##########
 		// TODO: Move to a dedicated file
-		final MessageChannel channelRef = (MessageChannel) this.client.getGuildById(GuildID.UNSER_SERVER)
-				.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
-		this.systemTasks.addTask(new RefinedTimerTask(Long.valueOf(2000),Long.valueOf(1000),null,this.systemTasks){
+		// final MessageChannel channelRef = (MessageChannel) this.client.getGuildById(GuildID.UNSER_SERVER)
+		// 		.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
+		// this.systemTasks.addTask(new RefinedTimerTask(Long.valueOf(2000),Long.valueOf(1000),null,this.systemTasks){
 
-			@Override
-			public void runTask() {
-				System.out.println("Executing CleanUp task!");
-				Message lastMessage = channelRef.getLastMessage().block();
-				List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
-				messages.add(0, lastMessage);
+		// 	@Override
+		// 	public void runTask() {
+		// 		System.out.println("Executing CleanUp task!");
+		// 		Message lastMessage = channelRef.getLastMessage().block();
+		// 		List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
+		// 		messages.add(0, lastMessage);
 
-				final String cleanUpFinish = "Täglicher CleanUp beendet!";
+		// 		final String cleanUpFinish = "Täglicher CleanUp beendet!";
 
-				Message infoMessage = channelRef.createMessage("Täglicher CleanUp wird ausgeführt!").block();
+		// 		Message infoMessage = channelRef.createMessage("Täglicher CleanUp wird ausgeführt!").block();
 
-				for(Message message: messages){
-					final String content = message.getContent();
-					switch(content){
-						case cleanUpFinish:
-						case AudioEventHandler.MUSIC_STOPPED:
-							message.delete();
-							break;
-					}
-				}
+		// 		for(Message message: messages){
+		// 			final String content = message.getContent();
+		// 			switch(content){
+		// 				case cleanUpFinish:
+		// 				case AudioEventHandler.MUSIC_STOPPED:
+		// 					message.delete();
+		// 					break;
+		// 			}
+		// 		}
 
-				infoMessage.edit(edit -> edit.setContent(cleanUpFinish)).block();
-				System.out.println("CleanUp task finished!");
-			}
+		// 		infoMessage.edit(edit -> edit.setContent(cleanUpFinish)).block();
+		// 		System.out.println("CleanUp task finished!");
+		// 	}
 			
-		});
+		// });
 	}
 	
 	/**
