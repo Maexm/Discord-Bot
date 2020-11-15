@@ -191,6 +191,10 @@ public abstract class ResponseType extends Middleware {
 			case "public":
 				this.onPSA();
 				break;
+			case "update":
+			case "updateinfo":
+				this.onUpdatePSA();
+				break;
 			case "name":
 				this.onChangeName();
 				break;
@@ -296,6 +300,8 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onDeleteMessages();
 
 	protected abstract void onPSA();
+
+	protected abstract void onUpdatePSA();
 
 	protected abstract void onChangeName();
 

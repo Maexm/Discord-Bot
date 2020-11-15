@@ -578,4 +578,19 @@ public class Megumin extends ResponseType {
 			this.noPermission();
 		}
 	}
+
+	@Override
+	protected void onUpdatePSA() {
+		if(this.hasPermission(SecurityLevel.DEV)){
+			if(this.getArgumentSection().equals("")){
+				this.sendAnswer("keine Nachricht angegeben!");
+			}
+			else{
+				this.sendInChannel("Ein neues Update ist verfügbar! :partying_face: Was ist neu?\n\n"+ Markdown.toMultilineBlockQuotes(this.getArgumentSection()), ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
+			}
+		}
+		else{
+			this.noPermission();
+		}
+	}
 }
