@@ -26,6 +26,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private final AudioPlayer player;
 	private final LinkedList<AudioTrack> tracks;
 	public final static String MUSIC_WARN = "";//":warning: Wiedergabe und Suche von YouTube Tracks funktioniert aktuell unzuverlässig!";
+	public final static String MUSIC_LOADING = ":musical_note: Musik wird geladen..."; 
+	public final static String MUSIC_STOPPED = ":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!";
+	public final static String MUSIC_INFO_PREFIX = ":musical_note: Es wird abgespielt:";
 	/**
 	 * A list containing MusicTrackInfo (mainly who submitted this track). This
 	 * instance is shared with a TrackLoader.
@@ -236,7 +239,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		//Message oldMessage = this.radioMessage;
 		try{
 			this.radioMessage.edit(spec -> {
-			spec.setContent(":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!");
+			spec.setContent(AudioEventHandler.MUSIC_STOPPED);
 			}).block();
 		}catch(Exception e){
 			System.out.println("Could not edit radio message while ending music session");
@@ -284,7 +287,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (this.isPaused()) {
 			status = "Die Wiedergabe ist " + Markdown.toBold("pausiert") + "!";
 		} else if (!this.isPlaying()) {
-			return ":musical_note: Musik wird geladen...";
+			return AudioEventHandler.MUSIC_LOADING;
 		}
 
 		// Volume
@@ -319,7 +322,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				+ Markdown.toBold(TimePrint.msToPretty(track.getDuration()));
 
 		// ########## RETURNING ##########
-		return 	":musical_note: Es wird abgespielt: "
+		return 	AudioEventHandler.MUSIC_INFO_PREFIX + " "
 				+ Markdown.toBold(track.getInfo().title) + " von " + Markdown.toBold(track.getInfo().author) + "\n\n"
 				+ status + "\n" + volume + "\n" + this.getQueueInfoString() + "\n" + "\n" + progressBar + "\n"
 				+ "Der Track wurde hinzugefügt von: " + Markdown.toBold(userName) + "\n" + ytSearch + "Link: "
