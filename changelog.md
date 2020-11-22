@@ -6,7 +6,7 @@
 - Fix: Some commands did not work in private chat
 - MegClear
 - Post new radio message when it gets deleted during music session
-- Does not save voiceState anymore
+- Middleware does not save voiceConnection anymore
 - MegPrio
 - MegName
 - Major renaming in system package
