@@ -13,6 +13,8 @@
 - Preparations for automated Tasks
 - MegWeather
 - MegKill
+- MegUpdate
+- Dev can rename bot during runtime
 - Stop surveys on logout & post progress information when logging out
 ## 1.0.4.2 (1st of November 2020)
 - MegQueue
