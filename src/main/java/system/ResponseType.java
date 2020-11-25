@@ -2,6 +2,7 @@ package system;
 
 import java.util.ArrayList;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
@@ -11,9 +12,9 @@ import survey.Survey;
 
 public abstract class ResponseType extends Middleware {
 
-	public ResponseType(GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+	public ResponseType(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
 			AudioEventHandler audioEventHandler) {
-		super(client, audioProvider, surveys, audioEventHandler);
+		super(guildId, client, audioProvider, surveys, audioEventHandler);
 	}
 
 	/**

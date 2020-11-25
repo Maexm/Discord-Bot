@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
@@ -19,8 +20,6 @@ import musicBot.TrackLoader;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
-import snowflakes.ChannelID;
-import snowflakes.GuildID;
 import start.RuntimeVariables;
 import survey.Survey;
 
@@ -36,9 +35,11 @@ public final class BotHeart {
 	private final LinkedList<MusicTrackInfo> addInfo;
 	private final AudioEventHandler playerEventHandler;
 	private final ArrayList<Middleware> middlewareBefore = new ArrayList<Middleware>();
+	private final Snowflake guildId;
 	//private final TaskManager<RefinedTimerTask> systemTasks = new TaskManager<>();
 	
-	public BotHeart(final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
+	public BotHeart(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
+		this.guildId = guildId;
 		this.trackList = new LinkedList<AudioTrack>();
 		this.addInfo = new LinkedList<MusicTrackInfo>();
 		this.client = client;
@@ -50,12 +51,18 @@ public final class BotHeart {
 		this.player.addListener(playerEventHandler);
 
 		// ########## RESPONSE SETS ##########
-		this.middlewareBefore.add(new Logger(client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new RoleFilter(client, this.audioProvider, this.surveys, this.playerEventHandler,
+		this.middlewareBefore.add(new Logger(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
+		this.middlewareBefore.add(new RoleFilter(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
 							msg -> RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
-		this.middlewareBefore.add(new VoiceGuard(client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new MusicRecommendation(client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.responseSet = new Megumin(client, this.audioProvider, this.surveys, this.playerEventHandler);
+		this.middlewareBefore.add(new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
+								msg -> {
+									final String[] expressions = {"explosion", "boom", "pau", "bum", "bam", "bäm", "bähm", "kaboom", "peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ", "爆発"};
+									final String evalStr = msg.getContent().toLowerCase();
+									for(String expr : expressions){if(evalStr.contains(expr)){return true;}};	return false; // React if evalStr contains something from array, skip otherwise
+								}, null));
+		this.middlewareBefore.add(new VoiceGuard(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
+		this.middlewareBefore.add(new MusicRecommendation(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
+		this.responseSet = new Megumin(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler);
 
 		// ########## TASKS ##########
 		// TODO: Move to a dedicated file

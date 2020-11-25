@@ -41,19 +41,21 @@ public abstract class Middleware {
 	protected String argumentSection = "";
 	protected final ArrayList<Survey> surveys;
 	private final Predicate<Message> mayAccept;
+	protected final Snowflake guildId;
 
 	// AUDIO
 	protected final AudioEventHandler audioEventHandler;
 
 	protected final AudioProvider audioProvider;
 
-	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
+	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
 			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
-		this(client, audioProvider, surveys, audioEventHandler, msg -> true);
+		this(guildId, client, audioProvider, surveys, audioEventHandler, msg -> true);
 	}
 
-	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
+	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
 			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final Predicate<Message> mayAccept) {
+		this.guildId = guildId;
 		this.client = client;
 		this.audioEventHandler = audioEventHandler;
 		this.audioProvider = audioProvider;

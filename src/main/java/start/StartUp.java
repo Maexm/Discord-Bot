@@ -67,7 +67,7 @@ public class StartUp {
 
 		final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build().login().block();
 
-		final BotHeart messageReceivedHandler = new BotHeart(client, provider, player,
+		final BotHeart messageReceivedHandler = new BotHeart(GuildID.UNSER_SERVER ,client, provider, player,
 				playerManager);
 
 		// ########## On client login ##########

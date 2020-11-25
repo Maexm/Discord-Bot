@@ -8,6 +8,7 @@ import java.util.Random;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Message;
 import discord4j.voice.AudioProvider;
@@ -34,9 +35,9 @@ import weather.Weather;
 
 public class Megumin extends ResponseType {
 
-	public Megumin(GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+	public Megumin(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
 			AudioEventHandler audioEventHandler) {
-		super(client, audioProvider, surveys, audioEventHandler);
+		super(guildId, client, audioProvider, surveys, audioEventHandler);
 	}
 
 	@Override

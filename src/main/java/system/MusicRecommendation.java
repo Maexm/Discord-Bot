@@ -13,9 +13,9 @@ import survey.Survey;
 
 public class MusicRecommendation extends Middleware {
 
-    public MusicRecommendation(GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+    public MusicRecommendation(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
             AudioEventHandler audioEventHandler) {
-        super(client, audioProvider, surveys, audioEventHandler);
+        super(guildId, client, audioProvider, surveys, audioEventHandler);
     }
 
     @Override

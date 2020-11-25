@@ -3,6 +3,7 @@ package system;
 import java.util.ArrayList;
 import java.util.function.Predicate;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
@@ -14,9 +15,9 @@ public class AutoReact extends Middleware {
 	
 	private final ReactionEmoji emoji;
 	
-	public AutoReact(GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+	public AutoReact(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
 			AudioEventHandler audioEventHandler, Predicate<Message> mayAccept, ReactionEmoji emoji) {
-		super(client, audioProvider, surveys, audioEventHandler, mayAccept);
+		super(guildId, client, audioProvider, surveys, audioEventHandler, mayAccept);
 		this.emoji = emoji;
 	}
 
