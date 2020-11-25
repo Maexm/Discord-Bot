@@ -30,6 +30,7 @@ public class Help {
 			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN+"\n" : "")
 			+ "\n"
 			+ "`MegMusikPrio YTSUCHE/URL`: Wie MegMusik, nur dass der Track vorne an die Warteschlange eingefügt wird"
+			+ "\n"
 			+ "`MegMusikNext OPT.ANZAHL`: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"
