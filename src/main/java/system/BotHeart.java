@@ -52,7 +52,7 @@ public final class BotHeart {
 		// ########## RESPONSE SETS ##########
 		this.middlewareBefore.add(new Logger(client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new RoleFilter(client, this.audioProvider, this.surveys, this.playerEventHandler,
-							() -> RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
+							msg -> RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
 		this.middlewareBefore.add(new VoiceGuard(client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new MusicRecommendation(client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.responseSet = new Megumin(client, this.audioProvider, this.surveys, this.playerEventHandler);

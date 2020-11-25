@@ -3,7 +3,7 @@ package system;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -40,7 +40,7 @@ public abstract class Middleware {
 	protected String commandSection = "";
 	protected String argumentSection = "";
 	protected final ArrayList<Survey> surveys;
-	private final BooleanSupplier mayAccept;
+	private final Predicate<Message> mayAccept;
 
 	// AUDIO
 	protected final AudioEventHandler audioEventHandler;
@@ -49,11 +49,11 @@ public abstract class Middleware {
 
 	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
 			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
-		this(client, audioProvider, surveys, audioEventHandler, () -> true);
+		this(client, audioProvider, surveys, audioEventHandler, msg -> true);
 	}
 
 	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
-			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final BooleanSupplier mayAccept) {
+			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final Predicate<Message> mayAccept) {
 		this.client = client;
 		this.audioEventHandler = audioEventHandler;
 		this.audioProvider = audioProvider;
@@ -69,7 +69,7 @@ public abstract class Middleware {
 	 */
 	public final boolean acceptEvent(final MessageCreateEvent messageEvent) {
 
-		if(!this.mayAccept.getAsBoolean()){
+		if(!this.mayAccept.test(messageEvent.getMessage())){
 			return true; // Skip if this Middleware may not handle event
 		}
 
@@ -104,8 +104,8 @@ public abstract class Middleware {
 						System.out.println("Cannot send messages at all!");
 					}
 				}
-			}
-		return ret;
+		}
+		return ret && fetchSuccess;
 	}
 
     protected abstract boolean handle();
