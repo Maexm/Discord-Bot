@@ -13,6 +13,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
@@ -51,15 +52,16 @@ public final class BotHeart {
 		this.player.addListener(playerEventHandler);
 
 		// ########## RESPONSE SETS ##########
+		// TODO: Shorten this hell
 		this.middlewareBefore.add(new Logger(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new RoleFilter(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
 							msg -> RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
-		this.middlewareBefore.add(new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
-								msg -> {
-									final String[] expressions = {"explosion", "boom", "pau", "bum", "bam", "bäm", "bähm", "kaboom", "peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ", "爆発"};
-									final String evalStr = msg.getContent().toLowerCase();
-									for(String expr : expressions){if(evalStr.contains(expr)){return true;}};	return false; // React if evalStr contains something from array, skip otherwise
-								}, null));
+		// this.middlewareBefore.add(new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
+		// 						msg -> {
+		// 							final String[] expressions = {"explosion", "boom", "pau", "bum", "bam", "bäm", "bähm", "kaboom", "peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ", "爆発"};
+		// 							final String evalStr = msg.getContent().toLowerCase();
+		// 							for(String expr : expressions){if(evalStr.contains(expr)){return true;}};	return false; // React if evalStr contains something from array, skip otherwise
+		// 						}, ReactionEmoji. ));
 		this.middlewareBefore.add(new VoiceGuard(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new MusicRecommendation(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.responseSet = new Megumin(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler);
