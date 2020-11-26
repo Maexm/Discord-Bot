@@ -35,8 +35,8 @@ import weather.Weather;
 
 public class Megumin extends ResponseType {
 
-	public Megumin(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
-			AudioEventHandler audioEventHandler) {
+	public Megumin(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider,
+			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler) {
 		super(guildId, client, audioProvider, surveys, audioEventHandler);
 	}
 
@@ -52,7 +52,7 @@ public class Megumin extends ResponseType {
 
 			// ########## CLEAN MUSIC SESSION ##########
 			System.out.println("Cleaning up mussic session...");
-			Message logOutMsg = this.sendInSameChannel(logoutText+"\n"+"Musik Session wird beendet...");
+			Message logOutMsg = this.sendInSameChannel(logoutText + "\n" + "Musik Session wird beendet...");
 			this.audioEventHandler.clearList();
 			if (this.audioEventHandler.isPlaying()) {
 				this.audioEventHandler.stop();
@@ -63,8 +63,8 @@ public class Megumin extends ResponseType {
 
 			// ########## CLEAN INFO CHANNEL ##########
 			System.out.println("Deleting messages in info channel...");
-			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText+"\n"+"Lösche Botnachrichten...")).block();
-			
+			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText + "\n" + "Lösche Botnachrichten...")).block();
+
 			try {
 				this.deleteAllMessages(ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
 				System.out.println("Messages deleted!");
@@ -75,7 +75,8 @@ public class Megumin extends ResponseType {
 
 			// ########## STOP SURVEYS ##########
 			System.out.println("Stopping surveys...");
-			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText+"\n"+"Beende existierende Umfragen...")).block();
+			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText + "\n" + "Beende existierende Umfragen..."))
+					.block();
 
 			this.surveys.forEach(survey -> {
 				survey.stop();
@@ -280,36 +281,38 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onReceiveMusicRequest(boolean isPrio) {
-			if (this.isAuthorVoiceConnected()) {
-				if (this.getArgumentSection().equals("")) {
-					this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
-							+ "Schreib " + Markdown.toBlockQuotes("MegMusikListe") + " für Anregungen!");
-				} else {
-					// Join authors voice channel, if bot is not connected to voice or not to the same channel (only true if player was not active before)
-					if (!this.isVoiceConnected()
-							|| !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
-						this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
-					}
-					// MUSIC PLAYBACK
-					try {
-						MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
-								this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject(), isPrio);
-						this.audioEventHandler.schedule(musicTrack, this);
-						this.sendAnswer("dein Track wurde hinzugefügt!"+(AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN: ""));
-						this.deleteReceivedMessage();
-
-					} catch (Exception e) {
-						// Should not occur
-						this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/ Bandcamp-Link!");
-						if (!this.audioEventHandler.isPlaying()) {
-							this.leaveVoiceChannel();
-						}
-						e.printStackTrace();
-					}
-				}
+		if (this.isAuthorVoiceConnected()) {
+			if (this.getArgumentSection().equals("")) {
+				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
+						+ "Schreib " + Markdown.toBlockQuotes("MegMusikListe") + " für Anregungen!");
 			} else {
-				this.sendAnswer("du musst dafür in einem Voice Channel sein!");
+				// Join authors voice channel, if bot is not connected to voice or not to the
+				// same channel (only true if player was not active before)
+				if (!this.isVoiceConnected()
+						|| !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
+					this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
+				}
+				// MUSIC PLAYBACK
+				try {
+					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
+							this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject(), isPrio);
+					this.audioEventHandler.schedule(musicTrack, this);
+					this.sendAnswer("dein Track wurde hinzugefügt!"
+							+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n" + AudioEventHandler.MUSIC_WARN : ""));
+					this.deleteReceivedMessage();
+
+				} catch (Exception e) {
+					// Should not occur
+					this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/ Bandcamp-Link!");
+					if (!this.audioEventHandler.isPlaying()) {
+						this.leaveVoiceChannel();
+					}
+					e.printStackTrace();
+				}
 			}
+		} else {
+			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
+		}
 	}
 
 	@Override
@@ -380,7 +383,7 @@ public class Megumin extends ResponseType {
 
 	protected boolean hasMusicRights(boolean requireSameChannel) {
 		// Private chat
-		if(this.isPrivate()){
+		if (this.isPrivate()) {
 			this.notInPrivate();
 			return false;
 		}
@@ -388,13 +391,13 @@ public class Megumin extends ResponseType {
 		else if (!this.isVoiceConnected()) {
 			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
 			return false;
-		// Bot not connected to voice
+			// Bot not connected to voice
 		} else if (!this.isAuthorVoiceConnected()) {
 			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			return false;
 		}
 		// Author connected to different voice channel
-		else if(requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())){
+		else if (requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
 			this.sendAnswer("du musst dafür im selben VoiceChannel wie ich sein!");
 			return false;
 		}
@@ -421,7 +424,7 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.audioEventHandler.getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (this.hasPermission(SecurityLevel.ADM)){
+		} else if (this.hasPermission(SecurityLevel.ADM)) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
 				if (vol > 200) {
@@ -449,7 +452,8 @@ public class Megumin extends ResponseType {
 		this.sendInSameChannel(
 				Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ") + this.getAppInfo().getName()
 						+ "\n" + Markdown.toBold("Beschreibung: ") + this.getAppInfo().getDescription() + "\n"
-						/*+ Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" */+ Markdown.toBold("Online seit: ")
+						/* + Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" */
+						+ Markdown.toBold("Online seit: ")
 						+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
 						+ Markdown.toBold("Mein Entwickler: ")
 						+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
@@ -463,11 +467,9 @@ public class Megumin extends ResponseType {
 		if (this.hasPermission(SecurityLevel.ADM)) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
-			}
-			else if(this.isPrivate()){
+			} else if (this.isPrivate()) {
 				this.notInPrivate();
-			}
-			else {
+			} else {
 				this.deleteReceivedMessage();
 				try {
 					int amount = Integer.parseInt(this.getArgumentSection());
@@ -491,68 +493,69 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onMusicIdea() {
-	// 	if (MusicVariables.trackLinks.length == 0) {
-	// 		this.sendAnswer("seltsam, es gibt keine Musiktipps...\n" + this.getOwner().getMention()
-	// 				+ ", kannst du das bitte prüfen?");
-	// 	} else {
-	// 		String msg = "Hier sind einige Anregungen. Du kannst uns auch gerne Anregungen für diese Liste empfehlen!\n\n";
-	// 		for (TrackLink element : MusicVariables.trackLinks) {
-	// 			msg += element. 
-	// 		}
-	// 	}
-	// }
-   }
+		// if (MusicVariables.trackLinks.length == 0) {
+		// this.sendAnswer("seltsam, es gibt keine Musiktipps...\n" +
+		// this.getOwner().getMention()
+		// + ", kannst du das bitte prüfen?");
+		// } else {
+		// String msg = "Hier sind einige Anregungen. Du kannst uns auch gerne
+		// Anregungen für diese Liste empfehlen!\n\n";
+		// for (TrackLink element : MusicVariables.trackLinks) {
+		// msg += element.
+		// }
+		// }
+		// }
+	}
 
 	@Override
 	protected void onMusicQueue() {
-		if(this.isVoiceConnected()){
+		if (this.isVoiceConnected()) {
 			AudioTrack curTrack = this.audioEventHandler.getCurrentAudioTrack();
 			// Leave if no track is playing (this should not happen)
-			if(curTrack == null){
+			if (curTrack == null) {
 				throw new NullPointerException("There is no current track!");
 			}
 			String curTrackUser = AudioEventHandler.getSubmittedByUserName(curTrack, this.getMessageGuild().getId());
 			// Build String
 
-			String out = "aktuell wird abgespielt:\n"+ Markdown.toBold(curTrack.getInfo().title)+" von "
-			+ Markdown.toBold(curTrack.getInfo().author)
-			+ (curTrackUser != null ? ", vorgeschlagen von "+Markdown.toBold(curTrackUser) : "")
-			+"\n\n"+this.audioEventHandler.getQueueInfoString();
+			String out = "aktuell wird abgespielt:\n" + Markdown.toBold(curTrack.getInfo().title) + " von "
+					+ Markdown.toBold(curTrack.getInfo().author)
+					+ (curTrackUser != null ? ", vorgeschlagen von " + Markdown.toBold(curTrackUser) : "") + "\n\n"
+					+ this.audioEventHandler.getQueueInfoString();
 
-			out += this.audioEventHandler.getListSize() > 0 ? "\n" : ""; 
+			out += this.audioEventHandler.getListSize() > 0 ? "\n" : "";
 
 			final LinkedList<AudioTrack> list = this.audioEventHandler.getDeepListCopy();
 			final int MAX_OUT = 5;
-			for(int i = 0; i < list.size() && i < MAX_OUT; i++){
+			for (int i = 0; i < list.size() && i < MAX_OUT; i++) {
 				final AudioTrack track = list.get(i);
 				String trackUser = AudioEventHandler.getSubmittedByUserName(track, this.getMessageGuild().getId());
 
-				out += Markdown.toBold(i+1+".")+" "+Markdown.toBold(track.getInfo().title)+" von " + Markdown.toBold(track.getInfo().author)
-				+ (trackUser != null ? " vorgeschlagen von "+Markdown.toBold(trackUser) : "") + "\n\n";
+				out += Markdown.toBold(i + 1 + ".") + " " + Markdown.toBold(track.getInfo().title) + " von "
+						+ Markdown.toBold(track.getInfo().author)
+						+ (trackUser != null ? " vorgeschlagen von " + Markdown.toBold(trackUser) : "") + "\n\n";
 			}
-			if(list.size() > MAX_OUT){
-				final int diff = list.size()-MAX_OUT;
+			if (list.size() > MAX_OUT) {
+				final int diff = list.size() - MAX_OUT;
 
-				out += "\nEs gibt noch "+(diff == 1 ? Markdown.toBold("einen")+ " weiteren Track!" : Markdown.toBold(""+diff)+" weitere Tracks!");
+				out += "\nEs gibt noch " + (diff == 1 ? Markdown.toBold("einen") + " weiteren Track!"
+						: Markdown.toBold("" + diff) + " weitere Tracks!");
 			}
 			this.sendAnswer(out);
-		}
-		else{
+		} else {
 			this.sendAnswer("es läuft aktuell keine Musik!");
 		}
 	}
 
 	@Override
 	protected void onPSA() {
-		if(this.hasPermission(SecurityLevel.DEV)){
-			if(this.getArgumentSection().equals("")){
+		if (this.hasPermission(SecurityLevel.DEV)) {
+			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
-			}
-			else{
+			} else {
 				this.sendInChannel(this.getArgumentSection(), ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
 			}
-		}
-		else{
+		} else {
 			this.noPermission();
 		}
 
@@ -560,20 +563,17 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onClearMusicQueue() {
-		if(this.hasMusicRights(true)){
+		if (this.hasMusicRights(true)) {
 			// List already empty
-			if(this.audioEventHandler.getListSize() == 0){
-				final String[] responses = {
-					"Warteschlange wird gele- Moment, die Liste ist schon leer!",
-					"Leerer als leer kann die Liste glaub ich nicht werden!",
-					"Your call was absorbed by the darkness.",
-					"Die Warteschlange ist bereits leer!"
-				};
+			if (this.audioEventHandler.getListSize() == 0) {
+				final String[] responses = { "Warteschlange wird gele- Moment, die Liste ist schon leer!",
+						"Leerer als leer kann die Liste glaub ich nicht werden!",
+						"Your call was absorbed by the darkness.", "Die Warteschlange ist bereits leer!" };
 				Random rand = new Random();
 				this.sendAnswer(responses[rand.nextInt(responses.length)]);
 			}
 			// Clear list
-			else{
+			else {
 				this.audioEventHandler.clearList();
 				this.sendAnswer("Die Musikqueue ist nun leer!");
 			}
@@ -587,31 +587,30 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onChangeName() {
-		if(this.hasPermission(SecurityLevel.DEV)){
-			if(this.argumentSection.equals("")){
+		if (this.hasPermission(SecurityLevel.DEV)) {
+			if (this.argumentSection.equals("")) {
 				this.sendAnswer("du hast keinen Namen angegeben!");
-			}
-			else{
+			} else {
 				this.getMessageGuild().changeSelfNickname(this.argumentSection).block();
 				this.sendAnswer("Name erfolgreich geändert!");
 			}
-		}
-		else{
+		} else {
 			this.noPermission();
 		}
 	}
 
 	@Override
 	protected void onUpdatePSA() {
-		if(this.hasPermission(SecurityLevel.DEV)){
-			if(this.getArgumentSection().equals("")){
+		if (this.hasPermission(SecurityLevel.DEV)) {
+			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
+			} else {
+				this.sendInChannel(
+						"Ein neues Update ist verfügbar! :partying_face: Was ist neu?\n\n"
+								+ Markdown.toMultilineBlockQuotes(this.getArgumentSection()),
+						ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
 			}
-			else{
-				this.sendInChannel("Ein neues Update ist verfügbar! :partying_face: Was ist neu?\n\n"+ Markdown.toMultilineBlockQuotes(this.getArgumentSection()), ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
-			}
-		}
-		else{
+		} else {
 			this.noPermission();
 		}
 	}
@@ -626,16 +625,19 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onYesNo() {
-		final String[] posResp = {"Ja.", "Tatsache.", "Das ist sehr wahrscheinlich.", "Völlig Korrekt.", "In der Tat.", "Absolut.", "Aber natürlich!", "Auf jeden Fall!", "Definitiv.",
-									"Daran besteht kein Zweifel.", "Davon würde ich definitiv ausgehen.", "Zweifellos!", "Offensichtlich ja.", "Yes.", "Jawohl!", "Klar!", "Rein objektiv gesehen: Ja."};
-		final String[] negResp = {"Nein.", "Überhaupt nicht.", "Auf garkeinen Fall.", "Völlig unmöglich.", "Definitiv nicht.", "No!", "Offensichtlich nicht.", "Das ist nicht möglich.",
-									"Davon würde ich sowas von abraten!", "Bloß nicht!", "Rein objektiv gesehen: Nein.", "Nein, wieso auch?", "Eher nicht."};
+		final String[] posResp = { "Ja.", "Tatsache.", "Das ist sehr wahrscheinlich.", "Völlig korrekt.", "In der Tat.",
+				"Absolut.", "Aber natürlich!", "Auf jeden Fall!", "Definitiv.", "Daran besteht kein Zweifel.",
+				"Davon würde ich definitiv ausgehen.", "Zweifellos!", "Offensichtlich ja.", "Yes.", "Jawohl!", "Klar!",
+				"Rein objektiv gesehen: Ja." };
+		final String[] negResp = { "Nein.", "Überhaupt nicht.", "Auf garkeinen Fall.", "Völlig unmöglich.",
+				"Definitiv nicht.", "No!", "Offensichtlich nicht.", "Das ist nicht möglich.",
+				"Davon würde ich sowas von abraten!", "Bloß nicht!", "Rein objektiv gesehen: Nein.",
+				"Nein, wieso auch?", "Eher nicht." };
 		final Random rand = new Random();
 		String resp = "";
-		if(rand.nextBoolean()){
+		if (rand.nextBoolean()) {
 			resp = posResp[rand.nextInt(posResp.length)];
-		}
-		else{
+		} else {
 			resp = negResp[rand.nextInt(negResp.length)];
 		}
 		this.sendAnswer(resp);
