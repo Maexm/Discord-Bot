@@ -625,14 +625,19 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onYesNo() {
+		if(this.getArgumentSection().equals("")){
+			this.sendAnswer("du musst mir eine Frage stellen!");
+			return;
+		}
+
 		final String[] posResp = { "Ja.", "Tatsache.", "Das ist sehr wahrscheinlich.", "Völlig korrekt.", "In der Tat.",
 				"Absolut.", "Aber natürlich!", "Auf jeden Fall!", "Definitiv.", "Daran besteht kein Zweifel.",
 				"Davon würde ich definitiv ausgehen.", "Zweifellos!", "Offensichtlich ja.", "Yes.", "Jawohl!", "Klar!",
-				"Rein objektiv gesehen: Ja." };
+				"Rein objektiv gesehen: Ja.", "Jup.", "Jep.", "Jo.", "Selbstverständlich!", "Klingt nach einer hervorragenden Idee!", ":thumbsup:" };
 		final String[] negResp = { "Nein.", "Überhaupt nicht.", "Auf garkeinen Fall.", "Völlig unmöglich.",
 				"Definitiv nicht.", "No!", "Offensichtlich nicht.", "Das ist nicht möglich.",
 				"Davon würde ich sowas von abraten!", "Bloß nicht!", "Rein objektiv gesehen: Nein.",
-				"Nein, wieso auch?", "Eher nicht." };
+				"Nein, wieso auch?", "Eher nicht.", "Ne.", "Nope.", "Nö", "Nichts da!", "Klingt wenn du mich fragst nach einer scheiß Idee.", ":thumbsdown:" };
 		final Random rand = new Random();
 		String resp = "";
 		if (rand.nextBoolean()) {
