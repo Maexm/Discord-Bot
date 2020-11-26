@@ -25,6 +25,7 @@ import musicBot.AudioEventHandler;
 import reactor.core.publisher.Mono;
 import security.SecurityProvider;
 import snowflakes.GuildID;
+import start.RuntimeVariables;
 import survey.Survey;
 
 
@@ -359,7 +360,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendInSameChannel(String message) {
-		return this.getMessageChannel().createMessage(message).block();
+		return this.getMessageChannel().createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
 	/**
@@ -408,7 +409,7 @@ public abstract class Middleware {
 	 */
 	public final Message sendInChannel(String message, Snowflake channelID, Snowflake guildID) {
 		MessageChannel channel = this.getChannelByID(channelID, guildID);
-		return channel.createMessage(message).block();
+		return channel.createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
 	/**
@@ -418,7 +419,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendPrivateAnswer(String message) {
-		return this.getMessageAuthorPrivateChannel().createMessage(message).block();
+		return this.getMessageAuthorPrivateChannel().createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
 	/**
