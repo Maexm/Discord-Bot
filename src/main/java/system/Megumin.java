@@ -21,6 +21,8 @@ import japanese.ToKatakanaConverter;
 import japanese.ToRomajiConverter;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
+import musicBot.MusicVariables;
+import musicBot.MusicVariables.TrackLink;
 import security.SecurityLevel;
 import security.SecurityProvider;
 import services.Emoji;
@@ -285,7 +287,7 @@ public class Megumin extends ResponseType {
 		if (this.isAuthorVoiceConnected()) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
-						+ "Schreib " + Markdown.toBlockQuotes("MegMusikListe") + " für Anregungen!");
+						+ "Schreib " + Markdown.toCodeBlock("MegMusikListe") + " für Anregungen!");
 			} else {
 				// Join authors voice channel, if bot is not connected to voice or not to the
 				// same channel (only true if player was not active before)
@@ -494,18 +496,18 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onMusicIdea() {
-		// if (MusicVariables.trackLinks.length == 0) {
-		// this.sendAnswer("seltsam, es gibt keine Musiktipps...\n" +
-		// this.getOwner().getMention()
-		// + ", kannst du das bitte prüfen?");
-		// } else {
-		// String msg = "Hier sind einige Anregungen. Du kannst uns auch gerne
-		// Anregungen für diese Liste empfehlen!\n\n";
-		// for (TrackLink element : MusicVariables.trackLinks) {
-		// msg += element.
-		// }
-		// }
-		// }
+		if (MusicVariables.trackLinks.length == 0) {
+			this.sendAnswer("seltsam, es gibt keine Musiktipps...\n" +
+			this.getOwner().getMention()
+			+ ", kannst du das bitte prüfen?");
+		}
+		else {
+			String msg = "Hier sind einige Anregungen. Du kannst auch gerne"
+			+ "Anregungen für diese Liste empfehlen!\n\n";
+			for (TrackLink element : MusicVariables.trackLinks) {
+				msg += element.getLink() + " " + Markdown.toBold(element.getTitle())+"\n";
+			}
+		}
 	}
 
 	@Override
