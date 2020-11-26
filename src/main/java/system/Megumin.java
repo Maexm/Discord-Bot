@@ -32,6 +32,7 @@ import snowflakes.GuildID;
 import start.RuntimeVariables;
 import survey.Survey;
 import weather.Weather;
+import wiki.Wikipedia;
 
 public class Megumin extends ResponseType {
 
@@ -646,5 +647,16 @@ public class Megumin extends ResponseType {
 			resp = negResp[rand.nextInt(negResp.length)];
 		}
 		this.sendAnswer(resp);
+	}
+
+	@Override
+	protected void onWiki() {
+		if(this.argumentSection.equals("")){
+			this.sendAnswer("du musst mir einen Begriff nennen!");
+			return;
+		}
+
+		this.sendAnswer(Wikipedia.buildMessage(Wikipedia.getWikiResult(this.argumentSection)));
+
 	}
 }

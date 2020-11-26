@@ -220,8 +220,17 @@ public abstract class ResponseType extends Middleware {
 			case "random":
 			case "janein":
 			case "neinja":
+			case "yesno":
+			case "yesorno":
 				this.onYesNo();
 				break;
+			case "wiki":
+			case "wikipedia":
+			case "wissen":
+			case "knowledge":
+			case "suche":
+			case "such":
+				this.onWiki();
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -338,5 +347,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onWeather();
 
 	protected abstract void onYesNo();
+
+	protected abstract void onWiki();
 
 }
