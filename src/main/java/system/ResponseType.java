@@ -231,6 +231,7 @@ public abstract class ResponseType extends Middleware {
 			case "suche":
 			case "such":
 				this.onWiki();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
