@@ -623,4 +623,21 @@ public class Megumin extends ResponseType {
 		String resp = Weather.buildMessage(Weather.getWeatherResponse(city));
 		this.sendAnswer(resp);
 	}
+
+	@Override
+	protected void onYesNo() {
+		final String[] posResp = {"Ja.", "Tatsache.", "Das ist sehr wahrscheinlich.", "Völlig Korrekt.", "In der Tat.", "Absolut.", "Aber natürlich!", "Auf jeden Fall!", "Definitiv.",
+									"Daran besteht kein Zweifel.", "Davon würde ich definitiv ausgehen.", "Zweifellos!", "Offensichtlich ja.", "Yes.", "Jawohl!", "Klar!", "Rein objektiv gesehen: Ja."};
+		final String[] negResp = {"Nein.", "Überhaupt nicht.", "Auf garkeinen Fall.", "Völlig unmöglich.", "Definitiv nicht.", "No!", "Offensichtlich nicht.", "Das ist nicht möglich.",
+									"Davon würde ich sowas von abraten!", "Bloß nicht!", "Rein objektiv gesehen: Nein.", "Nein, wieso auch?", "Eher nicht."};
+		final Random rand = new Random();
+		String resp = "";
+		if(rand.nextBoolean()){
+			resp = posResp[rand.nextInt(posResp.length)];
+		}
+		else{
+			resp = negResp[rand.nextInt(negResp.length)];
+		}
+		this.sendAnswer(resp);
+	}
 }

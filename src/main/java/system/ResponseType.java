@@ -212,6 +212,16 @@ public abstract class ResponseType extends Middleware {
 			case "tenki":
 				this.onWeather();
 				break;
+			case "frage":
+			case "qna":
+			case "entscheidung":
+			case "decision":
+			case "rand":
+			case "random":
+			case "janein":
+			case "neinja":
+				this.onYesNo();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -326,5 +336,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onChangeName();
 
 	protected abstract void onWeather();
+
+	protected abstract void onYesNo();
 
 }
