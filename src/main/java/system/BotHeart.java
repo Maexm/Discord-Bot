@@ -58,12 +58,12 @@ public final class BotHeart {
 		this.middlewareBefore.add(new Logger(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new RoleFilter(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
 							msg -> RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
-		// this.middlewareBefore.add(new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
-		// 						msg -> {
-		// 							final String[] expressions = {"explosion", "boom", "pau", "bum", "bam", "bäm", "bähm", "kaboom", "peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ", "爆発"};
-		// 							final String evalStr = msg.getContent().toLowerCase();
-		// 							for(String expr : expressions){if(evalStr.contains(expr)){return true;}};	return false; // React if evalStr contains something from array, skip otherwise
-		// 						}, ReactionEmoji. ));
+		this.middlewareBefore.add(new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
+								msg -> {
+									final String[] expressions = {"explosion", "boom", "pau", "bum", "bam", "bäm", "bähm", "kaboom", "peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ", "爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "eruption"};
+									final String evalStr = msg.getContent().toLowerCase();
+									for(String expr : expressions){if(evalStr.contains(expr)){return true;}};	return false; // React if evalStr contains something from array, skip otherwise
+								}, new ReactionEmoji[]{ReactionEmoji.unicode("\u2764"), ReactionEmoji.unicode("\u1F4A5")} ));
 		this.middlewareBefore.add(new VoiceGuard(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new MusicRecommendation(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.responseSet = new Megumin(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler);

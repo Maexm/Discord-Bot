@@ -13,23 +13,31 @@ import survey.Survey;
 
 public class AutoReact extends Middleware {
 	
-	private final ReactionEmoji emoji;
+	private final ReactionEmoji[] emojis;
+
+	public AutoReact(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+	AudioEventHandler audioEventHandler, Predicate<Message> mayAccept, ReactionEmoji[] emojis){
+		super(guildId, client, audioProvider, surveys, audioEventHandler, mayAccept);
+		this.emojis = emojis;
+	}
 	
 	public AutoReact(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
 			AudioEventHandler audioEventHandler, Predicate<Message> mayAccept, ReactionEmoji emoji) {
-		super(guildId, client, audioProvider, surveys, audioEventHandler, mayAccept);
-		this.emoji = emoji;
+		this(guildId, client, audioProvider, surveys, audioEventHandler, mayAccept, new ReactionEmoji[]{emoji});
 	}
 
 	@Override
 	protected boolean handle() {
 
-		this.msgObject.addReaction(this.emoji);
+		for(ReactionEmoji emoji : this.emojis){
+			try{
+				this.msgObject.addReaction(emoji);
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+		}
 		
 		return false;
 	}
-
-	
-    
-    
 }
