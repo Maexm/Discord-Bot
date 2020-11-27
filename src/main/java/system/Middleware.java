@@ -505,6 +505,12 @@ public abstract class Middleware {
 		return ret;
 	}
 
+	protected final Message sendMessageToOwner(String msg){
+		return this.getOwner().getPrivateChannel()
+			.flatMap(channel -> channel.createMessage(msg))
+			.block();
+	}
+
 	// TECHNICAL METHODS
 
 	protected final boolean surveyExists(String keyWord) {

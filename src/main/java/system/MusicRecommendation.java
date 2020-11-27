@@ -35,8 +35,7 @@ public class MusicRecommendation extends Middleware {
             String msg = Markdown.toBold(this.getMessageAuthorName()) + " hat dir eine Musikempfehlung hinterlassen!\n"
                     + Markdown.toMultilineBlockQuotes(this.msgContent);
 
-            this.getMember(ownerId, this.getMessageGuild().getId()).getPrivateChannel().block().createMessage(msg)
-                    .block();
+            this.sendMessageToOwner(msg);
         }
         return true;
     }
