@@ -10,7 +10,9 @@ import exceptions.IllegalMagicException;
 import services.HTTPRequests;
 import services.Markdown;
 import start.RuntimeVariables;
+import util.Format;
 import util.Range;
+import util.Units;
 import weather.WeatherResponses.SingleResponse;
 
 public class Weather {
@@ -47,7 +49,7 @@ public class Weather {
             return "konnte diese Stadt nicht finden!";
         }
 
-        String ret = "das aktuelle Wetter in " + Markdown.toBold(resp.name) + ":"
+        String ret = "das aktuelle Wetter in " + Markdown.toBold(resp.name) + " ("+resp.sys.country+")"+ ":"
                     +"\n\n"
                     +Markdown.toBold(resp.weather[0].description)
                     +" bei "+Markdown.toBold(resp.main.temp+ " °C") + " (gefühlt "+resp.main.feels_like+" °C)."
@@ -58,7 +60,7 @@ public class Weather {
                     +"\n"
                     +Markdown.toCodeBlock("Luftdruck:")+" "+Markdown.toBold(resp.main.pressure+"hPa")
                     +"\n"
-                    +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(resp.wind.speed+" m/s") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))+".";
+                    +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.speed), 2)+" km/h") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))+".";
         return ret;
     }
 
