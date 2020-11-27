@@ -661,4 +661,15 @@ public class Megumin extends ResponseType {
 		this.sendAnswer(Wikipedia.buildMessage(Wikipedia.getWikiResult(this.argumentSection)));
 
 	}
+
+	@Override
+	protected void onFeedback() {
+		if(this.getArgumentSection().equals("")){
+			this.sendAnswer("ein leeres Feedback ist kein Feedback!");
+			return;
+		}
+		String response = "Wir haben Feedback von "+Markdown.toBold(this.getMessageAuthorName())+" erhalten:\n\n"
+							+ Markdown.toMultilineBlockQuotes(this.getArgumentSection());
+		this.sendMessageToOwner(response);
+	}
 }

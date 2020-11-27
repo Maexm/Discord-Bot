@@ -232,6 +232,11 @@ public abstract class ResponseType extends Middleware {
 			case "such":
 				this.onWiki();
 				break;
+			case "feedback":
+			case "vorschlag":
+			case "request":
+				this.onFeedback();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -350,5 +355,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onYesNo();
 
 	protected abstract void onWiki();
+
+	protected abstract void onFeedback();
 
 }
