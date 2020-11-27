@@ -21,7 +21,7 @@ public class Help {
 			+ "\n"
 			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
 			+ "\n"
-			+ "Fragen, Anregungen und Vorschläge können gerne Maxim oder auf GitHub gestellt werden:\n"
+			+ "Fragen, Anregungen und Vorschläge können gerne persönlich, mit `MegFeedback Dein Feedback` oder auf GitHub gestellt werden:\n"
 			+ RuntimeVariables.GIT_URL;
 	
 	public final static String MUSICHELPTEXT = ">>> Du möchtest deine Freunde mit deiner furchtbaren Musik nerven? Ich helfe dir dabei! :musical_note:\n\n"
