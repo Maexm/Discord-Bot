@@ -320,7 +320,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onPauseMusic() {
-		if (this.hasMusicRights(true)) {
+		if (this.handleMusicCheck(true)) {
 			if (!this.audioEventHandler.isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
 			} else if (!this.audioEventHandler.isPaused()) {
@@ -334,7 +334,12 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onResumeMusic() {
-		if (this.hasMusicRights(true)) {
+		// Interpret as music add request, if there are arguments
+		if(!this.getArgumentSection().equals("")){
+			this.onReceiveMusicRequest(false);
+		}
+		// Else interpret as music pause request
+		else if (this.handleMusicCheck(true)) {
 			if (!this.audioEventHandler.isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
 			} else if (this.audioEventHandler.isPaused()) {
@@ -348,7 +353,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onStopMusic() {
-		if (this.hasMusicRights(true)) {
+		if (this.handleMusicCheck(true)) {
 			this.audioEventHandler.clearList();
 			this.audioEventHandler.stop();
 			this.sendAnswer("Musikwiedergabe wurde komplett gestoppt! :stop_button:");
@@ -357,7 +362,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onNextMusic() {
-		if (this.hasMusicRights(true)) {
+		if (this.handleMusicCheck(true)) {
 			if (!this.audioEventHandler.isPlaying()) {
 				this.sendAnswer("es wird nichts abgespielt!");
 			} else {
@@ -384,7 +389,7 @@ public class Megumin extends ResponseType {
 
 	}
 
-	protected boolean hasMusicRights(boolean requireSameChannel) {
+	protected boolean handleMusicCheck(boolean requireSameChannel) {
 		// Private chat
 		if (this.isPrivate()) {
 			this.notInPrivate();
@@ -566,7 +571,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onClearMusicQueue() {
-		if (this.hasMusicRights(true)) {
+		if (this.handleMusicCheck(true)) {
 			// List already empty
 			if (this.audioEventHandler.getListSize() == 0) {
 				final String[] responses = { "Warteschlange wird gele- Moment, die Liste ist schon leer!",
