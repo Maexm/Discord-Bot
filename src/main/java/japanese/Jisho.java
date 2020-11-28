@@ -1,10 +1,5 @@
 package japanese;
 
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import com.google.gson.Gson;
 import services.HTTPRequests;
 import services.Markdown;
@@ -22,11 +17,8 @@ public class Jisho {
 	 */
 	public static JishoResponse lookUpKeyWord(String keyword) {
 		keyword = HTTPRequests.neutralize(keyword);
-		try {
-			keyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8.name());
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		keyword = HTTPRequests.urlEncode(keyword);
+
 		String url = Jisho.jishoURLLookup+keyword;
 		
 			String response = HTTPRequests.getModern(url);
@@ -88,12 +80,7 @@ public class Jisho {
 			}
 			ret+="\n";
 		}
-		try {
-			ret += "Zeige ggf. nur einen Teil der Suchergebnisse - Mehr Suchergebnisse unter: "+Jisho.jishoURLStandard+URLEncoder.encode(searchKey, StandardCharsets.UTF_8.name()).replace("+", "%20");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		ret += "Zeige ggf. nur einen Teil der Suchergebnisse - Mehr Suchergebnisse unter: "+Jisho.jishoURLStandard+HTTPRequests.urlEncode(searchKey);
 		return ret;
 	}
 	

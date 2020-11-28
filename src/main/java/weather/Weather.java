@@ -1,9 +1,5 @@
 package weather;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import com.google.gson.Gson;
 
 import exceptions.IllegalMagicException;
@@ -22,15 +18,11 @@ public class Weather {
 
     public static SingleResponse getWeatherResponse(String city){
         city = HTTPRequests.neutralize(city);
+        city = HTTPRequests.urlEncode(city);
         if(RuntimeVariables.WEATHER_API_KEY == null){
             throw new IllegalMagicException("Weather API Key not available!");
         }
 
-        try {
-			city = URLEncoder.encode(city, StandardCharsets.UTF_8.name());
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-        }
         String url = Weather.WEATHER_BASE_URL+Weather.SINGLE_CALL+"&q="+city;
 
         String response = HTTPRequests.getModern(url);
