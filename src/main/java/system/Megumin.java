@@ -663,8 +663,7 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
-		this.sendAnswer(Wikipedia.buildMessage(Wikipedia.getWikiResult(this.argumentSection)));
-
+		this.sendAnswer(Wikipedia.buildMessage(Wikipedia.getWikiPage(this.argumentSection)));
 	}
 
 	@Override
