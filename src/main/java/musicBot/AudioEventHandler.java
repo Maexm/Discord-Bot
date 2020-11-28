@@ -189,7 +189,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTask.cancel();
 		this.refreshTimer.purge();
 
-		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
+		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).block();
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
@@ -240,7 +240,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	void ended() {
 		System.out.println("Music ended!");
-		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
+		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).block();
 		this.active = false;
 		this.parent.leaveVoiceChannel();
 		this.refreshTask.cancel();
@@ -269,7 +269,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		// Set discord status
-		this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).subscribe();
+		this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).block();
 
 		// Create refresh task
 		final AudioEventHandler timerParent = this;
