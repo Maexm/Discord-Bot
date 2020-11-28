@@ -17,7 +17,7 @@ public class Help {
 			+ "`MegSchreiben/Sprechen TEXT`: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
 			+ "`MegWetter STADT`: Aktuelle Wetterlage in irgendeiner Stadt weltweit :white_sun_cloud:\n"
 			+ "`MegFrage FRAGE`: Erhalte schnellen Rat bei Ja-/Nein-Fragen\n"
-			+ "`MegWiki BEGRIFF`: Schlage unbekannte Begriffe nach! :books:"
+			+ "`MegWiki BEGRIFF`: Schlage unbekannte Begriffe nach! :books:\n"
 			+ "`MegHelp`: Siehst du gerade vor dir, baka!\n"
 			+ "\n"
 			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
