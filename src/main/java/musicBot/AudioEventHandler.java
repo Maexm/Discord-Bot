@@ -197,7 +197,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
 				failedTrackMsg.getChannel()
-				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!"))
+				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
+				+"Beachte, bei "+Markdown.toBold("YouTube-Videos")+" können Videos mit Alterbeschränkung leider nicht abgespielt werden!"))
 				.subscribe();
 			} else if (this.radioMessage != null) {
 				this.radioMessage.getChannel()
