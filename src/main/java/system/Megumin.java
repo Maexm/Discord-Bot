@@ -512,6 +512,7 @@ public class Megumin extends ResponseType {
 			for (TrackLink element : MusicVariables.trackLinks) {
 				msg += element.getLink() + " " + Markdown.toBold(element.getTitle())+"\n";
 			}
+			this.sendAnswer(msg);
 		}
 	}
 
