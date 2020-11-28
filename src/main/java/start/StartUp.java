@@ -39,9 +39,6 @@ public class StartUp {
 			System.out.println("Please enter a token (won't be displayed): ");
 			Console console = System.console();
 			TOKEN = new String(console.readPassword());
-			if (TOKEN == null || TOKEN.equals("")) {
-				throw new StartUpException("Token missing");
-			}
 		}
 
 		// Retrieve weather api key
@@ -53,6 +50,10 @@ public class StartUp {
 		if (args.length >= 3 && args[2].toUpperCase().equals("DEBUG")) {
 			RuntimeVariables.IS_DEBUG = true;
 			
+		}
+
+		if (TOKEN == null || TOKEN.equals("")) {
+			throw new StartUpException("Token missing");
 		}
 		//reactor.util.Loggers.useJdkLoggers();
 
