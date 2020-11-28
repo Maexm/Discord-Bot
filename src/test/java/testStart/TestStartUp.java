@@ -33,7 +33,7 @@ public class TestStartUp {
          assertFalse("Debug should not be activated without debug value", RuntimeVariables.IS_DEBUG);
 
          try{
-             StartUp.main(new String[]{"", "anything but not DEBUG"});
+             StartUp.main(new String[]{"", "",  "anything but not DEBUG"});
          }
          catch(Exception e){
          }
