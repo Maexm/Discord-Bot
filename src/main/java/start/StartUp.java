@@ -49,7 +49,6 @@ public class StartUp {
 		// Retrieve debug info, if available
 		if (args.length >= 3 && args[2].toUpperCase().equals("DEBUG")) {
 			RuntimeVariables.IS_DEBUG = true;
-			
 		}
 
 		if (TOKEN == null || TOKEN.equals("")) {
@@ -78,7 +77,7 @@ public class StartUp {
 			System.out.println("Currently member of " + ready.getGuilds().size() + " guilds");
 
 			client.updatePresence(Presence
-					.online(Activity.playing(RuntimeVariables.IS_DEBUG ? "EXPERIMENTELL" : "Schreib 'MegHelp'!")))
+					.online(Activity.playing(RuntimeVariables.getStatus())))
 					.block();
 
 			if(RuntimeVariables.firstLogin){

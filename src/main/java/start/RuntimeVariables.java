@@ -16,4 +16,7 @@ public class RuntimeVariables {
 	public final static String HOME_TOWN = "Aachen";
 	public final static String ANS_PREFIX = "";
 	public final static String ANS_SUFFIX = RuntimeVariables.ANS_PREFIX;
+	public static String getStatus(){
+		return RuntimeVariables.IS_DEBUG ? "EXPERIMENTELL" : "Schreib 'MegHelp'!";
+	} 
 }
