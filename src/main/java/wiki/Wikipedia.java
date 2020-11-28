@@ -20,20 +20,24 @@ public class Wikipedia {
         keyword = HTTPRequests.neutralize(keyword);
         keyword = Format.firstCharsCapitalized(keyword, " ");
         keyword = HTTPRequests.urlEncode(keyword);
-        WikiPage ret = null;
 
-        // Try configured languages
+        // Try configured languages until a valid page has been found
         for(String language : Wikipedia.LANGUAGES){
-           String url = "https://"+language+"."+Wikipedia.WIKI_API_BASE_URL + Wikipedia.QUERY_PARAMS + keyword;
-           WikiResult resp = Wikipedia.fetchResult(url); // Fetch result
-           
-           ret = Wikipedia.retrievePage(resp.query.pages); // Get page object (null if there is no response)
+            final String[] variations = {keyword, keyword.replace(" ", "%2D")};
+            // Try different keyword variations until a valid page has been found
+            for(String variation : variations){ 
+                String url = "https://"+language+"."+Wikipedia.WIKI_API_BASE_URL + Wikipedia.QUERY_PARAMS + variation;
+                
+                WikiResult resp = Wikipedia.fetchResult(url); // Fetch result
+                WikiPage ret = Wikipedia.retrievePage(resp.query.pages); // Get page object from result (null if there is no response)
 
-           // ret: Page != null && pageId != 0 => found a valid page => return
-           if(ret != null && ret.pageid != 0){
-               ret.CUSTOM_PROP_LANGUAGE = language;
-               return ret;
-           }
+                // Check if page is usable
+                // ret: Page != null && pageId != 0 => found a valid page => return
+                if(ret != null && ret.pageid != 0){
+                    ret.CUSTOM_PROP_LANGUAGE = language;
+                    return ret;
+                }
+            }
         }
         return null;
     }
