@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.5.1 (???)
+- Middleware mayAccept is now a Predicate, accepting a message object as param
+- Autoreact to everything that Megumin likes :) (AWAIT TEST)
+- Finished automated cleanUp task (AWAIT TEST)
+- MegFrage
+- MegWiki
+- MegFeedback
+- Show weather wind speeds in kmh
+- MegPlay will schedule song, if user provided further arguments
+- Configurable suffix and prefix for bot responses
+- Music Recommendation
+- Simplified url encoding
 ## 1.0.5.0 (15th of November 2020)
 - Middleware has mayAccept condition
 - Block Music Bot commands from private chats & when not in same voice channel
