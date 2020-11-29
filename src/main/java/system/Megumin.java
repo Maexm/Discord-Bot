@@ -279,7 +279,7 @@ public class Megumin extends ResponseType {
 		if (this.isAuthorVoiceConnected()) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
-						+ "Schreib " + Markdown.toCodeBlock("MegMusikListe") + " für Anregungen!");
+						+ "Schreib " + Markdown.toCodeBlock("MegMusikIdee") + " für Anregungen!");
 			} else {
 				// Join authors voice channel, if bot is not connected to voice or not to the
 				// same channel (only true if player was not active before)

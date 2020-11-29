@@ -131,6 +131,12 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "musikidee":
 			case "musikideen":
+			case "musicidee":
+			case "musicideen":
+			case "musicideas":
+			case "musicidea":
+			case "musikidea":
+			case "musikideas":
 				this.onMusicIdea();
 				break;
 			case "musikliste":
