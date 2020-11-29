@@ -25,8 +25,11 @@ public class Wikipedia {
         for(String language : Wikipedia.LANGUAGES){
             final String[] variations = {keyword, keyword.replace(" ", "%2D")};
             // Try different keyword variations until a valid page has been found
-            for(String variation : variations){ 
-                String url = "https://"+language+"."+Wikipedia.WIKI_API_BASE_URL + Wikipedia.QUERY_PARAMS + variation;
+            for(int i = 0; i < variations.length; i++){ 
+                if(i > 0 && variations[i].equals(keyword)){
+                    continue; // Skip if variation does not differ
+                }
+                String url = "https://"+language+"."+Wikipedia.WIKI_API_BASE_URL + Wikipedia.QUERY_PARAMS + variations[i];
                 
                 WikiResult resp = Wikipedia.fetchResult(url); // Fetch result
                 WikiPage ret = Wikipedia.retrievePage(resp.query.pages); // Get page object from result (null if there is no response)
