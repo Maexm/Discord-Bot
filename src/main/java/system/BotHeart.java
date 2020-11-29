@@ -58,6 +58,8 @@ public final class BotHeart {
 		this.middlewareBefore.add(new Logger(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new RoleFilter(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
 							msg -> RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
+		
+		this.middlewareBefore.add(new HelpSection(this.guildId, this.client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
 								msg -> {
 									final String[] expressions = {"explosion", "boom", "pau", "bum", "bam", "bäm", "bähm", "kaboom", "peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ", "爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "eruption"};
@@ -122,6 +124,7 @@ public final class BotHeart {
 					System.out.println(e);
 				}
 				if(!shouldContinue){
+					System.out.println(middleware+" canceled event digest");
 					return;
 				}
 			}
@@ -130,6 +133,7 @@ public final class BotHeart {
 			shouldContinue = this.responseSet.acceptEvent(msgEvent);
 
 			if(!shouldContinue){
+				System.out.println("ResponseType canceled event digest");
 				return;
 			}
 		}

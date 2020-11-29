@@ -106,14 +106,6 @@ public class Megumin extends ResponseType {
 	}
 
 	@Override
-	protected void onHelp() {
-		this.sendPrivateAnswer(Help.HELPTEXT);
-		if (this.hasPermission(SecurityLevel.ADM)) {
-			this.sendPrivateAnswer(Help.ADMHELP);
-		}
-	}
-
-	@Override
 	protected void onConvertToKatakana() {
 		if (this.getArgumentSection().equals("")) {
 			this.sendAnswer("was genau soll ich konvertieren?");

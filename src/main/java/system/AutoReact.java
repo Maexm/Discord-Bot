@@ -38,6 +38,6 @@ public class AutoReact extends Middleware {
 			}
 		}
 		
-		return false;
+		return true;
 	}
 }

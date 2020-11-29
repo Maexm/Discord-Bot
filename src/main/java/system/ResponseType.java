@@ -62,11 +62,6 @@ public abstract class ResponseType extends Middleware {
 			case "say":
 				this.onRepeat();
 				break;
-			case "hilfe":
-			case "h":
-			case "help":
-				this.onHelp();
-				break;
 			case "katakana":
 				this.onConvertToKatakana();
 				break;
@@ -271,11 +266,6 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void noPermission();
 
 	protected abstract void notInPrivate();
-
-	/**
-	 * Sends a list of existing commands
-	 */
-	protected abstract void onHelp();
 
 	/**
 	 * Converts the argument to katakana
