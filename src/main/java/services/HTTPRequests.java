@@ -48,6 +48,7 @@ public class HTTPRequests {
 		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).build();
 
 		String body = null;
+		System.out.println("[HTTPRequests] Sending HTTP request to: "+URL);
 		try {
 			body = client.send(req, BodyHandlers.ofString()).body();
 		} catch (IOException e) {
