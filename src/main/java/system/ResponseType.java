@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
+import exceptions.IllegalMagicException;
 import musicBot.AudioEventHandler;
 import security.SecurityLevel;
 import start.RuntimeVariables;
@@ -37,9 +38,28 @@ public abstract class ResponseType extends Middleware {
 
 			// Extract order and arguments
 			if (this.msgContent.contains(" ")) {
-				this.commandSection = this.msgContent.split(" ")[0];
-				this.argumentSection = this.msgContent.replaceFirst(this.commandSection + " ", "");
-				this.commandSection = this.commandSection.toLowerCase().replaceFirst(PREFIX, "");
+				final String[] splitted = this.msgContent.split(" ");
+
+				int commandPos = 0;
+				if(splitted[0].toLowerCase().equals(PREFIX)){
+					commandPos++; // Use command in splitted[1] instead of splitted[0] - Message might be "Meg Command Args" instead of "MegCommand Args"
+				}
+
+				this.commandSection = splitted[commandPos];
+				// Prefix right next to command
+				if(commandPos == 0){
+					this.argumentSection = this.msgContent.replaceFirst(this.commandSection + " ", "");// Do not use splitted[1], since args can have spaces as well
+					this.commandSection = this.commandSection.toLowerCase().replaceFirst(PREFIX, "");
+				}
+				// Prefix seperated with " "
+				else if(commandPos == 1){
+					this.argumentSection = this.msgContent.replaceFirst(PREFIX + " " + this.commandSection + " ", "");
+					this.commandSection = this.commandSection.toLowerCase();
+				}
+				else{
+					throw new IllegalMagicException("commandPos must be 0 or 1");
+				}
+				
 			}
 			// No command section exists
 			else {
