@@ -17,7 +17,6 @@ public class Weather {
     public final static String SINGLE_CALL = "data/2.5/weather?appid=" + RuntimeVariables.WEATHER_API_KEY+ "&units=metric&lang=de";
 
     public static SingleResponse getWeatherResponse(String city){
-        city = HTTPRequests.neutralize(city);
         city = HTTPRequests.urlEncode(city);
         if(RuntimeVariables.WEATHER_API_KEY == null){
             throw new IllegalMagicException("Weather API Key not available!");

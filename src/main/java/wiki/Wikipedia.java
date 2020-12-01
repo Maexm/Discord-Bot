@@ -17,7 +17,6 @@ public class Wikipedia {
     public final static String[] LANGUAGES = {"de", "en"};
 
     public static WikiPage getWikiPage(String keyword){
-        keyword = HTTPRequests.neutralize(keyword);
         keyword = Format.firstCharsCapitalized(keyword, " ");
         keyword = HTTPRequests.urlEncode(keyword);
 
