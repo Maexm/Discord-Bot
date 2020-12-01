@@ -12,6 +12,9 @@
 - Configurable suffix and prefix for bot responses
 - Music Recommendation
 - Simplified url encoding
+- Accept amount input from user when displaying music queue
+- Support input in format "PREFIX COMMAND ARGS"
+- Foolproofed access to help section
 ## 1.0.5.0 (15th of November 2020)
 - Middleware has mayAccept condition
 - Block Music Bot commands from private chats & when not in same voice channel
