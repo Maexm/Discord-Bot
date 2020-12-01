@@ -7,7 +7,7 @@
 - MegFrage
 - MegWiki
 - MegFeedback
-- Show weather wind speeds in kmh
+- Show weather wind speeds & gust in kmh
 - MegPlay will schedule song, if user provided further arguments
 - Configurable suffix and prefix for bot responses
 - Music Recommendation
