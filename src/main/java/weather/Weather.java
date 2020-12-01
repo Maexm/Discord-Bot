@@ -51,7 +51,8 @@ public class Weather {
                     +"\n"
                     +Markdown.toCodeBlock("Luftdruck:")+" "+Markdown.toBold(resp.main.pressure+"hPa")
                     +"\n"
-                    +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.speed), 2)+" km/h") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))+".";
+                    +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.speed), 2)+" km/h") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))
+                    +(resp.wind.gust != 0 ? ("\nEs sind Böhen bis "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.gust), 2)+ " km/h")+ " möglich! :dash:") : "") +".";
         return ret;
     }
 
