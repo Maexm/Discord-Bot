@@ -526,8 +526,20 @@ public class Megumin extends ResponseType {
 
 			out += this.audioEventHandler.getListSize() > 0 ? "\n" : "";
 
+			// Build String for each track in queue
+
+			int parsed = -1;
+			if(!this.argumentSection.equals("") && !this.argumentSection.equals("all")){
+				try{
+					parsed = Integer.parseInt(this.argumentSection);
+				}
+				catch(Exception e){
+				}
+			}
+			final String ALL = "all";
 			final LinkedList<AudioTrack> list = this.audioEventHandler.getDeepListCopy();
-			final int MAX_OUT = 5;
+			// Use parsed value if valid, else use all if contains all, else use default value
+			final int MAX_OUT = parsed > 0 ? parsed : (this.argumentSection.toLowerCase().equals(ALL) || this.commandSection.endsWith(ALL)) ? Integer.MAX_VALUE : 5;
 			for (int i = 0; i < list.size() && i < MAX_OUT; i++) {
 				final AudioTrack track = list.get(i);
 				String trackUser = AudioEventHandler.getSubmittedByUserName(track, this.getMessageGuild().getId());

@@ -42,7 +42,7 @@ public class Help {
 			+ "\n"
 			+ "`MegMusikStop`: Beende die Musikwiedergabe und lösche die Warteschlange :stop_button:"
 			+ "\n"
-			+ "`MegMusikQueue`: Aktuelle Wiedergabe und Warteschlange"
+			+ "`MegMusikQueue` oder `MegMusikQueue All` oder `MegMusikQueue ANZAHL`: Aktuelle Wiedergabe und Warteschlange"
 			+ "\n"
 			+ "`MegMusikClear`: Lösche die aktuelle Warteschlange"
 			+ "\n"
