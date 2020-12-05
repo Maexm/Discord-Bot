@@ -268,7 +268,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		// Set discord status
-		this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).block();
+		this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).subscribe();
 
 		// Create refresh task
 		final AudioEventHandler timerParent = this;
