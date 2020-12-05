@@ -2,18 +2,25 @@ package system;
 
 import java.util.ArrayList;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
+import exceptions.IllegalMagicException;
 import musicBot.AudioEventHandler;
+import schedule.RefinedTimerTask;
+import schedule.TaskManager;
 import security.SecurityLevel;
 import start.RuntimeVariables;
 import survey.Survey;
 
 public abstract class ResponseType extends Middleware {
 
-	public ResponseType(GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
-			AudioEventHandler audioEventHandler) {
-		super(client, audioProvider, surveys, audioEventHandler);
+	private final TaskManager<RefinedTimerTask> systemTasks;
+
+	public ResponseType(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+			AudioEventHandler audioEventHandler, final TaskManager<RefinedTimerTask> systemTasks) {
+		super(guildId, client, audioProvider, surveys, audioEventHandler);
+		this.systemTasks = systemTasks;
 	}
 
 	/**
@@ -36,9 +43,28 @@ public abstract class ResponseType extends Middleware {
 
 			// Extract order and arguments
 			if (this.msgContent.contains(" ")) {
-				this.commandSection = this.msgContent.split(" ")[0];
-				this.argumentSection = this.msgContent.replaceFirst(this.commandSection + " ", "");
-				this.commandSection = this.commandSection.toLowerCase().replaceFirst(PREFIX, "");
+				final String[] splitted = this.msgContent.split(" ");
+
+				int commandPos = 0;
+				if(splitted[0].toLowerCase().equals(PREFIX)){
+					commandPos++; // Use command in splitted[1] instead of splitted[0] - Message might be "Meg Command Args" instead of "MegCommand Args"
+				}
+
+				this.commandSection = splitted[commandPos];
+				// Prefix right next to command
+				if(commandPos == 0){
+					this.argumentSection = this.msgContent.replaceFirst(this.commandSection + " ", "");// Do not use splitted[1], since args can have spaces as well
+					this.commandSection = this.commandSection.toLowerCase().replaceFirst(PREFIX, "");
+				}
+				// Prefix seperated with " "
+				else if(commandPos == 1){
+					this.argumentSection = this.msgContent.replaceFirst(PREFIX + " " + this.commandSection + " ", "");
+					this.commandSection = this.commandSection.toLowerCase();
+				}
+				else{
+					throw new IllegalMagicException("commandPos must be 0 or 1");
+				}
+				
 			}
 			// No command section exists
 			else {
@@ -60,11 +86,6 @@ public abstract class ResponseType extends Middleware {
 			case "print":
 			case "say":
 				this.onRepeat();
-				break;
-			case "hilfe":
-			case "h":
-			case "help":
-				this.onHelp();
 				break;
 			case "katakana":
 				this.onConvertToKatakana();
@@ -135,6 +156,12 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "musikidee":
 			case "musikideen":
+			case "musicidee":
+			case "musicideen":
+			case "musicideas":
+			case "musicidea":
+			case "musikidea":
+			case "musikideas":
 				this.onMusicIdea();
 				break;
 			case "musikliste":
@@ -151,6 +178,20 @@ public abstract class ResponseType extends Middleware {
 			case "schlange":
 			case "musikschlange":
 			case "musicschlange":
+			
+			case "musiklisteall":
+			case "musiklistall":
+			case "musiclistall":
+			case "musiclisteall":
+			case "listall":
+			case "queueall":
+			case "musicqueueall":
+			case "musikqueueall":
+			case "warteschlangeall":
+			case "schlangeall":
+			case "musikschlangeall":
+			case "musicschlangeall":
+
 				this.onMusicQueue();
 				break;
 			case "multiumfrage":
@@ -211,6 +252,31 @@ public abstract class ResponseType extends Middleware {
 			case "tenki":
 				this.onWeather();
 				break;
+			case "frage":
+			case "qna":
+			case "entscheidung":
+			case "decision":
+			case "rand":
+			case "random":
+			case "janein":
+			case "neinja":
+			case "yesno":
+			case "yesorno":
+				this.onYesNo();
+				break;
+			case "wiki":
+			case "wikipedia":
+			case "wissen":
+			case "knowledge":
+			case "suche":
+			case "such":
+				this.onWiki();
+				break;
+			case "feedback":
+			case "vorschlag":
+			case "request":
+				this.onFeedback();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -222,6 +288,10 @@ public abstract class ResponseType extends Middleware {
 		if(this.hasPermission(SecurityLevel.ADM)){
 			System.exit(1);
 		}
+	}
+
+	protected void cleanSystemTasks(){
+		this.systemTasks.stopAll();
 	}
 
 	// ########## ABSTRACT RESPONSE METHODS ##########
@@ -245,11 +315,6 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void noPermission();
 
 	protected abstract void notInPrivate();
-
-	/**
-	 * Sends a list of existing commands
-	 */
-	protected abstract void onHelp();
 
 	/**
 	 * Converts the argument to katakana
@@ -325,5 +390,11 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onChangeName();
 
 	protected abstract void onWeather();
+
+	protected abstract void onYesNo();
+
+	protected abstract void onWiki();
+
+	protected abstract void onFeedback();
 
 }

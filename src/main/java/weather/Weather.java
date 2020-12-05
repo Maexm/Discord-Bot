@@ -1,16 +1,14 @@
 package weather;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import com.google.gson.Gson;
 
 import exceptions.IllegalMagicException;
 import services.HTTPRequests;
 import services.Markdown;
 import start.RuntimeVariables;
+import util.Format;
 import util.Range;
+import util.Units;
 import weather.WeatherResponses.SingleResponse;
 
 public class Weather {
@@ -19,16 +17,11 @@ public class Weather {
     public final static String SINGLE_CALL = "data/2.5/weather?appid=" + RuntimeVariables.WEATHER_API_KEY+ "&units=metric&lang=de";
 
     public static SingleResponse getWeatherResponse(String city){
-        city = HTTPRequests.neutralize(city);
+        city = HTTPRequests.urlEncode(city);
         if(RuntimeVariables.WEATHER_API_KEY == null){
             throw new IllegalMagicException("Weather API Key not available!");
         }
 
-        try {
-			city = URLEncoder.encode(city, StandardCharsets.UTF_8.name());
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-        }
         String url = Weather.WEATHER_BASE_URL+Weather.SINGLE_CALL+"&q="+city;
 
         String response = HTTPRequests.getModern(url);
@@ -47,7 +40,7 @@ public class Weather {
             return "konnte diese Stadt nicht finden!";
         }
 
-        String ret = "das aktuelle Wetter in " + Markdown.toBold(resp.name) + ":"
+        String ret = "das aktuelle Wetter in " + Markdown.toBold(resp.name) + " ("+resp.sys.country+")"+ ":"
                     +"\n\n"
                     +Markdown.toBold(resp.weather[0].description)
                     +" bei "+Markdown.toBold(resp.main.temp+ " °C") + " (gefühlt "+resp.main.feels_like+" °C)."
@@ -58,7 +51,8 @@ public class Weather {
                     +"\n"
                     +Markdown.toCodeBlock("Luftdruck:")+" "+Markdown.toBold(resp.main.pressure+"hPa")
                     +"\n"
-                    +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(resp.wind.speed+" m/s") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))+".";
+                    +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.speed), 2)+" km/h") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))
+                    +(resp.wind.gust != 0 ? ("\nEs sind Böhen bis "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.gust), 2)+ " km/h")+ " möglich! :dash:") : "") +".";
         return ret;
     }
 

@@ -13,6 +13,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.presence.Activity;
+import discord4j.core.object.presence.Presence;
 import discord4j.rest.http.client.ClientException;
 import system.ResponseType;
 import services.Emoji;
@@ -20,6 +22,7 @@ import services.Markdown;
 import services.TimePrint;
 import snowflakes.ChannelID;
 import snowflakes.GuildID;
+import start.RuntimeVariables;
 
 public class AudioEventHandler extends AudioEventAdapter {
 
@@ -192,7 +195,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
 				failedTrackMsg.getChannel()
-				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!"))
+				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
+				+"Beachte, bei "+Markdown.toBold("YouTube-Videos")+" können Videos mit Alterbeschränkung leider nicht abgespielt werden!"))
 				.subscribe();
 			} else if (this.radioMessage != null) {
 				this.radioMessage.getChannel()
@@ -235,6 +239,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	void ended() {
 		System.out.println("Music ended!");
+		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 		this.active = false;
 		this.parent.leaveVoiceChannel();
 		this.refreshTask.cancel();
@@ -261,6 +266,11 @@ public class AudioEventHandler extends AudioEventAdapter {
 			player.stopTrack();
 			return;
 		}
+
+		// Set discord status
+		this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).block();
+
+		// Create refresh task
 		final AudioEventHandler timerParent = this;
 		this.refreshTask = new TimerTask() {
 

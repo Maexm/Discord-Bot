@@ -1,5 +1,6 @@
 package schedule;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.UUID;
@@ -66,6 +67,20 @@ public class TaskManager<TaskType extends RefinedTimerTask> {
 
     public TaskType getTaskByUUID(UUID uuid){
         return this.tasks.get(uuid);
+    }
+    /**
+     * Stops and removes all tasks
+     */
+    public void stopAll(){
+        ArrayList<TaskType> tasks = new ArrayList<>();
+
+        this.tasks.forEach((uuid, task) ->{
+            tasks.add(task);
+        });
+
+        for(TaskType task : tasks){
+            task.cleanCancel();
+        }
     }
 
     /**

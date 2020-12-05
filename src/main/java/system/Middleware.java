@@ -3,7 +3,7 @@ package system;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -25,6 +25,7 @@ import musicBot.AudioEventHandler;
 import reactor.core.publisher.Mono;
 import security.SecurityProvider;
 import snowflakes.GuildID;
+import start.RuntimeVariables;
 import survey.Survey;
 
 
@@ -40,20 +41,22 @@ public abstract class Middleware {
 	protected String commandSection = "";
 	protected String argumentSection = "";
 	protected final ArrayList<Survey> surveys;
-	private final BooleanSupplier mayAccept;
+	private final Predicate<Message> mayAccept;
+	protected final Snowflake guildId;
 
 	// AUDIO
 	protected final AudioEventHandler audioEventHandler;
 
 	protected final AudioProvider audioProvider;
 
-	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
+	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
 			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
-		this(client, audioProvider, surveys, audioEventHandler, () -> true);
+		this(guildId, client, audioProvider, surveys, audioEventHandler, msg -> true);
 	}
 
-	public Middleware(final GatewayDiscordClient client, final AudioProvider audioProvider,
-			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final BooleanSupplier mayAccept) {
+	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
+			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final Predicate<Message> mayAccept) {
+		this.guildId = guildId;
 		this.client = client;
 		this.audioEventHandler = audioEventHandler;
 		this.audioProvider = audioProvider;
@@ -69,7 +72,7 @@ public abstract class Middleware {
 	 */
 	public final boolean acceptEvent(final MessageCreateEvent messageEvent) {
 
-		if(!this.mayAccept.getAsBoolean()){
+		if(!this.mayAccept.test(messageEvent.getMessage())){
 			return true; // Skip if this Middleware may not handle event
 		}
 
@@ -104,8 +107,8 @@ public abstract class Middleware {
 						System.out.println("Cannot send messages at all!");
 					}
 				}
-			}
-		return ret;
+		}
+		return ret && fetchSuccess;
 	}
 
     protected abstract boolean handle();
@@ -261,7 +264,7 @@ public abstract class Middleware {
 	}
 	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
 		return this.client.getSelf()
-			.flatMap(self -> self.asMember(this.getMessageGuild().getId()))
+			.flatMap(self -> self.asMember(this.guildId))
 			.flatMap(member -> member.getVoiceState())
 			.flatMap(voiceState -> voiceState != null ? voiceState.getChannel() : null);
 	}
@@ -357,7 +360,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendInSameChannel(String message) {
-		return this.getMessageChannel().createMessage(message).block();
+		return this.getMessageChannel().createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
 	/**
@@ -406,7 +409,7 @@ public abstract class Middleware {
 	 */
 	public final Message sendInChannel(String message, Snowflake channelID, Snowflake guildID) {
 		MessageChannel channel = this.getChannelByID(channelID, guildID);
-		return channel.createMessage(message).block();
+		return channel.createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
 	/**
@@ -416,7 +419,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendPrivateAnswer(String message) {
-		return this.getMessageAuthorPrivateChannel().createMessage(message).block();
+		return this.getMessageAuthorPrivateChannel().createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
 	/**
@@ -500,6 +503,13 @@ public abstract class Middleware {
 			}
 		}
 		return ret;
+	}
+
+	protected final Message sendMessageToOwner(String msg){
+		final String MESSAGE = RuntimeVariables.ANS_PREFIX + msg + RuntimeVariables.ANS_SUFFIX;
+		return this.getOwner().getPrivateChannel()
+			.flatMap(channel -> channel.createMessage(MESSAGE))
+			.block();
 	}
 
 	// TECHNICAL METHODS

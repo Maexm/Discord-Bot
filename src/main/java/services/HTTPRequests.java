@@ -2,13 +2,16 @@ package services;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Scanner;
 
 public class HTTPRequests {
@@ -43,8 +46,9 @@ public class HTTPRequests {
 
 	public static String getModern(final String URL) {
 		HttpClient client = HttpClient.newHttpClient();
-		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).build();
+		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).GET().timeout(Duration.ofSeconds(10l)).build();
 
+		System.out.println("[HTTPRequests] Sending HTTP request to: " + URL);
 		String body = null;
 		try {
 			body = client.send(req, BodyHandlers.ofString()).body();
@@ -53,12 +57,29 @@ public class HTTPRequests {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+
 		return body;
 	}
 
-	public static String neutralize(String s){
+	public static String neutralize(String s) {
 		return s.replace(":", "").replace("/", "").replace("?", "").replace("#", "").replace("[", "").replace("]", "")
-		.replace("@", "").replace("!", "").replace("$", "").replace("&", "").replace("'", "").replace("(", "").replace(")", "")
-		.replace("*", "").replace("+", "").replace(",", "").replace(";", "").replace("=", "");
+				.replace("@", "").replace("!", "").replace("$", "").replace("&", "").replace("'", "").replace("(", "")
+				.replace(")", "").replace("*", "").replace("+", "").replace(",", "").replace(";", "").replace("=", "");
+	}
+
+	public static String urlEncode(String s, boolean perc20Space) {
+		try {
+			if (perc20Space) {
+				return URLEncoder.encode(s, StandardCharsets.UTF_8.name()).replace("+", "%20");
+			}
+			return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static String urlEncode(String s) {
+		return HTTPRequests.urlEncode(s, true);
 	}
 }

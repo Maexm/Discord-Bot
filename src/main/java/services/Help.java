@@ -5,7 +5,7 @@ import start.RuntimeVariables;
 
 public class Help {
 
-	public final static String HELPTEXT = ">>> Ich verstehe folgende Befehle:\n"
+	public final static String HELPTEXT = "\n>>> Ich verstehe folgende Befehle:\n"
 			+ "`Hey Megumin`: Lass dich von mir begrüßen! :smile:\n"
 			+ "`MegHelpMusik`: Alles zu Musik! :musical_note:\n"
 			+ "`MegHelpUmfrage`: Alles zu Umfragen! :bar_chart:\n"
@@ -16,20 +16,23 @@ public class Help {
 			+ "`MegStatus`: Aktuelle Statusinformationen zu meiner Existenz :signal_strength:\n"
 			+ "`MegSchreiben/Sprechen TEXT`: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n"
 			+ "`MegWetter STADT`: Aktuelle Wetterlage in irgendeiner Stadt weltweit :white_sun_cloud:\n"
+			+ "`MegFrage FRAGE`: Erhalte schnellen Rat bei Ja-/Nein-Fragen\n"
+			+ "`MegWiki BEGRIFF`: Schlage unbekannte Begriffe nach! :books:\n"
 			+ "`MegHelp`: Siehst du gerade vor dir, baka!\n"
 			+ "\n"
 			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
 			+ "\n"
-			+ "Fragen, Anregungen und Vorschläge können gerne Maxim oder auf GitHub gestellt werden:\n"
+			+ "Fragen, Anregungen und Vorschläge können gerne persönlich, mit `MegFeedback Dein Feedback` oder auf GitHub gestellt werden:\n"
 			+ RuntimeVariables.GIT_URL;
 	
-	public final static String MUSICHELPTEXT = ">>> Du möchtest deine Freunde mit deiner furchtbaren Musik nerven? Ich helfe dir dabei! :musical_note:\n\n"
+	public final static String MUSICHELPTEXT = "\n>>> Du möchtest deine Freunde mit deiner furchtbaren Musik nerven? Ich helfe dir dabei! :musical_note:\n\n"
 			+ "*Du musst für die meisten Befehle selber im VoiceChannel sein!*\n"
 			+ "`MegMusik YTSUCHE/URL`: Ich spiele Musik anhand eines Youtube- SoundCloud- oder Bandcamp-Links ab! Alternativ kannst du auch einfach ein Wort eingeben "
 			+ "und ich werde danach auf YouTube suchen!"
 			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN+"\n" : "")
 			+ "\n"
 			+ "`MegMusikPrio YTSUCHE/URL`: Wie MegMusik, nur dass der Track vorne an die Warteschlange eingefügt wird"
+			+ "\n"
 			+ "`MegMusikNext OPT.ANZAHL`: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"
@@ -39,20 +42,20 @@ public class Help {
 			+ "\n"
 			+ "`MegMusikStop`: Beende die Musikwiedergabe und lösche die Warteschlange :stop_button:"
 			+ "\n"
-			+ "`MegMusikQueue`: Aktuelle Wiedergabe und Warteschlange"
+			+ "`MegMusikQueue` oder `MegMusikQueue All` oder `MegMusikQueue ANZAHL`: Aktuelle Wiedergabe und Warteschlange"
 			+ "\n"
 			+ "`MegMusikClear`: Lösche die aktuelle Warteschlange"
 			+ "\n"
 			+ "`MegMusikVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist Admins vorbehalten)";
 	
-	public final static String ADMHELP = ">>> Du hast Zugriffsrechte auf Admin Befehle! :man_office_worker:\n"
+	public final static String ADMHELP = "\n>>> Du hast Zugriffsrechte auf Admin Befehle! :man_office_worker:\n"
 			+ "`MegLogout`: Ich melde mich ab und terminiere (bitte nur im Notfall verwenden) :skull_crossbones:"
 			+ "\n"
 			+"`MegKill`: Terminiert im Gegensatz zu 'MegLogout' unverzüglich und ohne Nachrichten CleanUp (für den Fall, dass 'MegLogout' nicht funktioniert)."
 			+ "\n"
 			+ "`MegMusikVol ZAHL`: Ich ändere meine Lautstärke!";
 	
-	public final static String SURVEYHELPTEXT = ">>> So nutzt du die Macht der Umfragen!"
+	public final static String SURVEYHELPTEXT = "\n>>> So nutzt du die Macht der Umfragen!"
 			+ "\n"
 			+ "Tipp: Copy & paste **fettgedruckte Befehle**, dies reduziert Syntaxfehler!"
 			+ "\n"

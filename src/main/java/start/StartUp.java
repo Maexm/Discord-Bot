@@ -39,9 +39,6 @@ public class StartUp {
 			System.out.println("Please enter a token (won't be displayed): ");
 			Console console = System.console();
 			TOKEN = new String(console.readPassword());
-			if (TOKEN == null || TOKEN.equals("")) {
-				throw new StartUpException("Token missing");
-			}
 		}
 
 		// Retrieve weather api key
@@ -52,7 +49,10 @@ public class StartUp {
 		// Retrieve debug info, if available
 		if (args.length >= 3 && args[2].toUpperCase().equals("DEBUG")) {
 			RuntimeVariables.IS_DEBUG = true;
-			
+		}
+
+		if (TOKEN == null || TOKEN.equals("")) {
+			throw new StartUpException("Token missing");
 		}
 		//reactor.util.Loggers.useJdkLoggers();
 
@@ -67,7 +67,7 @@ public class StartUp {
 
 		final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build().login().block();
 
-		final BotHeart messageReceivedHandler = new BotHeart(client, provider, player,
+		final BotHeart messageReceivedHandler = new BotHeart(GuildID.UNSER_SERVER ,client, provider, player,
 				playerManager);
 
 		// ########## On client login ##########
@@ -77,27 +77,38 @@ public class StartUp {
 			System.out.println("Currently member of " + ready.getGuilds().size() + " guilds");
 
 			client.updatePresence(Presence
-					.online(Activity.playing(RuntimeVariables.IS_DEBUG ? "EXPERIMENTELL" : "Schreib 'MegHelp'!")))
+					.online(Activity.playing(RuntimeVariables.getStatus())))
 					.block();
 
 			if(RuntimeVariables.firstLogin){
-				try {
-					List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
-							.blockFirst();
-					String emojiFormat = "";
-					for (GuildEmoji emoji : emojis) {
-						if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
-							emojiFormat = emoji.asFormat();
-							break;
+				// Send public hello message if not debug
+				if(!RuntimeVariables.IS_DEBUG){
+					try {
+						List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
+								.blockFirst();
+						String emojiFormat = "";
+						for (GuildEmoji emoji : emojis) {
+							if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
+								emojiFormat = emoji.asFormat();
+								break;
+							}
 						}
+						MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
+								.getChannelById(ChannelID.MEGUMIN).block();
+		
+						channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
+								+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
-							.getChannelById(ChannelID.MEGUMIN).block();
-	
-					channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
-							+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
-				} catch (Exception e) {
-					e.printStackTrace();
+				}
+				// Notify owner if debug
+				else{
+					client.getApplicationInfo()
+					.flatMap(appInfo -> appInfo.getOwner())
+					.flatMap(owner -> owner.getPrivateChannel())
+					.flatMap(ownerChannel -> ownerChannel.createMessage("Debug Session aktiv!"))
+					.block();
 				}
 				RuntimeVariables.firstLogin = false;
 			}

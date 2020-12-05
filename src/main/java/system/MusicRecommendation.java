@@ -13,9 +13,9 @@ import survey.Survey;
 
 public class MusicRecommendation extends Middleware {
 
-    public MusicRecommendation(GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
+    public MusicRecommendation(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
             AudioEventHandler audioEventHandler) {
-        super(client, audioProvider, surveys, audioEventHandler);
+        super(guildId, client, audioProvider, surveys, audioEventHandler);
     }
 
     @Override
@@ -33,10 +33,9 @@ public class MusicRecommendation extends Middleware {
                     +"ist aktuell beschäftigt, ich habe ihm aber die Nachricht weitergeschickt, damit er alles auf einem Blick hat!");
 
             String msg = Markdown.toBold(this.getMessageAuthorName()) + " hat dir eine Musikempfehlung hinterlassen!\n"
-                    + Markdown.toMultilineBlockQuotes(this.msgContent);
+                    + Markdown.toSafeMultilineBlockQuotes(this.msgContent);
 
-            this.getMember(ownerId, this.getMessageGuild().getId()).getPrivateChannel().block().createMessage(msg)
-                    .block();
+            this.sendMessageToOwner(msg);
         }
         return true;
     }
