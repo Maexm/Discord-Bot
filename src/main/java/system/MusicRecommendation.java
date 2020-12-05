@@ -33,7 +33,7 @@ public class MusicRecommendation extends Middleware {
                     +"ist aktuell beschäftigt, ich habe ihm aber die Nachricht weitergeschickt, damit er alles auf einem Blick hat!");
 
             String msg = Markdown.toBold(this.getMessageAuthorName()) + " hat dir eine Musikempfehlung hinterlassen!\n"
-                    + Markdown.toMultilineBlockQuotes(this.msgContent);
+                    + Markdown.toSafeMultilineBlockQuotes(this.msgContent);
 
             this.sendMessageToOwner(msg);
         }

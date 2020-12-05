@@ -23,6 +23,8 @@ import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
 import musicBot.MusicVariables;
 import musicBot.MusicVariables.TrackLink;
+import schedule.RefinedTimerTask;
+import schedule.TaskManager;
 import security.SecurityLevel;
 import security.SecurityProvider;
 import services.Emoji;
@@ -39,8 +41,8 @@ import wiki.Wikipedia;
 public class Megumin extends ResponseType {
 
 	public Megumin(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider,
-			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler) {
-		super(guildId, client, audioProvider, surveys, audioEventHandler);
+			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler, TaskManager<RefinedTimerTask> systemTasks) {
+		super(guildId, client, audioProvider, surveys, audioEventHandler, systemTasks);
 	}
 
 	@Override
@@ -84,6 +86,12 @@ public class Megumin extends ResponseType {
 			this.surveys.forEach(survey -> {
 				survey.stop();
 			});
+
+			// ########## STOP TASKS ##########
+			System.out.println("Stopping tasks...");
+			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText + "\n" + "Beende System-Tasks..."))
+					.block();
+			this.cleanSystemTasks();
 
 			// ########## LOGOUT ##########
 			System.out.println("Cleanup finished, logging out!");
@@ -248,15 +256,6 @@ public class Megumin extends ResponseType {
 			SecurityProvider.checkPermission(getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId());
 
 			this.sendAnswer("Keine Testfunktion angegeben!");
-
-			// int dur = 20;
-			// this.sendAnswer("**Async test** - Blockiere für "+dur+" Sekunden");
-
-			// Mono.just("Finished!").delayElement(Duration.ofSeconds(dur)).subscribe(result
-			// -> System.out.println(result));
-
-			// this.getChannelByID(ChannelID.MEGUMIN,
-			// GuildID.UNSER_SERVER).getRestChannel().
 
 		} catch (NoPermissionException e) {
 			this.noPermission();
@@ -603,7 +602,11 @@ public class Megumin extends ResponseType {
 		if (this.hasPermission(SecurityLevel.DEV)) {
 			if (this.argumentSection.equals("")) {
 				this.sendAnswer("du hast keinen Namen angegeben!");
-			} else {
+			}
+			else if(this.isPrivate()){
+				this.notInPrivate();
+			}
+			else {
 				this.getMessageGuild().changeSelfNickname(this.argumentSection).block();
 				this.sendAnswer("Name erfolgreich geändert!");
 			}
@@ -615,13 +618,16 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onUpdatePSA() {
 		if (this.hasPermission(SecurityLevel.DEV)) {
+			final String INTRO = "Ein neues Update ist verfügbar! :christmas_tree: Was ist neu?\n";
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
-			} else {
+			} else if(!RuntimeVariables.IS_DEBUG){
 				this.sendInChannel(
-						"Ein neues Update ist verfügbar! :partying_face: Was ist neu?\n\n"
-								+ Markdown.toMultilineBlockQuotes(this.getArgumentSection()),
+						INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()),
 						ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
+			}
+			else{
+				this.sendMessageToOwner(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 			}
 		} else {
 			this.noPermission();
@@ -643,14 +649,14 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
-		final String[] posResp = { "Ja.", "Tatsache.", "Das ist sehr wahrscheinlich.", "Völlig korrekt.", "In der Tat.",
-				"Absolut.", "Aber natürlich!", "Auf jeden Fall!", "Definitiv.", "Daran besteht kein Zweifel.",
-				"Davon würde ich definitiv ausgehen.", "Zweifellos!", "Offensichtlich ja.", "Yes.", "Jawohl!", "Klar!",
-				"Rein objektiv gesehen: Ja.", "Jup.", "Jep.", "Jo.", "Selbstverständlich!", "Klingt nach einer hervorragenden Idee!", ":thumbsup:" };
-		final String[] negResp = { "Nein.", "Überhaupt nicht.", "Auf garkeinen Fall.", "Völlig unmöglich.",
-				"Definitiv nicht.", "No!", "Offensichtlich nicht.", "Das ist nicht möglich.",
-				"Davon würde ich sowas von abraten!", "Bloß nicht!", "Rein objektiv gesehen: Nein.",
-				"Nein, wieso auch?", "Eher nicht.", "Ne.", "Nope.", "Nö", "Nichts da!", "Klingt wenn du mich fragst nach einer scheiß Idee.", ":thumbsdown:" };
+		final String[] posResp = { "ja.", "tatsache.", "das ist sehr wahrscheinlich.", "völlig korrekt.", "in der Tat.",
+				"absolut.", "aber natürlich!", "auf jeden Fall!", "definitiv.", "daran besteht kein Zweifel.",
+				"davon würde ich definitiv ausgehen.", "zweifellos!", "offensichtlich ja.", "yes.", "jawohl!", "klar!",
+				"rein objektiv gesehen: Ja.", "jup.", "jep.", "jo.", "selbstverständlich!", "klingt nach einer hervorragenden Idee!", ":thumbsup:" };
+		final String[] negResp = { "nein.", "überhaupt nicht.", "auf garkeinen Fall.", "völlig unmöglich.",
+				"definitiv nicht.", "no!", "offensichtlich nicht.", "das ist nicht möglich.",
+				"davon würde ich sowas von abraten!", "bloß nicht!", "rein objektiv gesehen: Nein.",
+				"nein, wieso auch?", "eher nicht.", "ne.", "nope.", "nö", "nichts da!", "klingt wenn du mich fragst nach einer scheiß Idee.", ":thumbsdown:" };
 		final Random rand = new Random();
 		String resp = "";
 		if (rand.nextBoolean()) {
@@ -677,12 +683,12 @@ public class Megumin extends ResponseType {
 			this.sendAnswer("ein leeres Feedback ist kein Feedback!");
 			return;
 		}
-		String response = "Wir haben Feedback von "+Markdown.toBold(this.getMessageAuthorName())+" erhalten:\n\n"
-							+ Markdown.toMultilineBlockQuotes(this.getArgumentSection());
+		String response = "Wir haben Feedback von "+Markdown.toBold(this.getMessageAuthorName())+" erhalten:\n"
+							+ Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection());
 		this.sendMessageToOwner(response);
 		this.sendPrivateAnswer("Vielen Dank! Ich habe dein Feedback an "+this.getOwner().getUsername()+" weitergeleitet! "
-								+"Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:\n\n"
-								+Markdown.toMultilineBlockQuotes(this.getArgumentSection()));
+								+"Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:\n"
+								+Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 		this.deleteReceivedMessage();
 	}
 }

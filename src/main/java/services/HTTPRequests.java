@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Scanner;
 
 public class HTTPRequests {
@@ -45,10 +46,10 @@ public class HTTPRequests {
 
 	public static String getModern(final String URL) {
 		HttpClient client = HttpClient.newHttpClient();
-		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).build();
+		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).GET().timeout(Duration.ofSeconds(10l)).build();
 
+		System.out.println("[HTTPRequests] Sending HTTP request to: " + URL);
 		String body = null;
-		System.out.println("[HTTPRequests] Sending HTTP request to: "+URL);
 		try {
 			body = client.send(req, BodyHandlers.ofString()).body();
 		} catch (IOException e) {
@@ -56,6 +57,7 @@ public class HTTPRequests {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+
 		return body;
 	}
 
@@ -77,7 +79,7 @@ public class HTTPRequests {
 		return null;
 	}
 
-	public static String urlEncode(String s){
+	public static String urlEncode(String s) {
 		return HTTPRequests.urlEncode(s, true);
 	}
 }

@@ -27,7 +27,7 @@ import start.RuntimeVariables;
 import survey.Survey;
 
 public final class BotHeart {
-	
+
 	private ResponseType responseSet;
 	private final GatewayDiscordClient client;
 	private final TrackLoader trackScheduler;
@@ -39,9 +39,10 @@ public final class BotHeart {
 	private final AudioEventHandler playerEventHandler;
 	private final ArrayList<Middleware> middlewareBefore = new ArrayList<Middleware>();
 	private final Snowflake guildId;
-	private final TaskManager<RefinedTimerTask> systemTasks = new TaskManager<>();
-	
-	public BotHeart(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider, final AudioPlayer player, final AudioPlayerManager playerManager) {
+	private final TaskManager<RefinedTimerTask> systemTasks = new TaskManager<>(true);
+
+	public BotHeart(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
+			final AudioPlayer player, final AudioPlayerManager playerManager) {
 		this.guildId = guildId;
 		this.trackList = new LinkedList<AudioTrack>();
 		this.addInfo = new LinkedList<MusicTrackInfo>();
@@ -50,81 +51,104 @@ public final class BotHeart {
 		this.player.setVolume(20);
 		this.trackScheduler = new TrackLoader(player, trackList, addInfo, playerManager);
 		this.audioProvider = audioProvider;
-		this.playerEventHandler = new AudioEventHandler(this.player, playerManager, this.trackScheduler, trackList, addInfo);
+		this.playerEventHandler = new AudioEventHandler(this.player, playerManager, this.trackScheduler, trackList,
+				addInfo);
 		this.player.addListener(playerEventHandler);
 
 		// ########## RESPONSE SETS ##########
 		// TODO: Shorten this hell
-		this.middlewareBefore.add(new Logger(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new RoleFilter(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
-							msg -> RuntimeVariables.IS_DEBUG, SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
-		
-		this.middlewareBefore.add(new HelpSection(this.guildId, this.client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler,
-								msg -> {
-									final String[] expressions = {"explosion", "boom", "pau", "bum", "bam", "bäm", "bähm", "kaboom", "peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ", "爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "eruption"};
-									final String evalStr = msg.getContent().toLowerCase();
-									for(String expr : expressions){if(evalStr.contains(expr)){return true;}};	return false; // React if evalStr contains something from array, skip otherwise
-								}, new ReactionEmoji[]{ReactionEmoji.unicode("\u2764"), ReactionEmoji.unicode("\u1F4A5")} ));
-		this.middlewareBefore.add(new VoiceGuard(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new MusicRecommendation(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.responseSet = new Megumin(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler);
+		this.middlewareBefore
+				.add(new Logger(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
+		this.middlewareBefore.add(new RoleFilter(this.guildId, client, this.audioProvider, this.surveys,
+				this.playerEventHandler,
+				msg -> RuntimeVariables.IS_DEBUG
+						&& msg.getContent().toLowerCase().startsWith(RuntimeVariables.MESSAGE_PREFIX.toLowerCase()),
+				SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
+
+		this.middlewareBefore.add(
+				new HelpSection(this.guildId, this.client, this.audioProvider, this.surveys, this.playerEventHandler));
+		this.middlewareBefore.add(
+				new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler, msg -> {
+					final String[] expressions = { "explosion", "boom", "bum", "bam", "bäm", "bäng", "bähm", "kaboom",
+							"peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ",
+							"爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "eruption", "bomtastisch",
+							"bomtastian"};
+					final String evalStr = msg.getContent().toLowerCase();
+					for (String expr : expressions) {
+						if (evalStr.contains(expr)) {
+							return true;
+						}
+					}
+					;
+					return false; // React if evalStr contains something from array, skip otherwise
+				}, new ReactionEmoji[] { ReactionEmoji.unicode("\u2764")/* , ReactionEmoji.unicode("\u1F386") */ }));
+		// this.middlewareBefore.add(new VoiceGuard(this.guildId, client,
+		// this.audioProvider, this.surveys, this.playerEventHandler));
+		this.middlewareBefore.add(new MusicRecommendation(this.guildId, client, this.audioProvider, this.surveys,
+				this.playerEventHandler));
+		this.responseSet = new Megumin(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler, this.systemTasks);
 
 		// ########## TASKS ##########
 		// TODO: Move to a dedicated file
-		final MessageChannel channelRef = (MessageChannel) this.client.getGuildById(this.guildId)
-				.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
-		this.systemTasks.addTask(new RefinedTimerTask(null,Long.valueOf(Time.DAY),Time.getNext(3, 0, 0).getTime() ,this.systemTasks){
+		this.systemTasks.addTask(new RefinedTimerTask(null, Long.valueOf(Time.DAY),
+				Time.getNext(3, 0, 0).getTime(), this.systemTasks) {
 
 			@Override
 			public void runTask() {
 				System.out.println("Executing CleanUp task!");
-				Message lastMessage = channelRef.getLastMessage().block();
-				List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
-				messages.add(0, lastMessage);
+				try {
+					MessageChannel channelRef = (MessageChannel) client.getGuildById(guildId)
+							.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
+					Message lastMessage = channelRef.getLastMessage().block();
+					List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
+					messages.add(0, lastMessage);
 
-				final String cleanUpFinish = "Täglicher CleanUp beendet!";
+					final String cleanUpFinish = "Täglicher CleanUp beendet! :sparkles:";
 
-				Message infoMessage = channelRef.createMessage("Täglicher CleanUp wird ausgeführt!").block();
+					Message infoMessage = channelRef.createMessage("Täglicher CleanUp wird ausgeführt! :wastebasket:").block();
 
-				for(Message message: messages){
-					final String content = message.getContent();
-					switch(content){
-						case cleanUpFinish:
-						case AudioEventHandler.MUSIC_STOPPED:
-							message.delete();
-							break;
+					for (Message message : messages) {
+						final String content = message.getContent();
+						switch (content) {
+							case cleanUpFinish:
+							case AudioEventHandler.MUSIC_STOPPED:
+								message.delete().block();
+								break;
+						}
 					}
-				}
 
-				infoMessage.edit(edit -> edit.setContent(cleanUpFinish)).block();
-				System.out.println("CleanUp task finished!");
+					infoMessage.edit(edit -> edit.setContent(cleanUpFinish)).block();
+					System.out.println("CleanUp task finished!");
+				} catch (Exception e) {
+					System.out.println("CleanUp task failed!");
+					e.printStackTrace();
+				}
 			}
-			
+
 		});
 	}
-	
+
 	/**
 	 * Allow this message to be further analyzed, if its author is NOT this bot.
+	 * 
 	 * @param msgEvent The message event
-	 * @param client This client
+	 * @param client   This client
 	 */
 	public void onMessageReceived(MessageCreateEvent msgEvent) {
-		if(!msgEvent.getMessage().getAuthor().get().getId().equals(client.getSelfId())) {
+		if (!msgEvent.getMessage().getAuthor().get().getId().equals(client.getSelfId())) {
 
 			boolean shouldContinue = true;
 
 			// ########## MIDDLEWARE BEFORE ##########
-			for(Middleware middleware: this.middlewareBefore){
-				try{
+			for (Middleware middleware : this.middlewareBefore) {
+				try {
 					shouldContinue = middleware.acceptEvent(msgEvent);
-				}
-				catch(Exception e){
-					System.out.println("Error while using middleware: '"+middleware+"'");
+				} catch (Exception e) {
+					System.out.println("Error while using middleware: '" + middleware + "'");
 					System.out.println(e);
 				}
-				if(!shouldContinue){
-					System.out.println(middleware+" canceled event digest");
+				if (!shouldContinue) {
+					System.out.println(middleware + " canceled event digest");
 					return;
 				}
 			}
@@ -132,7 +156,7 @@ public final class BotHeart {
 			// ########## RESPONSE TYPE ##########
 			shouldContinue = this.responseSet.acceptEvent(msgEvent);
 
-			if(!shouldContinue){
+			if (!shouldContinue) {
 				System.out.println("ResponseType canceled event digest");
 				return;
 			}

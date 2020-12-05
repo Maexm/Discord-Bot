@@ -7,15 +7,20 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
 import exceptions.IllegalMagicException;
 import musicBot.AudioEventHandler;
+import schedule.RefinedTimerTask;
+import schedule.TaskManager;
 import security.SecurityLevel;
 import start.RuntimeVariables;
 import survey.Survey;
 
 public abstract class ResponseType extends Middleware {
 
+	private final TaskManager<RefinedTimerTask> systemTasks;
+
 	public ResponseType(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
-			AudioEventHandler audioEventHandler) {
+			AudioEventHandler audioEventHandler, final TaskManager<RefinedTimerTask> systemTasks) {
 		super(guildId, client, audioProvider, surveys, audioEventHandler);
+		this.systemTasks = systemTasks;
 	}
 
 	/**
@@ -283,6 +288,10 @@ public abstract class ResponseType extends Middleware {
 		if(this.hasPermission(SecurityLevel.ADM)){
 			System.exit(1);
 		}
+	}
+
+	protected void cleanSystemTasks(){
+		this.systemTasks.stopAll();
 	}
 
 	// ########## ABSTRACT RESPONSE METHODS ##########

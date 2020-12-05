@@ -264,7 +264,7 @@ public abstract class Middleware {
 	}
 	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
 		return this.client.getSelf()
-			.flatMap(self -> self.asMember(this.getMessageGuild().getId()))
+			.flatMap(self -> self.asMember(this.guildId))
 			.flatMap(member -> member.getVoiceState())
 			.flatMap(voiceState -> voiceState != null ? voiceState.getChannel() : null);
 	}
@@ -506,8 +506,9 @@ public abstract class Middleware {
 	}
 
 	protected final Message sendMessageToOwner(String msg){
+		final String MESSAGE = RuntimeVariables.ANS_PREFIX + msg + RuntimeVariables.ANS_SUFFIX;
 		return this.getOwner().getPrivateChannel()
-			.flatMap(channel -> channel.createMessage(msg))
+			.flatMap(channel -> channel.createMessage(MESSAGE))
 			.block();
 	}
 

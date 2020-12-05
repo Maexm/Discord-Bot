@@ -13,7 +13,7 @@ public class Wikipedia {
 
     public final static String WIKI_API_BASE_URL = "wikipedia.org/w/api.php?";
     public final static String WIKI_NORMAL_BASE_URL = "wikipedia.org/wiki/";
-    public final static String QUERY_PARAMS = "action=query&prop=extracts&format=json&explaintext=true&exintro=true&exchars=700&redirects=true&titles=";
+    public final static String QUERY_PARAMS = "action=query&prop=extracts&format=json&explaintext=true&exintro=true&exchars=800&redirects=true&titles=";
     public final static String[] LANGUAGES = {"de", "en"};
 
     public static WikiPage getWikiPage(String keyword){
@@ -63,8 +63,8 @@ public class Wikipedia {
         }
 
         final String humanUrl = "https://"+wikiRes.CUSTOM_PROP_LANGUAGE+"."+Wikipedia.WIKI_NORMAL_BASE_URL + HTTPRequests.urlEncode(wikiRes.title.replace(" ", "_"));
-        String ret = Markdown.toMultilineBlockQuotes(
-            Markdown.toUnderlinedBold(wikiRes.title)+"\n\n"
+        String ret = Markdown.toSafeMultilineBlockQuotes(
+            wikiRes.title+"\n\n"
             + wikiRes.extract+"\n\n\n"
         )
         + "Ausführlichere Informationen gibt es hier: "+humanUrl;

@@ -189,8 +189,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTask.cancel();
 		this.refreshTimer.purge();
 
-		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).block();
-
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
@@ -241,7 +239,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	void ended() {
 		System.out.println("Music ended!");
-		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).block();
+		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 		this.active = false;
 		this.parent.leaveVoiceChannel();
 		this.refreshTask.cancel();

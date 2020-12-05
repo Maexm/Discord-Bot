@@ -14,8 +14,8 @@ public class RuntimeVariables {
 	public static boolean firstLogin = true;
 	public static String WEATHER_API_KEY = null;
 	public final static String HOME_TOWN = "Aachen";
-	public final static String ANS_PREFIX = "";
-	public final static String ANS_SUFFIX = RuntimeVariables.ANS_PREFIX;
+	public final static String ANS_PREFIX = ":snowflake: ";
+	public final static String ANS_SUFFIX = " " + RuntimeVariables.ANS_PREFIX;
 	public static String getStatus(){
 		return RuntimeVariables.IS_DEBUG ? "EXPERIMENTELL" : "Schreib 'MegHelp'!";
 	} 

@@ -4,7 +4,7 @@ public class Format {
     
     public static double truncateDouble(double val, int digits){
         int ret = (int) (val * Math.pow(10, digits));
-        return (1. * ret)/digits;
+        return (1. * ret)/Math.pow(10, digits);
     }
 
     public static String firstCharsCapitalized(String s, final String delimiter){

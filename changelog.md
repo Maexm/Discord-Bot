@@ -2,8 +2,8 @@
 
 ## 1.0.5.1 (???)
 - Middleware mayAccept is now a Predicate, accepting a message object as param
-- Autoreact to everything that Megumin likes :heart: (AWAIT TEST)
-- Finished automated cleanUp task (AWAIT TEST)
+- Autoreact to everything that Megumin likes :heart:
+- Finished automated cleanUp task
 - MegFrage
 - MegWiki
 - MegFeedback

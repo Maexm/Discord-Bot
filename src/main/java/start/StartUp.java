@@ -81,23 +81,34 @@ public class StartUp {
 					.block();
 
 			if(RuntimeVariables.firstLogin){
-				try {
-					List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
-							.blockFirst();
-					String emojiFormat = "";
-					for (GuildEmoji emoji : emojis) {
-						if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
-							emojiFormat = emoji.asFormat();
-							break;
+				// Send public hello message if not debug
+				if(!RuntimeVariables.IS_DEBUG){
+					try {
+						List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
+								.blockFirst();
+						String emojiFormat = "";
+						for (GuildEmoji emoji : emojis) {
+							if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
+								emojiFormat = emoji.asFormat();
+								break;
+							}
 						}
+						MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
+								.getChannelById(ChannelID.MEGUMIN).block();
+		
+						channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
+								+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
-							.getChannelById(ChannelID.MEGUMIN).block();
-	
-					channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
-							+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
-				} catch (Exception e) {
-					e.printStackTrace();
+				}
+				// Notify owner if debug
+				else{
+					client.getApplicationInfo()
+					.flatMap(appInfo -> appInfo.getOwner())
+					.flatMap(owner -> owner.getPrivateChannel())
+					.flatMap(ownerChannel -> ownerChannel.createMessage("Debug Session aktiv!"))
+					.block();
 				}
 				RuntimeVariables.firstLogin = false;
 			}

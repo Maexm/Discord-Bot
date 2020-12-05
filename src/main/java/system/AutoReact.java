@@ -31,7 +31,7 @@ public class AutoReact extends Middleware {
 
 		for(ReactionEmoji emoji : this.emojis){
 			try{
-				this.msgObject.addReaction(emoji);
+				this.msgObject.addReaction(emoji).block();
 			}
 			catch(Exception e){
 				e.printStackTrace();
