@@ -25,6 +25,10 @@ public abstract class RefinedTimerTask extends TimerTask {
             throw new NullPointerException("Either delay or startDate must not be null");
         }
 
+        if(startDate != null){
+            System.out.println("Scheduled a task for "+startDate.toString());
+        }
+
         this.delay = delay;
         this.period = period;
         this.startDate = startDate;

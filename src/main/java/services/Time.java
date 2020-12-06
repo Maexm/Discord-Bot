@@ -6,7 +6,7 @@ import start.RuntimeVariables;
 
 public class Time {
 
-    public static Calendar getNext(int hour, int minute, int sec){
+    public static Calendar getNext(int hour, int minute, int sec) {
         Calendar ret = Time.getNow();
         int initMil = ret.get(Calendar.MILLISECOND);
         int initSec = ret.get(Calendar.SECOND);
@@ -14,35 +14,30 @@ public class Time {
         int initHour = ret.get(Calendar.HOUR_OF_DAY);
 
         // Set millisecond to 0
-        if(initMil != 0){
-            ret.add(Calendar.MILLISECOND, 1000-initMil);
+        if (initMil != 0) {
+            ret.add(Calendar.MILLISECOND, 1000 - initMil);
         }
+
         // Set seconds
-        if(initSec != 0){
-            if(initSec > sec){
-                ret.add(Calendar.SECOND, 60-initSec);
-            }
-            ret.add(Calendar.SECOND, sec-ret.get(Calendar.SECOND));
+        if (initSec < sec) {
+            ret.add(Calendar.SECOND, 60 - initSec);
         }
-         // Set minutes
-         if(initMin != 0){
-            if(initMin > minute){
-                ret.add(Calendar.MINUTE, 60-initMin);
-            }
-            ret.add(Calendar.MINUTE, minute-ret.get(Calendar.MINUTE));
+        ret.add(Calendar.SECOND, sec - ret.get(Calendar.SECOND));
+        // Set minutes
+        if (initMin < minute) {
+            ret.add(Calendar.MINUTE, 60 - initMin);
         }
-         // Set hours
-         if(initHour != 0){
-            if(initHour > hour){
-                ret.add(Calendar.HOUR_OF_DAY, 60-initHour);
-            }
-            ret.add(Calendar.HOUR_OF_DAY, hour-ret.get(Calendar.HOUR_OF_DAY));
+        ret.add(Calendar.MINUTE, minute - ret.get(Calendar.MINUTE));
+        // Set hours
+        if (initHour < hour) {
+            ret.add(Calendar.HOUR_OF_DAY, 24 - initHour);
         }
+        ret.add(Calendar.HOUR_OF_DAY, hour - ret.get(Calendar.HOUR_OF_DAY));
 
         return ret;
     }
 
-    public static Calendar getNow(){
+    public static Calendar getNow() {
         return Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
     }
 
@@ -55,5 +50,5 @@ public class Time {
     public final static long WEEK = 604800000l;
     public final static long MONTH = 2419200000l;
     public final static long YEAR = 31536000000l;
-    
+
 }
