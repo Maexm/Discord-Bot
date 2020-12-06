@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.5.1 (???)
+## 1.0.5.1 (5th of December 2020)
 - Middleware mayAccept is now a Predicate, accepting a message object as param
 - Autoreact to everything that Megumin likes :heart:
 - Finished automated cleanUp task
