@@ -72,7 +72,7 @@ public final class BotHeart {
 					final String[] expressions = { "explosion", "boom", "bum", "bam", "bäm", "bäng", "bähm", "kaboom",
 							"peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ",
 							"爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "eruption", "bomtastisch",
-							"bomtastian"};
+							"bomtastian", "explodier"};
 					final String evalStr = msg.getContent().toLowerCase();
 					for (String expr : expressions) {
 						if (evalStr.contains(expr)) {
