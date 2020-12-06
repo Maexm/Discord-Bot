@@ -9,9 +9,6 @@ public class Time {
     public static Calendar getNext(int hour, int minute, int sec) {
         Calendar ret = Time.getNow();
         int initMil = ret.get(Calendar.MILLISECOND);
-        int initSec = ret.get(Calendar.SECOND);
-        int initMin = ret.get(Calendar.MINUTE);
-        int initHour = ret.get(Calendar.HOUR_OF_DAY);
 
         // Set millisecond to 0
         if (initMil != 0) {
@@ -19,18 +16,18 @@ public class Time {
         }
 
         // Set seconds
-        if (initSec < sec) {
-            ret.add(Calendar.SECOND, 60 - initSec);
+        if (ret.get(Calendar.SECOND) > sec) {
+            ret.add(Calendar.SECOND, 60 - ret.get(Calendar.SECOND));
         }
         ret.add(Calendar.SECOND, sec - ret.get(Calendar.SECOND));
         // Set minutes
-        if (initMin < minute) {
-            ret.add(Calendar.MINUTE, 60 - initMin);
+        if (ret.get(Calendar.MINUTE) > minute) {
+            ret.add(Calendar.MINUTE, 60 - ret.get(Calendar.MINUTE));
         }
         ret.add(Calendar.MINUTE, minute - ret.get(Calendar.MINUTE));
         // Set hours
-        if (initHour < hour) {
-            ret.add(Calendar.HOUR_OF_DAY, 24 - initHour);
+        if (ret.get(Calendar.HOUR_OF_DAY) > hour) {
+            ret.add(Calendar.HOUR_OF_DAY, 24 - ret.get(Calendar.HOUR_OF_DAY));
         }
         ret.add(Calendar.HOUR_OF_DAY, hour - ret.get(Calendar.HOUR_OF_DAY));
 
