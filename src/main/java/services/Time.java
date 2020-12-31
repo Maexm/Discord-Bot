@@ -38,6 +38,28 @@ public class Time {
         return Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
     }
 
+    public static long revertMsToPretty(String text, String delimiterRegex){
+        final int maxLength = 3;
+        String[] splitted = text.split(delimiterRegex);
+        long ret = 0l;
+
+        if(splitted.length > maxLength){
+            throw new IllegalArgumentException("String must have no more than "+ maxLength +" time values");
+        }
+
+        for(int i = 0; i < splitted.length; i++){
+            switch(i){
+                case 0:
+            }
+        }
+        
+        return ret;
+    }
+
+    public static long revertMsToPretty(String text){
+        return Time.revertMsToPretty(text, ":");
+    }
+
     public final static long SECOND = 1000l;
     public final static long MINUTE = 60000l;
     public final static long HOUR = 3600000l;
