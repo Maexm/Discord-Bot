@@ -47,6 +47,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 * Required for voice channel disconnect
 	 */
 	private ResponseType parent = null;
+	/**
+	 * Change between two different states for loading text (e.g. switch between / and \)
+	 */
+	private boolean loadFlag = true;
 
 	public AudioEventHandler(final AudioPlayer player, final AudioPlayerManager playerManager,
 			final TrackLoader loadScheduler, final LinkedList<AudioTrack> tracks,
@@ -181,6 +185,30 @@ public class AudioEventHandler extends AudioEventAdapter {
 		for (int i = 0; i < amount && i < this.getListSize(); i++) {
 			this.tracks.remove(0);
 		}
+	}
+	/**
+	 * Sets the position for the current track.
+	 * Does nothing, if track is a stream
+	 * @param pos
+	 */
+	public void setPosition(long pos){
+		if(!this.getCurrentAudioTrack().getInfo().isStream){
+			this.getCurrentAudioTrack().setPosition(pos);
+		}
+	}
+	/**
+	 * Moves forward or backwards in the currently playing track. Starts from zero or moves to the end of the track, if new position is out of range.
+	 * @param amount Amount to move in milliseconds
+	 * @return
+	 */
+	public long fastForward(long amount){
+		long newTrackPos = this.getCurrentAudioTrack().getPosition() + amount;
+		newTrackPos = Math.max(0l, newTrackPos);
+		newTrackPos = Math.min(this.getCurrentAudioTrack().getDuration(), newTrackPos);
+
+		this.setPosition(newTrackPos);
+
+		return newTrackPos;
 	}
 
 	@Override
@@ -322,17 +350,23 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		// progress bar
 		String progressBar = "";
-		final int barLength = 30;
-		double perc = 1. * track.getPosition() / track.getDuration();
-		for (int i = 0; i < barLength; i++) {
+		if(track.getInfo().isStream){
+			progressBar += ":red_circle: LIVE STREAM " + (this.loadFlag ? "/" : "\\");
+			this.loadFlag = !this.loadFlag;
+		}
+		else{
+			final int barLength = 30;
+			double perc = 1. * track.getPosition() / track.getDuration();
+			for (int i = 0; i < barLength; i++) {
 			if (i <= barLength * perc) {
 				progressBar += "█";
 			} else {
 				progressBar += "░";
+				}
 			}
+			progressBar += "\n" + Markdown.toBold(TimePrint.msToPretty(track.getPosition())) + " von "
+					+ Markdown.toBold(TimePrint.msToPretty(track.getDuration()));
 		}
-		progressBar += "\n" + Markdown.toBold(TimePrint.msToPretty(track.getPosition())) + " von "
-				+ Markdown.toBold(TimePrint.msToPretty(track.getDuration()));
 
 		// ########## RETURNING ##########
 		return 	AudioEventHandler.MUSIC_INFO_PREFIX + " "
