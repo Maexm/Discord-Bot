@@ -380,17 +380,22 @@ public class Megumin extends ResponseType {
 
 	}
 
+	/**
+	 * 
+	 * @param requireSameChannel
+	 * @return true if author is connected to voice and not in private, sends an error message otherwise
+	 */
 	protected boolean handleMusicCheck(boolean requireSameChannel) {
 		// Private chat
 		if (this.isPrivate()) {
 			this.notInPrivate();
 			return false;
 		}
-		// Author not connected to voice
+		// Bot not connected to voice
 		else if (!this.isVoiceConnected()) {
 			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
 			return false;
-			// Bot not connected to voice
+			// Author not connected to voice
 		} else if (!this.isAuthorVoiceConnected()) {
 			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			return false;
@@ -658,13 +663,8 @@ public class Megumin extends ResponseType {
 				"davon würde ich sowas von abraten!", "bloß nicht!", "rein objektiv gesehen: Nein.",
 				"nein, wieso auch?", "eher nicht.", "ne.", "nope.", "nö", "nichts da!", "klingt wenn du mich fragst nach einer scheiß Idee.", ":thumbsdown:" };
 		final Random rand = new Random();
-		String resp = "";
-		if (rand.nextBoolean()) {
-			resp = posResp[rand.nextInt(posResp.length)];
-		} else {
-			resp = negResp[rand.nextInt(negResp.length)];
-		}
-		this.sendAnswer(resp);
+
+		this.sendAnswer(rand.nextBoolean() ? posResp[rand.nextInt(posResp.length)] : negResp[rand.nextInt(negResp.length)]);
 	}
 
 	@Override
@@ -690,5 +690,26 @@ public class Megumin extends ResponseType {
 								+"Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:\n"
 								+Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 		this.deleteReceivedMessage();
+	}
+
+	@Override
+	protected void onFastForwardMusic() {
+		if(!this.handleMusicCheck(true)){			
+			return;
+		}
+
+		if(this.getArgumentSection().equals("")){
+			this.sendAnswer("mir ist nicht klar, wie viel ich skippen soll!");
+			return;
+		}
+
+		int skipSeconds = 0;
+		try{
+			skipSeconds = Integer.parseInt(this.getArgumentSection());
+			this.audioEventHandler.fastForward(skipSeconds * 1000);
+		}
+		catch(NumberFormatException e){
+			this.sendAnswer("ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");
+		}
 	}
 }

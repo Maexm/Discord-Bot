@@ -194,6 +194,16 @@ public abstract class ResponseType extends Middleware {
 
 				this.onMusicQueue();
 				break;
+			case "musicforward":
+			case "musicjump":
+			case "musicüberspringen":
+			case "musichüpfen":
+			case "musikforward":
+			case "musikjump":
+			case "musiküberspringen":
+			case "musikhüpfen":
+				this.onFastForwardMusic();
+				break;
 			case "multiumfrage":
 			case "umfrage":
 				this.onSurvey();
@@ -337,6 +347,8 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onMusicQueue();
 
 	protected abstract void onClearMusicQueue();
+
+	protected abstract void onFastForwardMusic();
 
 	/**
 	 * Start new survey
