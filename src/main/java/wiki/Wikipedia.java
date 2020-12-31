@@ -5,8 +5,8 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 import exceptions.IllegalMagicException;
-import services.HTTPRequests;
-import services.Markdown;
+import util.HTTPRequests;
+import util.Markdown;
 import util.Format;
 
 public class Wikipedia {

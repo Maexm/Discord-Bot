@@ -9,8 +9,8 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
 import exceptions.SurveyCreateIllegalDurationException;
-import services.Markdown;
-import services.TimePrint;
+import util.Markdown;
+import util.TimePrint;
 import start.RuntimeVariables;
 
 public class Survey {

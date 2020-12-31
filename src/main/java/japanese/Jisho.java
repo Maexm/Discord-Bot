@@ -1,8 +1,8 @@
 package japanese;
 
 import com.google.gson.Gson;
-import services.HTTPRequests;
-import services.Markdown;
+import util.HTTPRequests;
+import util.Markdown;
 
 public class Jisho {
 	

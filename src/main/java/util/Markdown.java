@@ -1,4 +1,4 @@
-package services;
+package util;
 
 /**
  * Provides a hand full of functions for markdown

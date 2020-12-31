@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import services.TimePrint;
+import util.TimePrint;
 import util.Pair;
 
 public class TestTimePrint {

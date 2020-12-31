@@ -7,7 +7,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
 import security.SecurityLevel;
-import services.Help;
+import util.Help;
 import survey.Survey;
 
 public class HelpSection extends Middleware {

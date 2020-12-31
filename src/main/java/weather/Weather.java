@@ -3,8 +3,8 @@ package weather;
 import com.google.gson.Gson;
 
 import exceptions.IllegalMagicException;
-import services.HTTPRequests;
-import services.Markdown;
+import util.HTTPRequests;
+import util.Markdown;
 import start.RuntimeVariables;
 import util.Format;
 import util.Range;
