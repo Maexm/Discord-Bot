@@ -69,10 +69,8 @@ public final class BotHeart {
 				new HelpSection(this.guildId, this.client, this.audioProvider, this.surveys, this.playerEventHandler));
 		this.middlewareBefore.add(
 				new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler, msg -> {
-					final String[] expressions = { "explosion", "boom", "bum", "bam", "bäm", "bäng", "bähm", "kaboom",
-							"peng", "knall", "bakuhatsu", "bakuretsu", "kabum", "buhm", "bahm", "ばくれつ", "爆裂", "ばくはつ",
-							"爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "eruption", "bomtastisch",
-							"bomtastian", "explodier"};
+					final String[] expressions = { "explosion", "kaboom", "bakuhatsu", "bakuretsu", "ばくれつ", "爆裂", "ばくはつ",
+							"爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "explodier"};
 					final String evalStr = msg.getContent().toLowerCase();
 					for (String expr : expressions) {
 						if (evalStr.contains(expr)) {
