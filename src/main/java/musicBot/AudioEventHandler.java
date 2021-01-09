@@ -1,5 +1,6 @@
 package musicBot;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -63,6 +64,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTimer = null;
 
 	}
+
+	// TODO: Shorten this file
 
 	public void schedule(MusicTrackInfo track, ResponseType parent) {
 		boolean loadRightNow = this.loadingQueue.isEmpty();
@@ -209,6 +212,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.setPosition(newTrackPos);
 
 		return newTrackPos;
+	}
+
+	public void randomize(){
+		Collections.shuffle(this.tracks);
 	}
 
 	@Override
