@@ -712,4 +712,17 @@ public class Megumin extends ResponseType {
 			this.sendAnswer("ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");
 		}
 	}
+
+	@Override
+	protected void onMusicRandom() {
+		if(this.handleMusicCheck(true)){
+			if(this.audioEventHandler.getListSize() >= 1){
+				this.sendAnswer("es müssen mindestens zwei Tracks in der Warteschlange sein, sonst macht das ganze keinen Sinn!");
+			}
+			else{
+				this.audioEventHandler.randomize();
+				this.sendAnswer("*ratter* *ratter* *schüttel* *schüttel* Die Warteschlange wurde einmal durchgemischt!");
+			}
+		}
+	}
 }
