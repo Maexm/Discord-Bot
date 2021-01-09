@@ -292,6 +292,12 @@ public abstract class ResponseType extends Middleware {
 			case "musikrandom":
 				this.onMusicRandom();
 				break;
+			case "chicken":
+			case "nuggets":
+			case "chicken nuggets":
+			case "chickennuggets":
+			this.onChicken();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -415,5 +421,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onFeedback();
 
 	protected abstract void onMusicRandom();
+
+	protected abstract void onChicken();
 
 }

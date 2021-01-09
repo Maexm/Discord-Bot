@@ -1,5 +1,6 @@
 package system;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -11,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Message;
+import discord4j.rest.util.Color;
 import discord4j.voice.AudioProvider;
 import exceptions.IllegalMagicException;
 import exceptions.NoPermissionException;
@@ -28,6 +30,7 @@ import schedule.TaskManager;
 import security.SecurityLevel;
 import security.SecurityProvider;
 import util.Emoji;
+import util.HTTPRequests;
 import util.Help;
 import util.Markdown;
 import util.TimePrint;
@@ -37,6 +40,7 @@ import start.RuntimeVariables;
 import survey.Survey;
 import weather.Weather;
 import wiki.Wikipedia;
+import wiki.Wikipedia.WikiPage;
 
 public class Megumin extends ResponseType {
 
@@ -674,7 +678,31 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
-		this.sendAnswer(Wikipedia.buildMessage(Wikipedia.getWikiPage(this.argumentSection)));
+		final Message loadingMessage = this.sendAnswer("einen Moment bitte, ich versuche auf Wikipedia etwas geeignetes zu finden...");
+
+		WikiPage page = Wikipedia.getWikiPage(this.argumentSection);
+
+		if(page == null){
+            this.sendAnswer("konnte unter diesem Begriff nichts finden!");
+        }
+        if(page.CUSTOM_PROP_LANGUAGE == null || page.CUSTOM_PROP_LANGUAGE.equals("")){
+            throw new IllegalMagicException("CUSTOM_PROP_LANGUAGE must not be null or empty");
+        }
+
+		final String humanUrl = "https://"+page.CUSTOM_PROP_LANGUAGE+"."+Wikipedia.WIKI_NORMAL_BASE_URL + HTTPRequests.urlEncode(page.title.replace(" ", "_"));
+		
+		this.getMessageChannel().createEmbed(spec -> {
+				spec.setColor(Color.CYAN)
+				.setTitle(page.title)
+				.setUrl(humanUrl)
+				.setDescription(page.extract);
+
+				if(page.original != null){
+					spec.setImage(page.original.source);
+				}
+			}).block();
+
+			loadingMessage.delete("Deleting info concerning async tasks");
 	}
 
 	@Override
@@ -721,8 +749,13 @@ public class Megumin extends ResponseType {
 			}
 			else{
 				this.audioEventHandler.randomize();
-				this.sendAnswer("*ratter* *ratter* *schüttel* *schüttel* Die Warteschlange wurde einmal durchgemischt!");
+				this.sendAnswer("*ratter* *ratter* *schüttel* *schüttel* Die Warteschlange wurde einmal kräftig durchgemischt!");
 			}
 		}
+	}
+
+	@Override
+	protected void onChicken() {
+		this.sendAnswer("ich bin kein :chicken:");
 	}
 }
