@@ -44,6 +44,8 @@ import wiki.Wikipedia.WikiPage;
 
 public class Megumin extends ResponseType {
 
+	protected int chicken = 0;
+
 	public Megumin(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider,
 			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler, TaskManager<RefinedTimerTask> systemTasks) {
 		super(guildId, client, audioProvider, surveys, audioEventHandler, systemTasks);
@@ -756,6 +758,59 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onChicken() {
-		this.sendAnswer("ich bin kein :chicken:");
+		if(this.chicken == Integer.MAX_VALUE){
+			this.sendAnswer("Mehr geht nicht!");
+			return;
+		}
+
+		final String appendString = ":chicken: ";
+
+		this.chicken++;
+		StringBuilder response = new StringBuilder(this.chicken * appendString.length());
+		for(int i = 0; i < this.chicken; i++){
+			response.append(appendString);
+		}
+		this.sendAnswer(response.toString());
+	}
+
+	@Override
+	protected void onNuggets() {
+		String response = "";
+		
+		if(this.chicken == 0){
+			response = "keine Zutaten für Nuggets verfügbar!";
+		}
+		else if(this.chicken == 1){
+			response = "hier hast du eine Portion Chicken Nuggets!";
+		}
+		else if(this.chicken == 2){
+			response = "hier sind Chicken Nuggets für zwei Personen!";
+		}
+		else if(this.chicken >= 3){
+			response = "hier sind "+this.chicken+" Portionen Chicken Nuggets!";
+		}
+		else if(this.chicken >= 10){
+			response = "hier sind "+this.chicken+" Portionen Chicken Nuggets, genug für eine Großfamilie!";
+		}
+		else if(this.chicken >= 50){
+			response = "hier ist deine McDonalds Tageslieferung an Chicken Nuggets ("+this.chicken+" Portionen)";
+		}
+		else if(this.chicken == 420){
+			response = "diese "+this.chicken+" Chicken Nuggets riechen seltsam...";
+		}
+		else if(this.chicken >= 200){
+			response = this.chicken+" Hühner wurden gewaltsam umgebra- Hier sind deine Chicken Nuggets, Mahlzeit!";
+		}
+		else if(this.chicken == Integer.MAX_VALUE){
+			response = "du hast das Maximum an Chicken Nuggets erreicht ("+this.chicken+")! Das ist ein Achievement Wert aber sowas gibt es bei mir nicht!";
+		}
+
+		this.sendAnswer(response);
+		this.chicken = 0;
+	}
+
+	@Override
+	protected void onPommes() {
+		this.sendAnswer("Pommes gibt es bei mir nicht!");
 	}
 }
