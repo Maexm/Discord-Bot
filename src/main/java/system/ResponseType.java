@@ -6,6 +6,7 @@ import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
 import start.RuntimeVariables;
+import survey.VoteEndReason;
 
 public abstract class ResponseType extends Middleware {
 
@@ -312,7 +313,7 @@ public abstract class ResponseType extends Middleware {
 
 			this.getSurveyListVerbose().forEach(survey ->{
 				if(survey.publicMessage.getGuildId().get().equals(this.config.guildId)){
-					survey.stop();
+					survey.stop(VoteEndReason.LOGOUT);
 				}
 			});
 

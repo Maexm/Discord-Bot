@@ -31,6 +31,7 @@ public class Survey {
 	private final ArrayList<Survey> surveyList;
 	private final ArrayList<User> participants;
 	public final boolean isMulti;
+	public VoteEndReason endReason = VoteEndReason.TIMED_OUT;
 
 	public Survey(final String description, final String[] options, final int duration, final MessageChannel channel,
 			final User createdBy, final ArrayList<Survey> surveyList, final boolean isMulti)
@@ -87,9 +88,25 @@ public class Survey {
 					participantsText += user.getMention() + " ";
 				}
 
+				String reason = "";
+				switch (endReason) {
+					case TIMED_OUT:
+						reason = " ";
+						break;
+					case BROKEN:
+						reason = " aufgrund eines Fehlers ";
+						break;
+					case CREATOR_STOPPED:
+						reason = " vorzeitig vom Ersteller ";
+						break;
+					case LOGOUT:
+						reason = " beim Herunterfahren vorzeitig ";
+						break;
+				}
+
 				// Write survey-completed message
 				channel.createMessage(">>> Die Umfrage " + Markdown.toBold(description) + " ("
-						+ Markdown.toBold("NR. " + key) + ") wurde beendet!\n" + "Das Resultat:\n" + results + "\n"
+						+ Markdown.toBold("NR. " + key) + ") wurde"+reason+"beendet!\n" + "Das Resultat:\n" + results + "\n"
 						+ multiChoice + "\n" + "Die Umfrage wurde von " + createdBy.getMention()
 						+ " initiiert und begann am " + Markdown.toBold(TimePrint.DD_MMMM_YYYY_HH_MM_SS(startTime))
 						+ ".\n\n" + "Es haben teilgenommen: " + participantsText + "\n").block();
@@ -109,7 +126,8 @@ public class Survey {
 		this.timer.schedule(endTask, this.endTime.getTime());
 	}
 
-	public void stop() {
+	public void stop(VoteEndReason reason) {
+		this.endReason = reason;
 		this.endTask.run();
 	}
 

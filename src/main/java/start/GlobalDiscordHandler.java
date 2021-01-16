@@ -10,6 +10,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import exceptions.IllegalMagicException;
 import survey.Survey;
+import survey.VoteEndReason;
 import system.GuildHandler;
 
 public class GlobalDiscordHandler {
@@ -129,6 +130,7 @@ public class GlobalDiscordHandler {
 
         public void createSurvey(Survey survey){
             if(this.getSurveyForKeyVerbose(survey.key) != null){
+                survey.stop(VoteEndReason.BROKEN);
                 throw new IllegalMagicException("Survey key collision detected for key: "+survey.key);
             }
             parent.surveys.add(survey);
