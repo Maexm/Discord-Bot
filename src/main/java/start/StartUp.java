@@ -4,8 +4,11 @@ import java.io.Console;
 
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
+import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.presence.Activity;
@@ -91,6 +94,8 @@ public class StartUp {
 			}
 		});
 
+		// ########## Guild events ##########
+
 		client.getEventDispatcher().on(GuildCreateEvent.class).subscribe(event ->{
 			if(discordHandlerWrapper[0] != null){
 				discordHandlerWrapper[0].addGuild(event.getGuild());
@@ -98,9 +103,29 @@ public class StartUp {
 		});
 
 		client.getEventDispatcher().on(GuildDeleteEvent.class).subscribe(event ->{
-			// Event might fire, when has an outage, ignore this case
+			// Event might fire, when guild has an outage, ignore this case
 			if(!event.isUnavailable() && discordHandlerWrapper[0] != null){
 				discordHandlerWrapper[0].removeGuild(event.getGuild().get());
+			}
+		});
+
+		client.getEventDispatcher().on(MemberLeaveEvent.class).subscribe(event -> {
+			if(discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].onMemberLeavesGuild(event);
+			}
+		});
+
+		// ########## Voice events ##########
+
+		client.getEventDispatcher().on(VoiceStateUpdateEvent.class).subscribe(event -> {
+			if(discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].onVoiceStateEvent(event);
+			}
+		});
+
+		client.getEventDispatcher().on(VoiceChannelDeleteEvent.class).subscribe(event -> {
+			if(discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].onVoiceChannelDeleted(event);
 			}
 		});
 		

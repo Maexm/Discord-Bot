@@ -1,5 +1,6 @@
 package system;
 
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import exceptions.IllegalMagicException;
 import musicBot.MusicTrackInfo.ScheduleType;
 import schedule.RefinedTimerTask;
@@ -280,6 +281,23 @@ public abstract class ResponseType extends Middleware {
 			case "pommes frites":
 				this.onPommes();
 				break;
+			case "follow":
+			case "subscribe":
+			case "abonnieren":
+			case "abo":
+			case "sub":
+				this.onSubscribeVoice();
+				break;
+			case "unfollow":
+			case "unsubscribe":
+			case "deabonnieren":
+				this.onUnsubscribeVoice();
+				break;
+			case "subscriptions":
+			case "abos":
+			case "following":
+				this.onGetVoiceSubscriptions();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
@@ -464,5 +482,13 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onNuggets();
 
 	protected abstract void onPommes();
+
+	protected abstract void onVoiceStateEvent(VoiceStateUpdateEvent event);
+
+	protected abstract void onSubscribeVoice();
+
+	protected abstract void onUnsubscribeVoice();
+
+	protected abstract void onGetVoiceSubscriptions();
 
 }

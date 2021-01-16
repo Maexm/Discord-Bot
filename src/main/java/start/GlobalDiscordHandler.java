@@ -2,17 +2,23 @@ package start;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
+import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import exceptions.IllegalMagicException;
 import survey.Survey;
 import survey.VoteEndReason;
 import system.GuildHandler;
+import util.Pair;
 
 public class GlobalDiscordHandler {
 
@@ -83,6 +89,10 @@ public class GlobalDiscordHandler {
         }
     }
 
+    void onVoiceStateEvent(VoiceStateUpdateEvent event){
+        this.guildMap.get(event.getCurrent().getGuildId()).onVoiceStateEvent(event);
+    }
+
     private void purgeAllGuilds() {
         this.guildMap.forEach((guildId, handler) ->{
             handler.onPurge();
@@ -96,6 +106,18 @@ public class GlobalDiscordHandler {
 
     private GatewayDiscordClient getClient() {
         return this.client;
+    }
+
+    public void onVoiceChannelDeleted(VoiceChannelDeleteEvent event){
+        if(this.guildMap.containsKey(event.getChannel().getGuildId())){
+            this.guildMap.get(event.getChannel().getGuildId()).onVoiceChannelDeleted(event);
+        }
+    }
+
+    public void onMemberLeavesGuild(MemberLeaveEvent event){
+        if(this.guildMap.containsKey(event.getGuildId())){
+            this.guildMap.get(event.getGuildId()).onUserRemoved(event);
+        }
     }
 
     public class GlobalDiscordProxy {
@@ -154,6 +176,25 @@ public class GlobalDiscordHandler {
 
         public ArrayList<Survey> getSurveysVerbose(){
             return parent.surveys;
+        }
+
+        public HashSet<Pair<Guild, VoiceChannel>> getSubscribedGuildChannelPairs(Snowflake userId){
+            HashSet<Pair<Guild, VoiceChannel>> ret = new HashSet<>();
+
+            // Search all guilds
+            parent.getGuildMap().forEach((guildId, guildHandler) -> {
+                // User is in guild
+                if(guildHandler.hasUser(userId)){
+                    // Search each subscribed voice channel
+                    guildHandler.getVoiceSubscriptions().forEach((channelId, userSet) ->{
+                        if(userSet.contains(userId)){
+                            ret.add(new Pair<>(guildHandler.getGuild(), (VoiceChannel) guildHandler.getGuild().getChannelById(channelId).block()));
+                        }
+                    });
+                }
+            });
+
+            return ret;
         }
     }
 

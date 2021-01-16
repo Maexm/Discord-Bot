@@ -15,6 +15,8 @@ import discord4j.core.object.entity.GuildEmoji;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.Channel;
+import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.GuildMessageChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
@@ -276,6 +278,14 @@ public abstract class Middleware {
 
 	public final MessageChannel getSystemChannel(){
 		return this.getGuild().getSystemChannel().block();
+	}
+
+	public final List<GuildChannel> getVoiceChannels(){
+		return this.getGuild().getChannels()
+		.filter(channel -> channel.getType().compareTo(Channel.Type.GUILD_VOICE) == 0)
+		.buffer()
+		.next()
+		.block();
 	}
 
 	// ########## INTERACTIVE METHODS ##########

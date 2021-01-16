@@ -1,9 +1,15 @@
 package system;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
+import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.reaction.ReactionEmoji;
 import musicBot.MusicWrapper;
@@ -22,6 +28,7 @@ public final class GuildHandler {
 	private final MiddlewareConfig middlewareConfig;
 	private final GlobalDiscordProxy globalProxy;
 	private final MusicWrapper musicWrapper;
+	private final Guild guild;
 
 	public GuildHandler(final Snowflake guildId, final GlobalDiscordProxy globalProxy) {
 
@@ -30,7 +37,8 @@ public final class GuildHandler {
 		this.guildId = guildId;
 		this.globalProxy = globalProxy;
 		this.musicWrapper = new MusicWrapper();
-		this.middlewareConfig = new MiddlewareConfig(this.guildId, this.musicWrapper, this.globalProxy, null);
+		this.middlewareConfig = new MiddlewareConfig(this.guildId, this.musicWrapper, this.globalProxy, null, new HashMap<>());
+		this.guild = this.globalProxy.getClient().getGuildById(this.guildId).block();
 
 		// ########## RESPONSE SETS ##########
 		// TODO: Shorten this hell
@@ -151,4 +159,39 @@ public final class GuildHandler {
 		this.middlewareConfig.helloMessage = msg;
 	}
 
+	public void onVoiceStateEvent(VoiceStateUpdateEvent event){
+		try{
+			this.responseSet.onVoiceStateEvent(event);
+		}
+		catch(Exception e){
+			System.out.println("Something went wrong while evaluating VoiceStateUpdateEvent for guild "+this.guild.getName());
+		}
+	}
+
+	public HashMap<Snowflake, HashSet<Snowflake>> getVoiceSubscriptions(){
+		return this.middlewareConfig.voiceSubscriberMap;
+	}
+
+	public boolean hasUser(Snowflake userId){
+		try{
+			return this.guild.getMemberById(userId).block() != null;
+		}
+		catch(Exception e){
+			return false;
+		}
+	}
+
+	public final Guild getGuild(){
+		return this.guild;
+	}
+
+	public final void onVoiceChannelDeleted(VoiceChannelDeleteEvent event){
+		this.middlewareConfig.voiceSubscriberMap.remove(event.getChannel().getId());
+	}
+
+	public final void onUserRemoved(MemberLeaveEvent event){
+		this.middlewareConfig.voiceSubscriberMap.forEach((channelId, set) -> {
+			set.remove(event.getUser().getId());
+		});
+	}
 }
