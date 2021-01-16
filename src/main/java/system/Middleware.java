@@ -88,6 +88,14 @@ public abstract class Middleware {
 		return this.config.globalProxy;
 	}
 
+	protected final boolean authorIsGuildOwner(){
+		return this.getMessage().getUser().getId().equals(this.getGuild().getId());
+	}
+
+	protected final Guild getGuild(){
+		return this.getGuildByID(this.config.guildId);
+	}
+
 	/**
 	 * Returns the author of this message as Member instance.
 	 * 

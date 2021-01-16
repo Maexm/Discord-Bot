@@ -395,7 +395,7 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.getMusicWrapper().getMusicBotHandler().getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (this.hasPermission(SecurityLevel.KREIS)) {
+		} else if (this.hasPermission(SecurityLevel.KREIS) || this.authorIsGuildOwner()) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
 				vol = Math.max(0, vol);
