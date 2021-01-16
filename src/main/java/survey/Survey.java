@@ -74,6 +74,7 @@ public class Survey {
 			public void run() {
 
 				System.out.println("Survey '" + key + "' has finished!");
+				try{
 				final String results = timerParent.createOptionsText();
 
 				String multiChoice = "";
@@ -115,10 +116,12 @@ public class Survey {
 				publicMessage.delete().block();
 
 				surveyList.remove(timerParent);
-
-				this.cancel();
-				timer.purge();
-				timer.cancel();
+				}
+				catch(Exception e){
+					this.cancel();
+					timer.purge();
+					timer.cancel();
+				}
 			}
 
 		};

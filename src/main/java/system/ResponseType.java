@@ -288,7 +288,7 @@ public abstract class ResponseType extends Middleware {
 	}
 
 	protected final void purge(){
-		System.out.println("########## Purging session for guild: "+this.getGuildByID(this.config.guildId).getName()+" ###########");
+		System.out.println("########## Purging session for guild: "+this.getGuild().getName()+" ###########");
 		// ########## CLEAN MUSIC SESSION ##########
 			System.out.println("Cleaning up mussic session...");
 			this.getMusicWrapper().getMusicBotHandler().clearList();

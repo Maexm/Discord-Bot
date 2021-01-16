@@ -276,13 +276,14 @@ public class AudioEventHandler extends AudioEventAdapter {
 		System.out.println("Music ended!");
 		//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 		this.active = false;
-		this.parent.leaveVoiceChannel();
 		this.refreshTask.cancel();
 		this.refreshTimer.purge();
 		this.refreshTimer.cancel();
 		this.refreshTimer = null;
+
 		//Message oldMessage = this.radioMessage;
 		try{
+			this.parent.leaveVoiceChannel();
 			this.radioMessage.delete().block();
 		}catch(Exception e){
 			System.out.println("Could not delete radio message while ending music session");

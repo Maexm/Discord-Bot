@@ -4,12 +4,13 @@ import java.io.Console;
 
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.guild.GuildCreateEvent;
+import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import exceptions.StartUpException;
-import util.Markdown;
 
 public class StartUp {
 
@@ -59,20 +60,9 @@ public class StartUp {
 			if(RuntimeVariables.firstLogin){
 				// Create entry point for event handling
 				discordHandlerWrapper[0] = new GlobalDiscordHandler(ready);
-				// Send public hello message if not debug
-				if(!RuntimeVariables.IS_DEBUG){
-					try {
-						client.getGuilds().doOnEach(guild ->{
-							guild.get().getSystemChannel()
-							.flatMap(channel -> channel.createMessage("Ich bin Online und einsatzbereit! Schreib "+Markdown.toCodeBlock("MegHelp")+"!"))
-							.subscribe(message -> discordHandlerWrapper[0].getGuildMap().get(guild.get().getId()).setHelloMessage(message));
-						}).then().block();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
+
 				// Notify owner if debug
-				else{
+				if(RuntimeVariables.IS_DEBUG){
 					client.getApplicationInfo()
 					.flatMap(appInfo -> appInfo.getOwner())
 					.flatMap(owner -> owner.getPrivateChannel())
@@ -98,6 +88,19 @@ public class StartUp {
 			}
 			if(discordHandlerWrapper[0] != null){
 				discordHandlerWrapper[0].acceptEvent(event);
+			}
+		});
+
+		client.getEventDispatcher().on(GuildCreateEvent.class).subscribe(event ->{
+			if(discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].addGuild(event.getGuild());
+			}
+		});
+
+		client.getEventDispatcher().on(GuildDeleteEvent.class).subscribe(event ->{
+			// Event might fire, when has an outage, ignore this case
+			if(!event.isUnavailable() && discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].removeGuild(event.getGuild().get());
 			}
 		});
 		

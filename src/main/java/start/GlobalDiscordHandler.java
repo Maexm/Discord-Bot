@@ -7,6 +7,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import exceptions.IllegalMagicException;
 import survey.Survey;
@@ -64,6 +65,21 @@ public class GlobalDiscordHandler {
         }
         else{
             this.privateHandler.onMessageReceived(event);
+        }
+    }
+
+    void addGuild(Guild guild){
+        if(!this.guildMap.containsKey(guild.getId())){
+            System.out.println("Bot was added to guild "+guild.getName());
+            GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy);
+            this.guildMap.put(guild.getId(), guildHandler);
+        }
+    }
+
+    void removeGuild(Guild guild){
+        if(this.guildMap.containsKey(guild.getId())){
+            System.out.println("Removing guild "+guild.getName());
+            this.guildMap.remove(guild.getId()).onPurge();
         }
     }
 

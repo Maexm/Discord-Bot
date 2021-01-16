@@ -44,6 +44,15 @@ public class Megumin extends ResponseType {
 
 	public Megumin(MiddlewareConfig config, TaskManager<RefinedTimerTask> localTasks) {
 		super(config, localTasks);
+		if(!RuntimeVariables.IS_DEBUG){
+			try{
+				Message message = this.getSystemChannel().createMessage("Ich bin Online und einsatzbereit! Schreib "+Markdown.toCodeBlock("MegHelp")+"!").block();
+				this.config.helloMessage = message;
+			}
+			catch(Exception e){
+				System.out.println("Failed to post hello message in guild "+this.getGuild().getName());
+			}
+		}
 	}
 
 	@Override
@@ -442,8 +451,7 @@ public class Megumin extends ResponseType {
 					int amount = Integer.parseInt(this.getArgumentSection());
 
 					// Calculate response
-					final int deleted = this.deleteMessages(this.getMessageChannel().getId(),
-							this.config.guildId, amount);
+					final int deleted = this.deleteMessages(this.getMessageChannel().getId(), amount);
 					if (deleted == 1) {
 						this.sendAnswer("eine Nachricht gelöscht!");
 					} else {

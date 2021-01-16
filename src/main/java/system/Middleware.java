@@ -91,7 +91,7 @@ public abstract class Middleware {
 		if(this.isPrivate()){
 			return false;
 		}
-		return this.getMessage().getUser().getId().equals(this.getGuild().getId());
+		return this.getMessage().getUser().getId().equals(this.getGuild().getOwnerId());
 	}
 
 	protected final Guild getGuild(){
@@ -188,7 +188,7 @@ public abstract class Middleware {
 	}
 	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
 		return this.getClient().getSelf()
-			.flatMap(self -> self.asMember(this.config.guildId))
+			.flatMap(self -> self.asMember(this.getGuildId()))
 			.flatMap(member -> member.getVoiceState())
 			.flatMap(voiceState -> voiceState != null ? voiceState.getChannel() : null);
 	}
@@ -217,7 +217,7 @@ public abstract class Middleware {
 	 * @return True if message comes from private channel, false otherwise
 	 */
 	protected final boolean isPrivate() {
-		return this.config.guildId == null;
+		return this.getGuildId() == null;
 	}
 
 	protected final long getResponseTime() {
@@ -228,8 +228,8 @@ public abstract class Middleware {
 		return this.getClient().getApplicationInfo().block();
 	}
 
-	protected final GuildEmoji getEmoji(Snowflake guildID, Snowflake emojiID) {
-		List<GuildEmoji> emojiList = this.getEmojiList(guildID);
+	protected final GuildEmoji getEmoji(Snowflake emojiID) {
+		List<GuildEmoji> emojiList = this.getEmojiList();
 		for (GuildEmoji emoji : emojiList) {
 			if (emoji.getId().equals(emojiID)) {
 				return emoji;
@@ -238,24 +238,24 @@ public abstract class Middleware {
 		return null;
 	}
 
-	protected final String getEmojiFormat(Snowflake guildID, Snowflake emojiID) {
-		GuildEmoji emoji = this.getEmoji(guildID, emojiID);
+	protected final String getEmojiFormat(Snowflake emojiID) {
+		GuildEmoji emoji = this.getEmoji(emojiID);
 		if (emoji != null) {
 			return emoji.asFormat();
 		}
 		return "";
 	}
 
-	protected final List<GuildEmoji> getEmojiList(Snowflake guildID) {
-		return this.getClient().getGuildById(guildID).block().getEmojis().buffer().blockFirst();
+	protected final List<GuildEmoji> getEmojiList() {
+		return this.getGuild().getEmojis().buffer().blockFirst();
 	}
 
 	protected final Guild getGuildByID(Snowflake guildID) {
 		return this.getClient().getGuildById(guildID).block();
 	}
 
-	protected final GuildMessageChannel getChannelByID(Snowflake channelID, Snowflake guildID) {
-		return (GuildMessageChannel) this.getGuildByID(guildID).getChannelById(channelID).block();
+	protected final GuildMessageChannel getChannelByID(Snowflake channelID) {
+		return (GuildMessageChannel) this.getGuild().getChannelById(channelID).block();
     }
 
     protected final Member getMember(Snowflake userId, Snowflake guildId){
@@ -328,7 +328,7 @@ public abstract class Middleware {
 	 * @return
 	 */
 	public final Message sendInChannel(String message, Snowflake channelID) {
-		MessageChannel channel = this.getChannelByID(channelID, this.config.guildId);
+		MessageChannel channel = this.getChannelByID(channelID);
 		return channel.createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
@@ -389,9 +389,9 @@ public abstract class Middleware {
 	 * @param guildID
 	 * @return The amount of deleted messages
 	 */
-	protected final int deleteAllMessages(Snowflake channelID, Snowflake guildID) {
+	protected final int deleteAllMessages(Snowflake channelID) {
 		int ret = 0;
-		MessageChannel megChannel = this.getChannelByID(channelID, guildID);
+		MessageChannel megChannel = this.getChannelByID(channelID);
 		Message lastMessage = megChannel.getLastMessage().block();
 		List<Message> messages = megChannel.getMessagesBefore(lastMessage.getId()).collectList().block();
 
@@ -412,10 +412,10 @@ public abstract class Middleware {
 	 * @param amount
 	 * @return The amount of deleted messages
 	 */
-	protected final int deleteMessages(Snowflake channelID, Snowflake guildID, int amount) {
+	protected final int deleteMessages(Snowflake channelID, int amount) {
 		int ret = 0;
 		if (amount > 0) {
-			MessageChannel channel = this.getChannelByID(channelID, guildID);
+			MessageChannel channel = this.getChannelByID(channelID);
 			for (int i = 0; i < amount; i++) {
 				Message lastMessage = channel.getLastMessage().block();
 				this.deleteMessage(lastMessage);

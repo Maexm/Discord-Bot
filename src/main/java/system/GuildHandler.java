@@ -139,7 +139,12 @@ public final class GuildHandler {
 	}
 
 	public void onPurge(){
-		this.responseSet.purge();
+		try{
+			this.responseSet.purge();
+		}
+		catch(Exception e){
+			System.out.println("Failed to purge guild session, continuing...");
+		}
 	}
 
 	public void setHelloMessage(Message msg){
