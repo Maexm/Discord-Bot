@@ -33,6 +33,8 @@ public class Help {
 			+ "\n"
 			+ "`MegPrio YTSUCHE/URL`: Wie MegMusik, nur dass der Track vorne an die Warteschlange eingefügt wird"
 			+ "\n"
+			+ "`MegForce YTSUCHE/URL`: Wie MegMusik, nur dass der Track unverzüglich abgespielt wird"
+			+ "\n"
 			+ "`MegSkip OPT.ANZAHL`: Ich spiele den nächsten Track aus der Warteschlange ab! Du kannst nach einem Leerzeichen auch eine Zahl mitgeben, ich überspringe dann "
 			+ "entsprechend viele Tracks!"
 			+ "\n"
@@ -45,6 +47,10 @@ public class Help {
 			+ "`MegQueue` oder `MegMusikQueue All` oder `MegMusikQueue ANZAHL`: Aktuelle Wiedergabe und Warteschlange"
 			+ "\n"
 			+ "`MegClear`: Lösche die aktuelle Warteschlange"
+			+ "\n"
+			+ "`MegJump SEKUNDEN`: Musik vor- oder zurückspulen (negative Sekunden für letzteres angeben!)"
+			+ "\n"
+			+ "`MegShuffle`: Mische die aktuelle Warteschlange"
 			+ "\n"
 			+ "`MegVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist aus Gründen nur wenigen Usern erlaubt)";
 	

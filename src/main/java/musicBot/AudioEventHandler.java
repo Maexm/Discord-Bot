@@ -200,9 +200,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 	/**
 	 * Moves forward or backwards in the currently playing track. Starts from zero or moves to the end of the track, if new position is out of range.
 	 * @param amount Amount to move in milliseconds
-	 * @return
+	 * @return New position of track
 	 */
-	public long fastForward(long amount){
+	public long jump(long amount){
 		long newTrackPos = this.getCurrentAudioTrack().getPosition() + amount;
 		newTrackPos = Math.max(0l, newTrackPos);
 		newTrackPos = Math.min(this.getCurrentAudioTrack().getDuration(), newTrackPos);

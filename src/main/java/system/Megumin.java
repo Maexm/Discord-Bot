@@ -695,7 +695,7 @@ public class Megumin extends ResponseType {
 		int skipSeconds = 0;
 		try{
 			skipSeconds = Integer.parseInt(this.getArgumentSection());
-			this.getMusicWrapper().getMusicBotHandler().fastForward(skipSeconds * 1000);
+			this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
 		}
 		catch(NumberFormatException e){
 			this.sendAnswer("ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");

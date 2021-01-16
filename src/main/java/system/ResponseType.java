@@ -67,7 +67,7 @@ public abstract class ResponseType extends Middleware {
 			}
 
 			// Redirect // TODO: Outsource
-			switch (this.commandSection.replace("musik", "music")) {
+			switch (this.commandSection.replace("musik", "music").replace("ä", "ae").replace("ö", "oe").replace("ü", "ue")) {
 			case "logout":
 				this.onLogout();
 				break;
@@ -162,8 +162,11 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "musicforward":
 			case "musicjump":
-			case "musicüberspringen":
-			case "musichüpfen":
+			case "musicueberspringen":
+			case "musichuepfen":
+			case "jump":
+			case "huepfen":
+			case "ueberspringen":
 				this.onFastForwardMusic();
 				break;
 			case "multiumfrage":
@@ -197,10 +200,10 @@ public abstract class ResponseType extends Middleware {
 				this.onTest();
 				break;
 			case "delete":
-			case "löschen":
 			case "loeschen":
 			case "vernebeln":
 			case "del":
+			case "rm":
 				this.onDeleteMessages();
 				break;
 			case "announce":
@@ -247,10 +250,13 @@ public abstract class ResponseType extends Middleware {
 			case "feedback":
 			case "vorschlag":
 			case "request":
+			case "req":
 				this.onFeedback();
 				break;
 			case "randomize":
 			case "musicrandom":
+			case "shuffle":
+			case "musicshuffle":
 				this.onMusicRandom();
 				break;
 			case "force":
