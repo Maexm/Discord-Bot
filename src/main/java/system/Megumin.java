@@ -34,6 +34,7 @@ import snowflakes.ChannelID;
 import snowflakes.GuildID;
 import start.RuntimeVariables;
 import survey.Survey;
+import survey.VoteChange;
 import weather.Weather;
 import wiki.Wikipedia;
 import wiki.Wikipedia.WikiPage;
@@ -120,22 +121,22 @@ public class Megumin extends ResponseType {
 									"Du hast öffentlich für eine Umfrage abgestimmt. Ich habe diese Nachricht gelöscht,\n"
 											+ "eventuell hat aber jemand schon deinen geheimen Vote gesehen! :cold_sweat:");
 						}
-						String resp = this.getSurveyForKeyUserScoped(surveyKey, userId).receiveVote(this.getMessage().getUser(),
+						VoteChange resp = this.getSurveyForKeyUserScoped(surveyKey, userId).receiveVote(this.getMessage().getUser(),
 								surveyOption);
 						switch (resp) {
-							case Survey.VOTE_ADDED:
+							case ADDED:
 								this.sendPrivateAnswer("Du hast für die Umfrage '"
 										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 										+ " abgestimmt!\nDu hast abgestimmt für: '" + Markdown.toBold(surveyOption)
 										+ "'\nDanke für die Teilnahme!");
 								break;
-							case Survey.VOTE_DELETED:
+							case DELETED:
 								this.sendPrivateAnswer("Deine Stimme aus der Umfrage '"
 										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 										+ " wurde entfernt!\nDu hattest vorher '" + Markdown.toBold(surveyOption)
 										+ "' gewählt. ");
 								break;
-							case Survey.VOTE_REJECTED:
+							case REJECTED:
 								// Not currently used
 								this.sendPrivateAnswer(
 										"Mehrfache Antworten sind ausgeschaltet.\nDeine Stimme aus der Umfrage '"
@@ -143,7 +144,7 @@ public class Megumin extends ResponseType {
 														.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 												+ " ist also nicht gültig.\nWenn du deine Antwort ändern möchtest, musst du sie zunächst löschen (für die zu löschende Auswahl nochmal abstimmen!)");
 								break;
-							case Survey.VOTE_CHANGED:
+							case CHANGED:
 								this.sendPrivateAnswer("Du hast für die Umfrage '"
 										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 										+ " bereits abgestimmt, aber mehrfache Antworten sind nicht erlaubt!\n"

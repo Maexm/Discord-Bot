@@ -32,24 +32,6 @@ public class Survey {
 	private final ArrayList<User> participants;
 	public final boolean isMulti;
 
-	/**
-	 * Vote has been added successfully
-	 */
-	public final static String VOTE_ADDED = "VOTE_ADDED";
-	/**
-	 * Vote has been deleted
-	 */
-	public final static String VOTE_DELETED = "VOTE_DELETED";
-	/**
-	 * Vote has been rejected
-	 */
-	public final static String VOTE_REJECTED = "VOTE_REJECTED";
-	/**
-	 * Only applies if not multi answer survey: Old option has been "unvoted" and
-	 * vote for new option has been added
-	 */
-	public final static String VOTE_CHANGED = "VOTE_CHANGED";
-
 	public Survey(final String description, final String[] options, final int duration, final MessageChannel channel,
 			final User createdBy, final ArrayList<Survey> surveyList, final boolean isMulti)
 			throws SurveyCreateIllegalDurationException {
@@ -259,19 +241,19 @@ public class Survey {
 	 * @param option His option
 	 * @return Survey vote status strings (ADDED, DELETED, REJECTED, CHANGED)
 	 */
-	public String receiveVote(User user, String option) {
+	public VoteChange receiveVote(User user, String option) {
 		if (!this.optionExists(option)) {
 			throw new IllegalArgumentException("'" + option + "' does not exist!");
 		}
 
-		String ret = "";
+		VoteChange ret;
 
 		SurveyOption optionObject = this.getOption(option);
 		// Add vote, if user has not participated yet
 		if (!this.userHasParticipated(user)) {
 			optionObject.addVote(user);
 			this.participants.add(user);
-			ret = Survey.VOTE_ADDED;
+			ret = VoteChange.ADDED;
 		}
 		// Delete vote, if user has voted for this before
 		else if (optionObject.hasVoted(user)) {
@@ -282,7 +264,7 @@ public class Survey {
 				this.participants.remove(user);
 				// User does not participate anymore
 			}
-			ret = Survey.VOTE_DELETED;
+			ret = VoteChange.DELETED;
 		}
 		// User has voted for something else (but has participated before!)
 		else {
@@ -293,13 +275,13 @@ public class Survey {
 			// Add vote to option
 			optionObject.addVote(user);
 			if (!this.isMulti) {
-				ret = Survey.VOTE_CHANGED;
+				ret = VoteChange.CHANGED;
 			} else {
-				ret = Survey.VOTE_ADDED;
+				ret = VoteChange.ADDED;
 			}
 		}
 		// Update message
-		if (ret.equals(Survey.VOTE_ADDED) || ret.equals(Survey.VOTE_DELETED) || ret.equals(VOTE_CHANGED)) {
+		if (ret.equals(VoteChange.ADDED) || ret.equals(VoteChange.DELETED) || ret.equals(VoteChange.CHANGED)) {
 			this.updateMessage();
 		}
 		return ret;
