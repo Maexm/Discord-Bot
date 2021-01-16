@@ -89,6 +89,9 @@ public abstract class Middleware {
 	}
 
 	protected final boolean authorIsGuildOwner(){
+		if(this.isPrivate()){
+			return false;
+		}
 		return this.getMessage().getUser().getId().equals(this.getGuild().getId());
 	}
 
