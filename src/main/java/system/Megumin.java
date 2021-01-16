@@ -724,48 +724,60 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
-		final String appendString = ":chicken: ";
+		final String appendString = ":chicken:";
 
 		this.chicken++;
-		StringBuilder response = new StringBuilder(this.chicken * appendString.length());
-		for(int i = 0; i < this.chicken; i++){
-			response.append(appendString);
+
+		if(this.chicken <= 200){
+			StringBuilder response = new StringBuilder(this.chicken * appendString.length());
+			for(int i = 0; i < this.chicken; i++){
+				response.append(appendString);
+			}
+			this.sendAnswer(response.toString());
 		}
-		this.sendAnswer(response.toString());
+		else{
+			this.sendAnswer(this.chicken+" "+appendString);
+		}
 	}
 
 	@Override
 	protected void onNuggets() {
 		String response = "";
-		
-		if(this.chicken == 0){
-			response = "keine Zutaten für Nuggets verfügbar!";
-		}
-		else if(this.chicken == 1){
-			response = "hier hast du eine Portion Chicken Nuggets!";
-		}
-		else if(this.chicken == 2){
-			response = "hier sind Chicken Nuggets für zwei Personen!";
-		}
-		else if(this.chicken >= 3){
-			response = "hier sind "+this.chicken+" Portionen Chicken Nuggets!";
-		}
-		else if(this.chicken >= 10){
-			response = "hier sind "+this.chicken+" Portionen Chicken Nuggets, genug für eine Großfamilie!";
-		}
-		else if(this.chicken >= 50){
-			response = "hier ist deine McDonalds Tageslieferung an Chicken Nuggets ("+this.chicken+" Portionen)";
-		}
-		else if(this.chicken == 420){
-			response = "diese "+this.chicken+" Chicken Nuggets riechen seltsam...";
-		}
-		else if(this.chicken >= 200){
-			response = this.chicken+" Hühner wurden gewaltsam umgebra- Hier sind deine Chicken Nuggets, Mahlzeit!";
-		}
-		else if(this.chicken == Integer.MAX_VALUE){
-			response = "du hast das Maximum an Chicken Nuggets erreicht ("+this.chicken+")! Das ist ein Achievement Wert aber sowas gibt es bei mir nicht!";
-		}
 
+		switch(this.chicken){
+			case 0:
+				response = "keine Zutaten für Nuggets verfügbar!";
+				break;
+			case 1:
+				response = "hier hast du eine Portion Chicken Nuggets!";
+				break;
+			case 2:
+				response = "hier sind Chicken Nuggets für zwei Personen!";
+				break;
+			case 3:
+				response = "hier sind 3 Chicken Nuggets für dich und deine Freunde!";
+				break;
+			case 420:
+				response = "diese 420 Chicken Nuggets riechen seltsam...";
+				break;
+			default:
+				if(this.chicken >= 4){
+					response = "hier sind "+this.chicken+" Portionen Chicken Nuggets!";
+				}
+				else if(this.chicken >= 10){
+					response = "hier sind "+this.chicken+" Portionen Chicken Nuggets, genug für eine Großfamilie!";
+				}
+				else if(this.chicken >= 50){
+					response = "hier ist deine McDonalds Tageslieferung an Chicken Nuggets ("+this.chicken+" Portionen)";
+				}
+				else if(this.chicken >= 200){
+					response = this.chicken+" Hühner wurden gewaltsam umgebra- Hier sind deine Chicken Nuggets, Mahlzeit!";
+				}
+				else if(this.chicken == Integer.MAX_VALUE){
+					response = "du hast das Maximum an Chicken Nuggets erreicht ("+this.chicken+")! Das ist ein Achievement Wert aber sowas gibt es bei mir nicht!";
+				}
+		}
+		
 		this.sendAnswer(response);
 		this.chicken = 0;
 	}
