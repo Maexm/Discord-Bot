@@ -66,7 +66,7 @@ public class StartUp {
 							guild.get().getSystemChannel()
 							.flatMap(channel -> channel.createMessage("Ich bin Online und einsatzbereit! Schreib "+Markdown.toCodeBlock("MegHelp")+"!"))
 							.subscribe(message -> discordHandlerWrapper[0].getGuildMap().get(guild.get().getId()).setHelloMessage(message));
-						});
+						}).then().block();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

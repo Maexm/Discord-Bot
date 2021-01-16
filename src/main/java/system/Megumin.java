@@ -31,8 +31,6 @@ import util.HTTPRequests;
 import util.Help;
 import util.Markdown;
 import util.TimePrint;
-import snowflakes.ChannelID;
-import snowflakes.GuildID;
 import start.RuntimeVariables;
 import survey.Survey;
 import survey.VoteChange;
