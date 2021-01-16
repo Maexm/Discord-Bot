@@ -1,26 +1,20 @@
 package system;
 
-import java.util.ArrayList;
-
-import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.voice.AudioProvider;
 import exceptions.IllegalMagicException;
-import musicBot.AudioEventHandler;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
 import start.RuntimeVariables;
-import survey.Survey;
 
 public abstract class ResponseType extends Middleware {
 
-	private final TaskManager<RefinedTimerTask> systemTasks;
+	private final TaskManager<RefinedTimerTask> localTasks;
+	protected String commandSection = "";
+    protected String argumentSection = "";
 
-	public ResponseType(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider, ArrayList<Survey> surveys,
-			AudioEventHandler audioEventHandler, final TaskManager<RefinedTimerTask> systemTasks) {
-		super(guildId, client, audioProvider, surveys, audioEventHandler);
-		this.systemTasks = systemTasks;
+	public ResponseType(MiddlewareConfig config, final TaskManager<RefinedTimerTask> localTasks) {
+		super(config);
+		this.localTasks = localTasks;
 	}
 
 	/**
@@ -33,17 +27,17 @@ public abstract class ResponseType extends Middleware {
 		final String PREFIX = RuntimeVariables.MESSAGE_PREFIX.toLowerCase();
 		
 		// Expressions
-		switch (this.msgContent.toLowerCase()) {
+		switch (this.getMessage().getContent().toLowerCase()) {
 		case "hey megumin":
 			this.onGreeting();
 		}
 
 		// Expressions starting with prefix
-		if (this.msgContent.toLowerCase().startsWith(PREFIX)) {
+		if (this.getMessage().getContent().toLowerCase().startsWith(PREFIX)) {
 
 			// Extract order and arguments
-			if (this.msgContent.contains(" ")) {
-				final String[] splitted = this.msgContent.split(" ");
+			if (this.getMessage().getContent().contains(" ")) {
+				final String[] splitted = this.getMessage().getContent().split(" ");
 
 				int commandPos = 0;
 				if(splitted[0].toLowerCase().equals(PREFIX)){
@@ -53,12 +47,12 @@ public abstract class ResponseType extends Middleware {
 				this.commandSection = splitted[commandPos];
 				// Prefix right next to command
 				if(commandPos == 0){
-					this.argumentSection = this.msgContent.replaceFirst(this.commandSection + " ", "");// Do not use splitted[1], since args can have spaces as well
+					this.argumentSection = this.getMessage().getContent().replaceFirst(this.commandSection + " ", "");// Do not use splitted[1], since args can have spaces as well
 					this.commandSection = this.commandSection.toLowerCase().replaceFirst(PREFIX, "");
 				}
 				// Prefix seperated with " "
 				else if(commandPos == 1){
-					this.argumentSection = this.msgContent.replaceFirst(PREFIX + " " + this.commandSection + " ", "");
+					this.argumentSection = this.getMessage().getContent().replaceFirst(PREFIX + " " + this.commandSection + " ", "");
 					this.commandSection = this.commandSection.toLowerCase();
 				}
 				else{
@@ -68,7 +62,7 @@ public abstract class ResponseType extends Middleware {
 			}
 			// No command section exists
 			else {
-				this.commandSection = this.msgContent.toLowerCase().replaceFirst(PREFIX, "");
+				this.commandSection = this.getMessage().getContent().toLowerCase().replaceFirst(PREFIX, "");
 			}
 
 			// Redirect // TODO: Outsource
@@ -314,14 +308,69 @@ public abstract class ResponseType extends Middleware {
 		return true;
 	}
 
+	protected final void purge(){
+		System.out.println("########## Purging session for guild: "+this.getGuildByID(this.config.guildId).getName()+" ###########");
+		// ########## CLEAN MUSIC SESSION ##########
+			System.out.println("Cleaning up mussic session...");
+			this.getMusicWrapper().getMusicBotHandler().clearList();
+			if (this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
+				this.getMusicWrapper().getMusicBotHandler().stop();
+			}
+			if (this.isVoiceConnected()) {
+				this.leaveVoiceChannel();
+			}
+
+			// Remove hello message
+			System.out.println("Removing hello message...");
+			try{
+				this.config.helloMessage.delete().block();
+			}
+			catch(Exception e){
+				System.out.println("Failed to remove message, continuing... ");
+			}
+
+			// ########## STOP SURVEYS ##########
+			System.out.println("Stopping surveys...");
+
+			this.getSurveyListVerbose().forEach(survey ->{
+				if(survey.publicMessage.getGuildId().get().equals(this.config.guildId)){
+					survey.stop();
+				}
+			});
+
+			// ########## STOP TASKS ##########
+			System.out.println("Stopping tasks...");
+			this.cleanLocalTasks();
+	}
+
+	/**
+	 * Returns the order section of a Meg[ORDER] message. Returns an empty string,
+	 * if there is no order section.
+	 * 
+	 * @return The order section of the message
+	 */
+	protected final String getCommandSection() {
+		return this.commandSection;
+	}
+
+	/**
+	 * Returns the argument section of a Meg[ORDER] [ARGUMENTS] message. Returns an
+	 * empty string, if there are no arguments.
+	 * 
+	 * @return The argument section
+	 */
+	protected final String getArgumentSection() {
+		return this.argumentSection;
+	}
+
 	private void kill(){
 		if(this.hasPermission(SecurityLevel.ADM)){
 			System.exit(1);
 		}
 	}
 
-	protected void cleanSystemTasks(){
-		this.systemTasks.stopAll();
+	protected void cleanLocalTasks(){
+		this.localTasks.stopAll();
 	}
 
 	// ########## ABSTRACT RESPONSE METHODS ##########

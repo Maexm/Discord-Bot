@@ -1,74 +1,53 @@
 package system;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-
 import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
-import discord4j.voice.AudioProvider;
 import musicBot.AudioEventHandler;
-import musicBot.MusicTrackInfo;
-import musicBot.TrackLoader;
+import musicBot.MusicWrapper;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
 import util.Time;
 import snowflakes.ChannelID;
 import start.RuntimeVariables;
-import survey.Survey;
+import start.GlobalDiscordHandler.GlobalDiscordProxy;
 
-public final class BotHeart {
+public final class GuildHandler {
 
 	private ResponseType responseSet;
-	private final GatewayDiscordClient client;
-	private final TrackLoader trackScheduler;
-	private final AudioProvider audioProvider;
-	private final AudioPlayer player;
-	private final ArrayList<Survey> surveys = new ArrayList<Survey>();
-	private final LinkedList<AudioTrack> trackList;
-	private final LinkedList<MusicTrackInfo> addInfo;
-	private final AudioEventHandler playerEventHandler;
-	private final ArrayList<Middleware> middlewareBefore = new ArrayList<Middleware>();
+	private final ArrayList<Middleware> middlewareBefore;
 	private final Snowflake guildId;
-	private final TaskManager<RefinedTimerTask> systemTasks = new TaskManager<>(true);
+	private final TaskManager<RefinedTimerTask> localTasks;
+	private final MiddlewareConfig middlewareConfig;
+	private final GlobalDiscordProxy globalProxy;
+	private final MusicWrapper musicWrapper;
 
-	public BotHeart(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
-			final AudioPlayer player, final AudioPlayerManager playerManager) {
+	public GuildHandler(final Snowflake guildId, final GlobalDiscordProxy globalProxy) {
+
+		this.middlewareBefore = new ArrayList<Middleware>();
+		this.localTasks = new TaskManager<>(true);
 		this.guildId = guildId;
-		this.trackList = new LinkedList<AudioTrack>();
-		this.addInfo = new LinkedList<MusicTrackInfo>();
-		this.client = client;
-		this.player = player;
-		this.player.setVolume(20);
-		this.trackScheduler = new TrackLoader(player, trackList, addInfo, playerManager);
-		this.audioProvider = audioProvider;
-		this.playerEventHandler = new AudioEventHandler(this.player, playerManager, this.trackScheduler, trackList,
-				addInfo);
-		this.player.addListener(playerEventHandler);
+		this.globalProxy = globalProxy;
+		this.musicWrapper = new MusicWrapper();
+		this.middlewareConfig = new MiddlewareConfig(this.guildId, this.musicWrapper, this.globalProxy, null);
 
 		// ########## RESPONSE SETS ##########
 		// TODO: Shorten this hell
-		this.middlewareBefore
-				.add(new Logger(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new RoleFilter(this.guildId, client, this.audioProvider, this.surveys,
-				this.playerEventHandler,
+		this.middlewareBefore.add(new Logger(this.middlewareConfig));
+		this.middlewareBefore.add(new RoleFilter(this.middlewareConfig,
 				msg -> RuntimeVariables.IS_DEBUG
 						&& msg.getContent().toLowerCase().startsWith(RuntimeVariables.MESSAGE_PREFIX.toLowerCase()),
 				SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
 
+		this.middlewareBefore.add(new HelpSection(this.middlewareConfig));
 		this.middlewareBefore.add(
-				new HelpSection(this.guildId, this.client, this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(
-				new AutoReact(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler, msg -> {
+				new AutoReact(this.middlewareConfig, msg -> {
 					final String[] expressions = { "explosion", "kaboom", "bakuhatsu", "bakuretsu", "ばくれつ", "爆裂", "ばくはつ",
 							"爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "explodier"};
 					final String evalStr = msg.getContent().toLowerCase();
@@ -82,20 +61,19 @@ public final class BotHeart {
 				}, new ReactionEmoji[] { ReactionEmoji.unicode("\u2764")/* , ReactionEmoji.unicode("\u1F386") */ }));
 		// this.middlewareBefore.add(new VoiceGuard(this.guildId, client,
 		// this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new MusicRecommendation(this.guildId, client, this.audioProvider, this.surveys,
-				this.playerEventHandler));
-		this.responseSet = new Megumin(this.guildId, client, this.audioProvider, this.surveys, this.playerEventHandler, this.systemTasks);
+		this.middlewareBefore.add(new MusicRecommendation(this.middlewareConfig));
+		this.responseSet = new Megumin(this.middlewareConfig, this.localTasks);
 
 		// ########## TASKS ##########
 		// TODO: Move to a dedicated file
-		this.systemTasks.addTask(new RefinedTimerTask(null, Long.valueOf(Time.DAY),
-				Time.getNext(3, 0, 0).getTime(), this.systemTasks) {
+		this.localTasks.addTask(new RefinedTimerTask(null, Long.valueOf(Time.DAY),
+				Time.getNext(3, 0, 0).getTime(), this.localTasks) {
 
 			@Override
 			public void runTask() {
 				System.out.println("Executing CleanUp task!");
 				try {
-					MessageChannel channelRef = (MessageChannel) client.getGuildById(guildId)
+					MessageChannel channelRef = (MessageChannel) globalProxy.getClient().getGuildById(guildId)
 							.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
 					Message lastMessage = channelRef.getLastMessage().block();
 					List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
@@ -133,14 +111,18 @@ public final class BotHeart {
 	 * @param client   This client
 	 */
 	public void onMessageReceived(MessageCreateEvent msgEvent) {
-		if (!msgEvent.getMessage().getAuthor().get().getId().equals(client.getSelfId())) {
+		if (!msgEvent.getMessage().getAuthor().get().getId().equals(this.globalProxy.getClient().getSelfId())) {
 
 			boolean shouldContinue = true;
+			DecompiledMessage msg = new DecompiledMessage(msgEvent);
+			if(msg.isBroken()){
+				return;
+			}
 
 			// ########## MIDDLEWARE BEFORE ##########
 			for (Middleware middleware : this.middlewareBefore) {
 				try {
-					shouldContinue = middleware.acceptEvent(msgEvent);
+					shouldContinue = middleware.acceptEvent(msg);
 				} catch (Exception e) {
 					System.out.println("Error while using middleware: '" + middleware + "'");
 					System.out.println(e);
@@ -152,13 +134,21 @@ public final class BotHeart {
 			}
 
 			// ########## RESPONSE TYPE ##########
-			shouldContinue = this.responseSet.acceptEvent(msgEvent);
+			shouldContinue = this.responseSet.acceptEvent(msg);
 
 			if (!shouldContinue) {
 				System.out.println("ResponseType canceled event digest");
 				return;
 			}
 		}
+	}
+
+	public void onPurge(){
+		this.responseSet.purge();
+	}
+
+	public void setHelloMessage(Message msg){
+		this.middlewareConfig.helloMessage = msg;
 	}
 
 }

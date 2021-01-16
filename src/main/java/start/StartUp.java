@@ -1,30 +1,15 @@
 package start;
 
 import java.io.Console;
-import java.util.List;
-
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.GuildEmoji;
-import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
-import discord4j.voice.AudioProvider;
 import exceptions.StartUpException;
-import system.BotHeart;
-import musicBot.AudioProviderLavaPlayer;
 import util.Markdown;
-import snowflakes.ChannelID;
-import snowflakes.EmojiID;
-import snowflakes.GuildID;
 
 public class StartUp {
 
@@ -56,19 +41,10 @@ public class StartUp {
 		}
 		//reactor.util.Loggers.useJdkLoggers();
 
-		// Music components
-		final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
-
-		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
-
-		AudioSourceManagers.registerRemoteSources(playerManager);
-		final AudioPlayer player = playerManager.createPlayer();
-		AudioProvider provider = new AudioProviderLavaPlayer(player);
+		// Objects
+		GlobalDiscordHandler[] discordHandlerWrapper = new GlobalDiscordHandler[1];
 
 		final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build().login().block();
-
-		final BotHeart messageReceivedHandler = new BotHeart(GuildID.UNSER_SERVER ,client, provider, player,
-				playerManager);
 
 		// ########## On client login ##########
 
@@ -81,23 +57,16 @@ public class StartUp {
 					.block();
 
 			if(RuntimeVariables.firstLogin){
+				// Create entry point for event handling
+				discordHandlerWrapper[0] = new GlobalDiscordHandler(ready);
 				// Send public hello message if not debug
 				if(!RuntimeVariables.IS_DEBUG){
 					try {
-						List<GuildEmoji> emojis = client.getGuildById(GuildID.UNSER_SERVER).block().getEmojis().buffer()
-								.blockFirst();
-						String emojiFormat = "";
-						for (GuildEmoji emoji : emojis) {
-							if (emoji.getId().equals(EmojiID.MEG_THUMBUP)) {
-								emojiFormat = emoji.asFormat();
-								break;
-							}
-						}
-						MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
-								.getChannelById(ChannelID.MEGUMIN).block();
-		
-						channel.createMessage("Megumin ist online und einsatzbereit! " + emojiFormat + " Schreib "
-								+ Markdown.toBold("'MegHelp'") + " für mehr Informationen! ").block();
+						client.getGuilds().doOnEach(guild ->{
+							guild.get().getSystemChannel()
+							.flatMap(channel -> channel.createMessage("Ich bin Online und einsatzbereit! Schreib "+Markdown.toCodeBlock("MegHelp")+"!"))
+							.subscribe(message -> discordHandlerWrapper[0].getGuildMap().get(guild.get().getId()).setHelloMessage(message));
+						});
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -113,11 +82,11 @@ public class StartUp {
 				RuntimeVariables.firstLogin = false;
 			}
 			else{
-				System.out.println("Reconnected!");
-				MessageChannel channel = (MessageChannel) client.getGuildById(GuildID.UNSER_SERVER).block()
-							.getChannelById(ChannelID.MEGUMIN).block();
-	
-					channel.createMessage(":warning: Ein Verbindungsfehler ist aufgetreten... Jetzt bin ich aber wieder verbunden!").block();
+				client.getApplicationInfo()
+					.flatMap(appInfo -> appInfo.getOwner())
+					.flatMap(owner -> owner.getPrivateChannel())
+					.flatMap(ownerChannel -> ownerChannel.createMessage(":warning: Ein Verbindungsfehler ist aufgetreten... Jetzt bin ich aber wieder verbunden!"))
+					.block();
 			}
 		});
 
@@ -127,7 +96,9 @@ public class StartUp {
 			if (RuntimeVariables.IS_DEBUG) {
 				System.out.println("Event received!");
 			}
-			messageReceivedHandler.onMessageReceived(event);
+			if(discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].acceptEvent(event);
+			}
 		});
 		
 		// ########## On logout ##########

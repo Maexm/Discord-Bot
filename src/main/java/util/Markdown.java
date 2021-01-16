@@ -85,4 +85,8 @@ public class Markdown {
 	public final static String toSpoiler(String message) {
 		return "||"+message+"||";
 	}
+
+	public final static String noLinkPreview(String link){
+		return "<"+link+">";
+	}
 }

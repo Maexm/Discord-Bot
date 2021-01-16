@@ -21,47 +21,29 @@ import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
-import musicBot.AudioEventHandler;
+import musicBot.MusicWrapper;
 import reactor.core.publisher.Mono;
 import security.SecurityProvider;
 import snowflakes.GuildID;
 import start.RuntimeVariables;
+import start.GlobalDiscordHandler.GlobalDiscordProxy;
 import survey.Survey;
 
 
 public abstract class Middleware {
 
-    protected String msgContent;
-	protected MessageCreateEvent msgEvent;
-	protected Message msgObject;
-	protected String msgAuthorName;
-	protected User msgAuthorObject;
-	//protected VoiceConnection voiceConnection = null;
-	protected final GatewayDiscordClient client;
-	protected String commandSection = "";
-	protected String argumentSection = "";
-	protected final ArrayList<Survey> surveys;
-	private final Predicate<Message> mayAccept;
-	protected final Snowflake guildId;
+	protected DecompiledMessage msg;
+	protected final MiddlewareConfig config;
+	protected final Predicate<Message> mayAccept;
 
-	// AUDIO
-	protected final AudioEventHandler audioEventHandler;
-
-	protected final AudioProvider audioProvider;
-
-	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
-			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
-		this(guildId, client, audioProvider, surveys, audioEventHandler, msg -> true);
+	public Middleware(MiddlewareConfig config) {
+		this(config, config.mayAccept);
 	}
 
-	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
-			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final Predicate<Message> mayAccept) {
-		this.guildId = guildId;
-		this.client = client;
-		this.audioEventHandler = audioEventHandler;
-		this.audioProvider = audioProvider;
-		this.surveys = surveys;
+	public Middleware(MiddlewareConfig config, Predicate<Message> mayAccept){
+		this.config = config;
 		this.mayAccept = mayAccept;
+		
 	}
 
 	/**
@@ -70,83 +52,40 @@ public abstract class Middleware {
 	 * 
 	 * @param messageEvent
 	 */
-	public final boolean acceptEvent(final MessageCreateEvent messageEvent) {
+	public final boolean acceptEvent(final DecompiledMessage message) {
 
-		if(!this.mayAccept.test(messageEvent.getMessage())){
+		if(!this.config.mayAccept.test(message.getMessageObject())){
 			return true; // Skip if this Middleware may not handle event
 		}
-
-		boolean fetchSuccess = true;
 		boolean ret = true;
 
-		try {
-			// Save message and other useful variables for easy access
-			this.msgEvent = messageEvent;
-			this.msgObject = this.msgEvent.getMessage();
-			this.msgContent = this.msgObject.getContent();
-			this.msgAuthorObject = this.msgObject.getAuthor().orElse(null);
-			this.msgAuthorName = this.msgAuthorObject != null? this.msgAuthorObject.getUsername(): "";
-			this.argumentSection = "";
-			this.commandSection = "";
-		} catch (Exception e) {
-			System.out.println("Something went wrong, while accepting event!");
-			e.printStackTrace();
-			fetchSuccess = false;
-		}
-
 		// Start redirecting
-		if (fetchSuccess) {
-			try {
-				ret = this.handle();
-				// ERROR HANDLING
-			} catch (Exception e) {
-				e.printStackTrace();
-					try {
-						this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
-					} catch (Exception e2) {
-						System.out.println("Cannot send messages at all!");
-					}
+		try {
+			ret = this.handle();
+			// ERROR HANDLING
+		} catch (Exception e) {
+			e.printStackTrace();
+				try {
+					this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
+				} catch (Exception e2) {
+					System.out.println("Cannot send messages at all!");
 				}
 		}
-		return ret && fetchSuccess;
+		return ret;
 	}
 
-    protected abstract boolean handle();
-
-    /**
-	 * Returns the message string content
-	 * 
-	 * @return Received message content as string representation
-	 */
-	protected final String getMessageContent() {
-		return this.msgContent;
+	protected abstract boolean handle();
+	
+	protected final DecompiledMessage getMessage(){
+		return this.msg;
 	}
 
-	/**
-	 * Returns the message as Message object
-	 * 
-	 * @return Received message as Message object
-	 */
-	protected final Message getMessageObject() {
-		return this.msgObject;
+	protected final MusicWrapper getMusicWrapper(){
+		return this.config.musicWrapper;
 	}
 
-	/**
-	 * Returns the user name string of the author of the received message
-	 * 
-	 * @return Author user name of received message as String
-	 */
-	protected final String getMessageAuthorName() {
-		return this.msgAuthorName;
-	}
-
-	/**
-	 * Returns the author of the message as User object
-	 * 
-	 * @return Author of received message as User
-	 */
-	protected final User getMessageAuthorObject() {
-		return this.msgAuthorObject;
+	protected final GlobalDiscordProxy getGlobalProxy(){
+		return this.config.globalProxy;
 	}
 
 	/**
@@ -156,7 +95,7 @@ public abstract class Middleware {
 	 */
 	protected final Member getMessageAuthorMember() {
 		if (!this.isPrivate()) {
-			return this.msgEvent.getMember().orElse(null);
+			return this.getMessage().getEvent().getMember().orElse(null);
 		}
 		return null;
 	}
@@ -167,36 +106,7 @@ public abstract class Middleware {
 	 * @return Channel associated to the received message as MessageChannel
 	 */
 	protected final MessageChannel getMessageChannel() {
-		return this.msgObject.getChannel().block();
-	}
-
-	/**
-	 * Returns the guild, where the received message was sent to
-	 * 
-	 * @return Guild associated to the received message as Guild
-	 */
-	public final Guild getMessageGuild() {
-		return this.msgObject.getGuild().block();
-	}
-
-	/**
-	 * Returns the order section of a Meg[ORDER] message. Returns an empty string,
-	 * if there is no order section.
-	 * 
-	 * @return The order section of the message
-	 */
-	protected final String getCommandSection() {
-		return this.commandSection;
-	}
-
-	/**
-	 * Returns the argument section of a Meg[ORDER] [ARGUMENTS] message. Returns an
-	 * empty string, if there are no arguments.
-	 * 
-	 * @return The argument section
-	 */
-	protected final String getArgumentSection() {
-		return this.argumentSection;
+		return this.getMessage().getMessageObject().getChannel().block();
 	}
 
 	/**
@@ -205,7 +115,7 @@ public abstract class Middleware {
 	 * @return the event
 	 */
 	protected final MessageCreateEvent getMessageEvent() {
-		return this.msgEvent;
+		return this.getMessage().getEvent();
 	}
 
 	/**
@@ -214,7 +124,7 @@ public abstract class Middleware {
 	 * @return the audio provider
 	 */
 	protected final AudioProvider getAudioProvider() {
-		return this.audioProvider;
+		return this.getMusicWrapper().getAudioProvider();
 	}
 
 	/**
@@ -223,7 +133,7 @@ public abstract class Middleware {
 	 * @return This bot as client
 	 */
 	public final GatewayDiscordClient getClient() {
-		return this.client;
+		return this.config.globalProxy.getClient();
 	}
 
 	/**
@@ -263,8 +173,8 @@ public abstract class Middleware {
 		return this.getMyVoiceChannelAsync().block();
 	}
 	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
-		return this.client.getSelf()
-			.flatMap(self -> self.asMember(this.guildId))
+		return this.getClient().getSelf()
+			.flatMap(self -> self.asMember(this.config.guildId))
 			.flatMap(member -> member.getVoiceState())
 			.flatMap(voiceState -> voiceState != null ? voiceState.getChannel() : null);
 	}
@@ -284,7 +194,7 @@ public abstract class Middleware {
 	 * @return Private channel object of author
 	 */
 	protected final PrivateChannel getMessageAuthorPrivateChannel() {
-		return this.msgAuthorObject.getPrivateChannel().block();
+		return this.getMessage().getUser().getPrivateChannel().block();
 	}
 
 	/**
@@ -293,7 +203,7 @@ public abstract class Middleware {
 	 * @return True if message comes from private channel, false otherwise
 	 */
 	protected final boolean isPrivate() {
-		return this.getMessageChannel().getId().equals(this.getMessageAuthorPrivateChannel().getId());
+		return this.config.guildId == null;
 	}
 
 	protected final long getResponseTime() {
@@ -327,7 +237,7 @@ public abstract class Middleware {
 	}
 
 	protected final Guild getGuildByID(Snowflake guildID) {
-		return this.client.getGuildById(guildID).block();
+		return this.getClient().getGuildById(guildID).block();
 	}
 
 	protected final GuildMessageChannel getChannelByID(Snowflake channelID, Snowflake guildID) {
@@ -364,14 +274,6 @@ public abstract class Middleware {
 	}
 
 	/**
-	 * Logs the bot out
-	 */
-	protected final void logOut() {
-		System.out.println("LOGGING OUT");
-		this.client.logout().block();
-	}
-
-	/**
 	 * Deletes a message
 	 * 
 	 * @param message The message to be deleted
@@ -385,7 +287,7 @@ public abstract class Middleware {
 	 */
 	protected final void deleteReceivedMessage() {
 		if(!this.isPrivate()){
-			this.getMessageObject().delete().block();
+			this.getMessage().getMessageObject().delete().block();
 		}
 	}
 
@@ -396,7 +298,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendAnswer(String message) {
-		return this.sendInSameChannel(this.msgAuthorObject.getMention() + ", " + message);
+		return this.sendInSameChannel(this.getMessage().getUser().getMention() + ", " + message);
 	}
 
 	/**
@@ -514,20 +416,28 @@ public abstract class Middleware {
 
 	// TECHNICAL METHODS
 
-	protected final boolean surveyExists(String keyWord) {
-		return this.getSurveyForKey(keyWord) != null;
+	protected final boolean surveyExistsUserScoped(String keyword, Snowflake userId){
+		return this.getGlobalProxy().getSurveyForKeyUserScoped(keyword, userId) != null;
 	}
 
-	protected final Survey getSurveyForKey(String keyWord) {
-		for (Survey survey : this.surveys) {
-			if (survey.key.equals(keyWord)) {
-				return survey;
-			}
-		}
-		return null;
+
+	protected final Survey getSurveyForKeyUserScoped(String keyword, Snowflake userId) {
+		return this.getGlobalProxy().getSurveyForKeyUserScoped(keyword, userId);
+	}
+
+	protected final Survey getSurveyForKeyVerbose(String keyword){
+		return this.getGlobalProxy().getSurveyForKeyVerbose(keyword);
+	}
+
+	protected final boolean surveyExistsVerbose(String keyword){
+		return this.getSurveyForKeyVerbose(keyword) != null;
+	}
+
+	protected final ArrayList<Survey> getSurveyListVerbose(){
+		return this.getGlobalProxy().getSurveysVerbose();
 	}
 
 	protected final boolean hasPermission(int required){
-		return SecurityProvider.hasPermission(this.getMessageAuthorObject(), required, this.getOwner().getId());
+		return SecurityProvider.hasPermission(this.getMessage().getUser(), required, this.getOwner().getId());
 	}
 }
