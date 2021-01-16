@@ -274,7 +274,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	void ended() {
 		System.out.println("Music ended!");
-		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
+		//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 		this.active = false;
 		this.parent.leaveVoiceChannel();
 		this.refreshTask.cancel();
@@ -283,11 +283,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTimer = null;
 		//Message oldMessage = this.radioMessage;
 		try{
-			this.radioMessage.edit(spec -> {
-			spec.setContent(AudioEventHandler.MUSIC_STOPPED);
-			}).block();
+			this.radioMessage.delete().block();
 		}catch(Exception e){
-			System.out.println("Could not edit radio message while ending music session");
+			System.out.println("Could not delete radio message while ending music session");
 		}
 		
 		this.radioMessage = null;
@@ -303,7 +301,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		// Set discord status
-		this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).subscribe();
+		//this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).subscribe();
 
 		// Create refresh task
 		final AudioEventHandler timerParent = this;

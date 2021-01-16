@@ -1,20 +1,15 @@
 package system;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
-import musicBot.AudioEventHandler;
 import musicBot.MusicWrapper;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
-import util.Time;
-import snowflakes.ChannelID;
 import start.RuntimeVariables;
 import start.GlobalDiscordHandler.GlobalDiscordProxy;
 
@@ -65,43 +60,43 @@ public final class GuildHandler {
 		this.responseSet = new Megumin(this.middlewareConfig, this.localTasks);
 
 		// ########## TASKS ##########
-		// TODO: Move to a dedicated file
-		this.localTasks.addTask(new RefinedTimerTask(null, Long.valueOf(Time.DAY),
-				Time.getNext(3, 0, 0).getTime(), this.localTasks) {
+		// // TODO: Move to a dedicated file
+		// this.localTasks.addTask(new RefinedTimerTask(null, Long.valueOf(Time.DAY),
+		// 		Time.getNext(3, 0, 0).getTime(), this.localTasks) {
 
-			@Override
-			public void runTask() {
-				System.out.println("Executing CleanUp task!");
-				try {
-					MessageChannel channelRef = (MessageChannel) globalProxy.getClient().getGuildById(guildId)
-							.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
-					Message lastMessage = channelRef.getLastMessage().block();
-					List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
-					messages.add(0, lastMessage);
+		// 	@Override
+		// 	public void runTask() {
+		// 		System.out.println("Executing CleanUp task!");
+		// 		try {
+		// 			MessageChannel channelRef = (MessageChannel) globalProxy.getClient().getGuildById(guildId)
+		// 					.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
+		// 			Message lastMessage = channelRef.getLastMessage().block();
+		// 			List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
+		// 			messages.add(0, lastMessage);
 
-					final String cleanUpFinish = "Täglicher CleanUp beendet! :sparkles:";
+		// 			final String cleanUpFinish = "Täglicher CleanUp beendet! :sparkles:";
 
-					Message infoMessage = channelRef.createMessage("Täglicher CleanUp wird ausgeführt! :wastebasket:").block();
+		// 			Message infoMessage = channelRef.createMessage("Täglicher CleanUp wird ausgeführt! :wastebasket:").block();
 
-					for (Message message : messages) {
-						final String content = message.getContent();
-						switch (content) {
-							case cleanUpFinish:
-							case AudioEventHandler.MUSIC_STOPPED:
-								message.delete().block();
-								break;
-						}
-					}
+		// 			for (Message message : messages) {
+		// 				final String content = message.getContent();
+		// 				switch (content) {
+		// 					case cleanUpFinish:
+		// 					case AudioEventHandler.MUSIC_STOPPED:
+		// 						message.delete().block();
+		// 						break;
+		// 				}
+		// 			}
 
-					infoMessage.edit(edit -> edit.setContent(cleanUpFinish)).block();
-					System.out.println("CleanUp task finished!");
-				} catch (Exception e) {
-					System.out.println("CleanUp task failed!");
-					e.printStackTrace();
-				}
-			}
+		// 			infoMessage.edit(edit -> edit.setContent(cleanUpFinish)).block();
+		// 			System.out.println("CleanUp task finished!");
+		// 		} catch (Exception e) {
+		// 			System.out.println("CleanUp task failed!");
+		// 			e.printStackTrace();
+		// 		}
+		// 	}
 
-		});
+		// });
 	}
 
 	/**
