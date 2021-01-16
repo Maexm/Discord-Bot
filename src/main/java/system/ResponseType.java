@@ -1,6 +1,7 @@
 package system;
 
 import exceptions.IllegalMagicException;
+import musicBot.MusicTrackInfo.ScheduleType;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
@@ -66,7 +67,7 @@ public abstract class ResponseType extends Middleware {
 			}
 
 			// Redirect // TODO: Outsource
-			switch (this.commandSection) {
+			switch (this.commandSection.replace("musik", "music")) {
 			case "logout":
 				this.onLogout();
 				break;
@@ -85,81 +86,58 @@ public abstract class ResponseType extends Middleware {
 				this.onConvertToKatakana();
 				break;
 			case "music":
-			case "musik":
-				this.onReceiveMusicRequest(false);
+				this.onReceiveMusicRequest(ScheduleType.NORMAL);
 				break;
 			case "prio":
 			case "musicprio":
-			case "musikprio":
 			case "priomusic":
-			case "priomusik":
 			case "push":
 			case "musicpush":
-			case "musikpush":
 			case "pushmusic":
-			case "pushmusik":
 			case "front":
 			case "musicfront":
-			case "musikfront":
-				this.onReceiveMusicRequest(true);
+				this.onReceiveMusicRequest(ScheduleType.PRIO);
 				break;
 			case "clear":
 			case "musicclear":
-			case "musikclear":
 			case "clearmusic":
-			case "clearmusik":
 				this.onClearMusicQueue();
 				break;
 			case "pause":
 			case "musicpause":
-			case "musikpause":
 				this.onPauseMusic();
 				break;
 			case "play":
-			case "musikplay":
 			case "musicplay":
 				this.onResumeMusic();
 				break;
 			case "stop":
-			case "musikstop":
 			case "musicstop":
 				this.onStopMusic();
 				break;
-			case "musiknxt":
 			case "musicnxt":
-			case "musikskip":
 			case "musicskip":
 			case "next":
 			case "nxt":
 			case "skip":
 			case "skp":
-			case "musiknext":
 			case "musicnext":
 				this.onNextMusic();
 				break;
-			case "musikhelp":
 			case "musichelp":
-			case "helpmusik":
 			case "helpmusic":
 				this.onMusicHelp();
 				break;
 			case "vol":
-			case "musikvol":
 			case "musicvol":
 				this.onMusicVol();
 				break;
-			case "musikidee":
-			case "musikideen":
 			case "musicidee":
 			case "musicideen":
 			case "musicideas":
 			case "musicidea":
-			case "musikidea":
-			case "musikideas":
 				this.onMusicIdea();
 				break;
-			case "musikliste":
-			case "musiklist":
 			case "musiclist":
 			case "musicliste":
 			case "list":
@@ -167,23 +145,17 @@ public abstract class ResponseType extends Middleware {
 			case "ls":
 			case "queue":
 			case "musicqueue":
-			case "musikqueue":
 			case "warteschlange":
 			case "schlange":
-			case "musikschlange":
 			case "musicschlange":
 			
-			case "musiklisteall":
-			case "musiklistall":
 			case "musiclistall":
 			case "musiclisteall":
 			case "listall":
 			case "queueall":
 			case "musicqueueall":
-			case "musikqueueall":
 			case "warteschlangeall":
 			case "schlangeall":
-			case "musikschlangeall":
 			case "musicschlangeall":
 
 				this.onMusicQueue();
@@ -192,10 +164,6 @@ public abstract class ResponseType extends Middleware {
 			case "musicjump":
 			case "musicüberspringen":
 			case "musichüpfen":
-			case "musikforward":
-			case "musikjump":
-			case "musiküberspringen":
-			case "musikhüpfen":
 				this.onFastForwardMusic();
 				break;
 			case "multiumfrage":
@@ -283,8 +251,12 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "randomize":
 			case "musicrandom":
-			case "musikrandom":
 				this.onMusicRandom();
+				break;
+			case "force":
+			case "musicforce":
+			case "forcemusic":
+				this.onReceiveMusicRequest(ScheduleType.INTRUSIVE);
 				break;
 			case "chicken":
 				this.onChicken();
@@ -403,7 +375,7 @@ public abstract class ResponseType extends Middleware {
 	/**
 	 * Receives a link to a music source and adds it to the music queue
 	 */
-	protected abstract void onReceiveMusicRequest(boolean isPrio);
+	protected abstract void onReceiveMusicRequest(ScheduleType scheduleType);
 
 	protected abstract void onPauseMusic();
 

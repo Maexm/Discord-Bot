@@ -20,6 +20,7 @@ import japanese.ToRomajiConverter;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
 import musicBot.MusicVariables;
+import musicBot.MusicTrackInfo.ScheduleType;
 import musicBot.MusicVariables.TrackLink;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
@@ -242,7 +243,7 @@ public class Megumin extends ResponseType {
 	}
 
 	@Override
-	protected void onReceiveMusicRequest(boolean isPrio) {
+	protected void onReceiveMusicRequest(ScheduleType scheduleType) {
 		if (this.isAuthorVoiceConnected()) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link oder einen Suchbegriff!");
@@ -256,7 +257,7 @@ public class Megumin extends ResponseType {
 				// MUSIC PLAYBACK
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
-					this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(), this.getMessage().getMessageObject(), isPrio);
+					this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(), this.getMessage().getMessageObject(), scheduleType);
 					this.getMusicWrapper().getMusicBotHandler().schedule(musicTrack, this);
 					this.sendAnswer("dein Track wurde hinzugefügt!"
 							+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n" + AudioEventHandler.MUSIC_WARN : ""));
@@ -294,7 +295,7 @@ public class Megumin extends ResponseType {
 	protected void onResumeMusic() {
 		// Interpret as music add request, if there are arguments
 		if(!this.getArgumentSection().equals("")){
-			this.onReceiveMusicRequest(false);
+			this.onReceiveMusicRequest(ScheduleType.NORMAL);
 		}
 		// Else interpret as music pause request
 		else if (this.handleMusicCheck(true)) {
@@ -478,7 +479,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onMusicQueue() {
-		if (this.isVoiceConnected()) {
+		if (this.handleMusicCheck(false)) {
 			AudioTrack curTrack = this.getMusicWrapper().getMusicBotHandler().getCurrentAudioTrack();
 			// Leave if no track is playing (this should not happen)
 			if (curTrack == null) {

@@ -8,18 +8,18 @@ public class MusicTrackInfo {
 
 	private final String url;
 	private final User submittedByUser;
-	private final static String[] MUSIC_URL_PREFIXES = {"youtube.com", "youtu.be", "soundcloud.com"};
+	private final static String[] MUSIC_URL_PREFIXES = {"youtube.com", "youtu.be", "soundcloud.com", "open.spotify.com", "spotify.com"}; // Spotify to be tested
 	public final AudioEventHandler audioEventHandler;
 	public final Message userRequestMessage;
-	private final boolean isPrio;
+	private final ScheduleType scheduleType;
 	
-	public MusicTrackInfo(String url, final User submittedByUser, final AudioEventHandler audioEventHandler, final Message userRequestMessage, final boolean isPrio) {
+	public MusicTrackInfo(String url, final User submittedByUser, final AudioEventHandler audioEventHandler, final Message userRequestMessage, final ScheduleType scheduleType) {
 		
 		this.url = this.adjustURL(url);
 		this.submittedByUser = submittedByUser;
 		this.audioEventHandler = audioEventHandler;
 		this.userRequestMessage = userRequestMessage;
-		this.isPrio = isPrio;
+		this.scheduleType = scheduleType;
 	}
 	
 	private String adjustURL(String url) {
@@ -53,14 +53,18 @@ public class MusicTrackInfo {
 	public final User getSubmittedByUser() {
 		return this.submittedByUser;
 	}
-	public boolean isPrio(){
-		return this.isPrio;
+	public ScheduleType getScheduleType(){
+		return this.scheduleType;
 	}
 	public String toString() {
 		return "'"+this.url+"' - submitted by "+this.getSubmittedByUser().getId();
 	}
 	
 	public MusicTrackInfo clone() {
-		return new MusicTrackInfo(this.url, this.submittedByUser, this.audioEventHandler, this.userRequestMessage, this.isPrio);
+		return new MusicTrackInfo(this.url, this.submittedByUser, this.audioEventHandler, this.userRequestMessage, this.scheduleType);
+	}
+
+	public enum ScheduleType{
+		PRIO, INTRUSIVE, NORMAL
 	}
 }

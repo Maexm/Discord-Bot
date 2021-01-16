@@ -27,7 +27,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private final AudioPlayer player;
 	private final LinkedList<AudioTrack> tracks;
 	public final static String MUSIC_WARN = "";//":warning: Wiedergabe und Suche von YouTube Tracks funktioniert aktuell unzuverlässig!";
-	public final static String MUSIC_LOADING = ":musical_note: Musik wird geladen..."; 
+	public final static String MUSIC_LOADING = ":musical_note: Musik wird geladen...";
+	@Deprecated
 	public final static String MUSIC_STOPPED = ":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!";
 	public final static String MUSIC_INFO_PREFIX = ":musical_note: Es wird abgespielt:";
 	/**
