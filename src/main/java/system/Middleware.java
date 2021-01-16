@@ -24,7 +24,6 @@ import discord4j.voice.AudioProvider;
 import musicBot.MusicWrapper;
 import reactor.core.publisher.Mono;
 import security.SecurityProvider;
-import snowflakes.GuildID;
 import start.RuntimeVariables;
 import start.GlobalDiscordHandler.GlobalDiscordProxy;
 import survey.Survey;
@@ -96,7 +95,11 @@ public abstract class Middleware {
 	}
 
 	protected final Guild getGuild(){
-		return this.getGuildByID(this.config.guildId);
+		return this.getGuildByID(this.getGuildId());
+	}
+
+	public final Snowflake getGuildId(){
+		return this.config.guildId;
 	}
 
 	/**
@@ -271,6 +274,10 @@ public abstract class Middleware {
 		return this.getAppInfo().getOwner().map(owner -> owner.getMention());
 	}
 
+	public final MessageChannel getSystemChannel(){
+		return this.getGuild().getSystemChannel().block();
+	}
+
 	// ########## INTERACTIVE METHODS ##########
 
 	/**
@@ -320,8 +327,8 @@ public abstract class Middleware {
 	 * @param guildID
 	 * @return
 	 */
-	public final Message sendInChannel(String message, Snowflake channelID, Snowflake guildID) {
-		MessageChannel channel = this.getChannelByID(channelID, guildID);
+	public final Message sendInChannel(String message, Snowflake channelID) {
+		MessageChannel channel = this.getChannelByID(channelID, this.config.guildId);
 		return channel.createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
@@ -369,7 +376,7 @@ public abstract class Middleware {
 		// 	return;
 		// }
 		try {
-			this.getClient().getVoiceConnectionRegistry().disconnect(GuildID.UNSER_SERVER).doOnTerminate(() -> {System.out.println("Left voice channel");}).subscribe();
+			this.getClient().getVoiceConnectionRegistry().disconnect(this.config.guildId).doOnTerminate(() -> {System.out.println("Left voice channel");}).subscribe();
 		} catch (Exception e) {
 			System.out.println(e);
 		}

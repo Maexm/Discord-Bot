@@ -425,7 +425,7 @@ public class Megumin extends ResponseType {
 						+ Markdown.toBold("Online seit: ")
 						+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
 						+ Markdown.toBold("Mein Entwickler: ")
-						+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
+						+ this.getOwner().getUsername() + "\n"
 						+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " "
 						+ (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
 						+ Markdown.toBold("GitHub: ") + RuntimeVariables.GIT_URL);
@@ -535,7 +535,7 @@ public class Megumin extends ResponseType {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
 			} else {
-				this.sendInChannel(this.getArgumentSection(), ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
+				this.sendInChannel(this.getArgumentSection(), this.getSystemChannel().getId());
 			}
 		} else {
 			this.noPermission();
@@ -594,7 +594,7 @@ public class Megumin extends ResponseType {
 			} else if(!RuntimeVariables.IS_DEBUG){
 				this.sendInChannel(
 						INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()),
-						ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
+						this.getSystemChannel().getId());
 			}
 			else{
 				this.sendMessageToOwner(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));

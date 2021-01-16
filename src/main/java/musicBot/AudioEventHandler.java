@@ -51,6 +51,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 */
 	private boolean loadFlag = true;
 
+	private Snowflake musicChannelId;
+
 	public AudioEventHandler(final AudioPlayer player, final AudioPlayerManager playerManager,
 			final TrackLoader loadScheduler, final LinkedList<AudioTrack> tracks,
 			final LinkedList<MusicTrackInfo> loadingQueue) {
@@ -60,7 +62,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.playerManager = playerManager;
 		this.loadScheduler = loadScheduler;
 		this.refreshTimer = null;
-
 	}
 
 	// TODO: Shorten this file
@@ -78,6 +79,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null && loadRightNow) {
+			this.musicChannelId = parent.getGuildId().equals(GuildID.UNSER_SERVER) ? ChannelID.MEGUMIN : track.userRequestMessage.getChannelId();
 			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...");
 		}
 		// Update radioMessage, if one does already exist.
@@ -287,6 +289,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		
 		this.radioMessage = null;
+		this.musicChannelId = null;
 	}
 
 	@Override
@@ -437,7 +440,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private Message createRadioMessage(String msg){
 		Message ret = null;
 		try{
-			ret = parent.sendInChannel(msg, ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
+			ret = parent.sendInChannel(msg, this.musicChannelId);
 			this.radioMessage = ret;
 		}
 		catch(Exception e){
