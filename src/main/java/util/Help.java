@@ -46,14 +46,12 @@ public class Help {
 			+ "\n"
 			+ "`MegClear`: Lösche die aktuelle Warteschlange"
 			+ "\n"
-			+ "`MegVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist Admins vorbehalten)";
+			+ "`MegVol`: Ich nenne dir meine aktuelle Lautstärke! (Das Ändern der Lautstärke ist aus Gründen nur wenigen Usern erlaubt)";
 	
 	public final static String ADMHELP = "\n>>> Du hast Zugriffsrechte auf Admin Befehle! :man_office_worker:\n"
 			+ "`MegLogout`: Ich melde mich ab und terminiere (bitte nur im Notfall verwenden) :skull_crossbones:"
 			+ "\n"
-			+"`MegKill`: Terminiert im Gegensatz zu 'MegLogout' unverzüglich und ohne Nachrichten CleanUp (für den Fall, dass 'MegLogout' nicht funktioniert)."
-			+ "\n"
-			+ "`MegVol ZAHL`: Ich ändere meine Lautstärke!";
+			+"`MegKill`: Terminiert im Gegensatz zu 'MegLogout' unverzüglich und ohne Nachrichten CleanUp (für den Fall, dass 'MegLogout' nicht funktioniert).";
 	
 	public final static String SURVEYHELPTEXT = "\n>>> So nutzt du die Macht der Umfragen!"
 			+ "\n"

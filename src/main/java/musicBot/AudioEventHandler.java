@@ -14,8 +14,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.presence.Activity;
-import discord4j.core.object.presence.Presence;
 import discord4j.rest.http.client.ClientException;
 import system.ResponseType;
 import util.Emoji;
@@ -23,7 +21,6 @@ import util.Markdown;
 import util.TimePrint;
 import snowflakes.ChannelID;
 import snowflakes.GuildID;
-import start.RuntimeVariables;
 
 public class AudioEventHandler extends AudioEventAdapter {
 

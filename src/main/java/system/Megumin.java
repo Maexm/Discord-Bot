@@ -395,14 +395,11 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.getMusicWrapper().getMusicBotHandler().getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (this.hasPermission(SecurityLevel.ADM)) {
+		} else if (this.hasPermission(SecurityLevel.KREIS)) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
-				if (vol > 200) {
-					vol = 200;
-				} else if (vol < 0) {
-					vol = 0;
-				}
+				vol = Math.max(0, vol);
+				vol = Math.min(200, vol);
 				this.getMusicWrapper().getMusicBotHandler().setVolume(vol);
 				this.sendAnswer("Lautstärke wurde auf " + vol + " gestellt! " + Emoji.getVol(vol));
 			} catch (Exception e) {
