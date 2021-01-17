@@ -16,6 +16,8 @@ import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.core.object.presence.Activity;
+import discord4j.core.object.presence.Presence;
 import discord4j.rest.util.Color;
 import exceptions.IllegalMagicException;
 import exceptions.NoPermissionException;
@@ -78,6 +80,7 @@ public class Megumin extends ResponseType {
 		if (this.hasPermission(SecurityLevel.ADM)) {
 			Message logOutMsg = this.sendInSameChannel("Logout wird ausgeführt. Das kann kurz etwas dauern...");
 
+			this.getClient().updatePresence(Presence.doNotDisturb(Activity.playing("Herunterfahren..."))).block();
 			this.getGlobalProxy().purgeAllGuilds();
 
 			// ########## LOGOUT ##########
@@ -981,6 +984,7 @@ public class Megumin extends ResponseType {
 		}
 
 		String response = "Du hast "+set.size()+" "+(set.size() == 1 ? "VoiceChannel" : "VoiceChannels")+" abonniert:\n";
+		response += Markdown.toUnsafeMultilineBlockQuotes("");
 		for(Pair<Guild, VoiceChannel> pair : set){
 			response += "Server: "+Markdown.toBold(pair.key.getName())+" - VoiceChannel: "+Markdown.toBold(pair.value.getName())+"\n";
 		}

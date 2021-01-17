@@ -20,6 +20,8 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.core.object.presence.Activity;
+import discord4j.core.object.presence.Presence;
 import exceptions.IllegalMagicException;
 import musicBot.MusicWrapper;
 import survey.Survey;
@@ -55,6 +57,10 @@ public class GlobalDiscordHandler {
         this.privateHandler = new GuildHandler(null, this.globalProxy, null);
 
         this.surveys = new ArrayList<>();
+
+        this.client.updatePresence(Presence
+					.online(Activity.playing(RuntimeVariables.getStatus())))
+					.block();
     }
 
     public HashMap<Snowflake, GuildHandler> getGuildMap(){

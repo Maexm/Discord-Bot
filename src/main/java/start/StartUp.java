@@ -57,7 +57,7 @@ public class StartUp {
 			System.out.println("Currently member of " + ready.getGuilds().size() + " guilds");
 
 			client.updatePresence(Presence
-					.online(Activity.playing(RuntimeVariables.getStatus())))
+					.doNotDisturb(Activity.playing("Starten")))
 					.block();
 
 			if(RuntimeVariables.firstLogin){
