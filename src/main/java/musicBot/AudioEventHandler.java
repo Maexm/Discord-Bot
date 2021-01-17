@@ -195,7 +195,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 * @param pos
 	 */
 	public void setPosition(long pos){
-		if(!this.getCurrentAudioTrack().getInfo().isStream){
+		if(!this.currentIsStream()){
 			this.getCurrentAudioTrack().setPosition(pos);
 		}
 	}
@@ -205,6 +205,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 * @return New position of track
 	 */
 	public long jump(long amount){
+		// ignore streams
+		if(this.currentIsStream()){
+			return 0l;
+		}
 		long newTrackPos = this.getCurrentAudioTrack().getPosition() + amount;
 		newTrackPos = Math.max(0l, newTrackPos);
 		newTrackPos = Math.min(this.getCurrentAudioTrack().getDuration(), newTrackPos);
@@ -212,6 +216,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.setPosition(newTrackPos);
 
 		return newTrackPos;
+	}
+
+	public boolean currentIsStream(){
+		return this.getCurrentAudioTrack().getInfo().isStream;
 	}
 
 	public void randomize(){

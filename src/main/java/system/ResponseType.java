@@ -134,12 +134,12 @@ public abstract class ResponseType extends Middleware {
 			case "musicvol":
 				this.onMusicVol();
 				break;
-			case "musicidee":
-			case "musicideen":
-			case "musicideas":
-			case "musicidea":
-				this.onMusicIdea();
-				break;
+			// case "musicidee":
+			// case "musicideen":
+			// case "musicideas":
+			// case "musicidea":
+			// 	this.onMusicIdea();
+			// 	break;
 			case "musiclist":
 			case "musicliste":
 			case "list":
@@ -234,8 +234,6 @@ public abstract class ResponseType extends Middleware {
 			case "qna":
 			case "entscheidung":
 			case "decision":
-			case "rand":
-			case "random":
 			case "janein":
 			case "neinja":
 			case "yesno":
@@ -260,6 +258,9 @@ public abstract class ResponseType extends Middleware {
 			case "musicrandom":
 			case "shuffle":
 			case "musicshuffle":
+			case "random":
+			case "rand":
+			case "musicrand":
 				this.onMusicRandom();
 				break;
 			case "force":

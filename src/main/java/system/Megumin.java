@@ -738,6 +738,11 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
+		if(this.getMusicWrapper().getMusicBotHandler().currentIsStream()){
+			this.sendAnswer("es läuft ein Livestream, hier kannst du nicht springen!");
+			return;
+		}
+
 		if (this.getArgumentSection().equals("")) {
 			this.sendAnswer("mir ist nicht klar, wie viel ich skippen soll!");
 			return;
@@ -752,6 +757,7 @@ public class Megumin extends ResponseType {
 			}
 			long pos = this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
 			this.sendAnswer("springe "+skipSeconds+" "+(Math.abs(skipSeconds) > 1 ? "Sekunden" : "Sekunde")+"!\nNeue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
+			this.deleteReceivedMessage();
 		} catch (NumberFormatException e) {
 			this.sendAnswer(
 					"ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");
