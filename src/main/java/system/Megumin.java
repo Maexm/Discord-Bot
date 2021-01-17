@@ -51,7 +51,7 @@ public class Megumin extends ResponseType {
 
 	public Megumin(MiddlewareConfig config, TaskManager<RefinedTimerTask> localTasks) {
 		super(config, localTasks);
-		if (!RuntimeVariables.IS_DEBUG) {
+		if (!RuntimeVariables.IS_DEBUG && !this.isPrivate()) {
 			try {
 				Message message = this.getSystemChannel()
 						.createMessage(
@@ -181,6 +181,10 @@ public class Megumin extends ResponseType {
 				break;
 			// Create new survey
 			case 3:
+				if(this.isPrivate()){
+					this.notInPrivate();
+					return;
+				}
 
 				final String[] options = arguments[1].split(";");
 				final String description = arguments[0];
@@ -303,6 +307,7 @@ public class Megumin extends ResponseType {
 			} else if (!this.getMusicWrapper().getMusicBotHandler().isPaused()) {
 				this.getMusicWrapper().getMusicBotHandler().pause();
 				this.sendAnswer("Musik wurde pausiert! :pause_button:");
+				this.deleteReceivedMessage();
 			} else {
 				this.sendAnswer("Musik ist bereits pausiert! Schreib 'MegPlay', um die Wiedergabe fortzuführen!");
 			}
@@ -322,6 +327,7 @@ public class Megumin extends ResponseType {
 			} else if (this.getMusicWrapper().getMusicBotHandler().isPaused()) {
 				this.getMusicWrapper().getMusicBotHandler().pause();
 				this.sendAnswer("Musik wird wieder abgespielt! :arrow_forward:");
+				this.deleteReceivedMessage();
 			} else {
 				this.sendAnswer("Musik spielt bereits! Schreib 'MegPause', um die Wiedergabe zu pausieren!");
 			}
@@ -333,7 +339,8 @@ public class Megumin extends ResponseType {
 		if (this.handleMusicCheck(true)) {
 			this.getMusicWrapper().getMusicBotHandler().clearList();
 			this.getMusicWrapper().getMusicBotHandler().stop();
-			this.sendAnswer("Musikwiedergabe wurde komplett gestoppt! :stop_button:");
+			this.sendAnswer("Musikwiedergabe wurde komplett gestoppt!");
+			this.deleteReceivedMessage();
 		}
 	}
 
@@ -342,11 +349,13 @@ public class Megumin extends ResponseType {
 		if (this.handleMusicCheck(true)) {
 			if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.sendAnswer("es wird nichts abgespielt!");
+				this.deleteReceivedMessage();
 			} else {
 				int count = 1;
 				// Stop music, if queue is empty
 				if (this.getMusicWrapper().getMusicBotHandler().getListSize() == 0) {
 					this.sendAnswer("keine Musik in der Warteschlange. Musik wird gestoppt.");
+					this.deleteReceivedMessage();
 					this.getMusicWrapper().getMusicBotHandler().stop();
 				}
 				// Queue not empty
@@ -359,6 +368,7 @@ public class Megumin extends ResponseType {
 						}
 					}
 					this.sendAnswer("überspringe Musik...");
+					this.deleteReceivedMessage();
 				}
 				this.getMusicWrapper().getMusicBotHandler().next(count);// Count = 1, unless a different number was
 																		// parsed
@@ -442,11 +452,10 @@ public class Megumin extends ResponseType {
 				Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ") + this.getAppInfo().getName()
 						+ "\n" + Markdown.toBold("Beschreibung: ") + this.getAppInfo().getDescription() + "\n"
 						/* + Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" */
-						+ Markdown.toBold("Online seit: ")
-						+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
+						+ Markdown.toBold("Online seit: ") + TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
+						+ Markdown.toBold("Anzahl Server: ") + this.getGlobalProxy().getClient().getGuilds().buffer().next().map(guildList -> guildList.size()).block()+"\n"
 						+ Markdown.toBold("Mein Entwickler: ") + this.getOwner().getUsername() + "\n"
-						+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " "
-						+ (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
+						+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " " + (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
 						+ Markdown.toBold("GitHub: ") + RuntimeVariables.GIT_URL);
 	}
 
@@ -726,16 +735,23 @@ public class Megumin extends ResponseType {
 			if (this.getMusicWrapper().getMusicBotHandler().getListSize() >= 1) {
 				this.sendAnswer(
 						"es müssen mindestens zwei Tracks in der Warteschlange sein, sonst macht das ganze keinen Sinn!");
+					this.deleteReceivedMessage();
 			} else {
 				this.getMusicWrapper().getMusicBotHandler().randomize();
 				this.sendAnswer(
 						"*ratter* *ratter* *schüttel* *schüttel* Die Warteschlange wurde einmal kräftig durchgemischt!");
+				this.deleteReceivedMessage();
 			}
 		}
 	}
 
 	@Override
 	protected void onChicken() {
+		if(this.isPrivate()){
+			this.notInPrivate();
+			return;
+		}
+
 		if (this.chicken == Integer.MAX_VALUE) {
 			this.sendAnswer("Mehr geht nicht!");
 			return;
@@ -758,6 +774,11 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onNuggets() {
+		if(this.isPrivate()){
+			this.sendAnswer("Chicken Nuggets isst man am besten mit Freunden und nicht alleine im Privatchat!");
+			return;
+		}
+
 		String response = "";
 
 		switch (this.chicken) {

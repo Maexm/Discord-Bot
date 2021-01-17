@@ -26,43 +26,26 @@ public class GlobalDiscordHandler {
     private final GuildHandler privateHandler;
     private final GlobalDiscordProxy globalProxy;
     private final GatewayDiscordClient client;
-    private final boolean isDummy;
     private final ArrayList<Survey> surveys;
 
     public GlobalDiscordHandler(ReadyEvent readyEvent) {
+        this.globalProxy = new GlobalDiscordProxy(this);
+        this.client = readyEvent.getClient();
 
-        if (readyEvent == null) {
-            this.guildMap = null;
-            this.globalProxy = null;
-            this.client = null;
-            this.privateHandler = null;
-            this.isDummy = true;
-            this.surveys = null;
-        } else {
-            this.globalProxy = new GlobalDiscordProxy(this);
-            this.client = readyEvent.getClient();
+        // Prepare guilds
+        this.guildMap = new HashMap<>();
 
-            // Prepare guilds
-            this.guildMap = new HashMap<>();
+        readyEvent.getGuilds().forEach(guild -> {
+            GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy);
+            this.guildMap.put(guild.getId(), guildHandler);
+        });
+        this.privateHandler = new GuildHandler(null, this.globalProxy);
 
-            readyEvent.getGuilds().forEach(guild -> {
-                GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy);
-                this.guildMap.put(guild.getId(), guildHandler);
-            });
-            this.privateHandler = new GuildHandler(null, this.globalProxy);
-
-            this.surveys = new ArrayList<>();
-
-            this.isDummy = false;
-        }
+        this.surveys = new ArrayList<>();
     }
 
     public HashMap<Snowflake, GuildHandler> getGuildMap(){
         return this.guildMap;
-    }
-
-    public boolean isDummy(){
-       return this.isDummy;
     }
 
     public void acceptEvent(MessageCreateEvent event) {
