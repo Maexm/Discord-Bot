@@ -3,7 +3,7 @@ package survey;
 import java.util.ArrayList;
 
 import discord4j.core.object.entity.User;
-import services.Markdown;
+import util.Markdown;
 
 public class SurveyOption {
 	public final String option;

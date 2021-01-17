@@ -1,25 +1,17 @@
 package system;
 
-import java.util.ArrayList;
-
-import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.voice.AudioProvider;
-import musicBot.AudioEventHandler;
 import security.SecurityLevel;
-import services.Help;
-import survey.Survey;
+import util.Help;
 
 public class HelpSection extends Middleware {
 
-    public HelpSection(Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider,
-            ArrayList<Survey> surveys, AudioEventHandler audioEventHandler) {
-        super(guildId, client, audioProvider, surveys, audioEventHandler);
+    public HelpSection(MiddlewareConfig config) {
+        super(config);
     }
 
     @Override
     protected boolean handle() {
-        switch(this.msgContent.toLowerCase()){
+        switch(this.getMessage().getContent().toLowerCase()){
             // Help section (and ONLY the help section) should be fool proofed
             case "megh":
             case "meghelp":

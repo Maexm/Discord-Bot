@@ -7,12 +7,12 @@ public class Format {
         return (1. * ret)/Math.pow(10, digits);
     }
 
-    public static String firstCharsCapitalized(String s, final String delimiter){
+    public static String firstCharsCapitalized(String s, final char delimiter){
         String ret = "";
         String lower = s.toLowerCase();
         String upper = s.toUpperCase();
         for(int i = 0; i < s.length(); i++){
-            if(s.charAt(i) == lower.charAt(i) && (i == 0 || s.charAt(i-1) == ' ')){
+            if(s.charAt(i) == lower.charAt(i) && (i == 0 || s.charAt(i-1) == delimiter)){
                 ret += upper.charAt(i);
             }
             else{

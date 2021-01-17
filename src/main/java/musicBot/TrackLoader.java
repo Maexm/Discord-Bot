@@ -102,17 +102,25 @@ public class TrackLoader implements AudioLoadResultHandler {
 		if (this.player.getPlayingTrack() == null) {
 			this.playTrack(track, info);
 		}
-		// Add track to queue, if something is already playing. Differentiate between isPrio and !isPrio
-		else if(info.isPrio()){
-			this.trackList.addFirst(track);
-		}
-		else {
-			this.trackList.add(track);
+		// Add track to queue, if something is already playing. Differentiate between ScheduleTypes
+		else{
+			switch(info.getScheduleType()){
+				case NORMAL:
+					this.trackList.add(track);
+					break;
+				case INTRUSIVE:
+					this.playTrack(track, info);
+					break;
+				case PRIO:
+					this.trackList.addFirst(track);
+					break;
+			}
 		}
 		this.loadNext();
 	}
 
 	private void digestMultipleTracks(AudioPlaylist playlist) {
+		boolean firstTrackAlreadyPlaying = false;
 		// Retrieve first track and its info
 		MusicTrackInfo info = null;
 		AudioTrack first = null;
@@ -127,17 +135,26 @@ public class TrackLoader implements AudioLoadResultHandler {
 			playlist.getTracks().remove(0);
 			first.setUserData(info);
 			this.playTrack(first, info);
+			firstTrackAlreadyPlaying = true;
 		}
 		// Add loaded list to queue. First track will be included, if playingTrack was not null
 		for (int i = 0; i < playlist.getTracks().size(); i++) {
 			AudioTrack track = playlist.getTracks().get(i);
 			track.setUserData(info);
-			// Differentiate between isPrio & !isPrio - If first track is prio then every ttrack in this playlist is prio
-			if(info.isPrio()){
-				this.trackList.add(i, track);
-			}
-			else{
-				this.trackList.add(track);
+			// Differentiate between ScheduleType - If first track is prio then every track in this playlist is prio, same for intrusive, but first tarck will be played immediately
+			switch(info.getScheduleType()){
+				case INTRUSIVE:
+					if(!firstTrackAlreadyPlaying){
+						this.playTrack(track, info);
+						firstTrackAlreadyPlaying = true;
+						break;
+					}
+				case PRIO:
+					this.trackList.add(i, track);
+					break;
+				case NORMAL:
+					this.trackList.add(track);
+					break;
 			}
 		}
 		this.loadNext();

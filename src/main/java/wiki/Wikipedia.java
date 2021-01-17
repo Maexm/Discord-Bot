@@ -5,24 +5,26 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 import exceptions.IllegalMagicException;
-import services.HTTPRequests;
-import services.Markdown;
+import util.HTTPRequests;
+import util.Markdown;
 import util.Format;
 
 public class Wikipedia {
 
     public final static String WIKI_API_BASE_URL = "wikipedia.org/w/api.php?";
     public final static String WIKI_NORMAL_BASE_URL = "wikipedia.org/wiki/";
-    public final static String QUERY_PARAMS = "action=query&prop=extracts&format=json&explaintext=true&exintro=true&exchars=800&redirects=true&titles=";
+    public final static String QUERY_PARAMS = "action=query&prop=extracts%7Cpageimages&format=json&explaintext=true&exintro=true&exchars=800&pilicense=any&piprop=original&redirects=true&titles=";
     public final static String[] LANGUAGES = {"de", "en"};
 
     public static WikiPage getWikiPage(String keyword){
-        keyword = Format.firstCharsCapitalized(keyword, " ");
+        keyword = Format.firstCharsCapitalized(keyword, ' ');
+        keyword = Format.firstCharsCapitalized(keyword, '-');
         keyword = HTTPRequests.urlEncode(keyword);
+        
 
         // Try configured languages until a valid page has been found
         for(String language : Wikipedia.LANGUAGES){
-            final String[] variations = {keyword, keyword.replace(" ", "%2D")};
+            final String[] variations = {keyword, keyword.replace("%20", "%2D"), keyword.replace("-", "%2D")};
             // Try different keyword variations until a valid page has been found
             for(int i = 0; i < variations.length; i++){ 
                 if(i > 0 && variations[i].equals(keyword)){
@@ -54,6 +56,7 @@ public class Wikipedia {
         return pages.values().stream().findFirst().orElse(null);
     }
 
+    @Deprecated
     public static String buildMessage(WikiPage wikiRes){
         if(wikiRes == null){
             return "konnte unter diesem Begriff nichts finden!";
@@ -91,8 +94,21 @@ public class Wikipedia {
         public long pageid;
         public String title;
         public String missing;
+        /**
+         * Extracted article text
+         */
         public String extract;
+        /**
+         * Thumbnail url
+         */
+        public WikiThumbnail original;
 
         public String CUSTOM_PROP_LANGUAGE;
+    }
+
+    public class WikiThumbnail{
+        public String source;
+        public int width;
+        public int height;
     }
 }

@@ -1,8 +1,8 @@
 package japanese;
 
 import com.google.gson.Gson;
-import services.HTTPRequests;
-import services.Markdown;
+import util.HTTPRequests;
+import util.Markdown;
 
 public class Jisho {
 	
@@ -53,7 +53,7 @@ public class Jisho {
 		}
 		
 		for(int i = 0; i < resp.data.length && i < maxResults; i++) {
-			data data = resp.data[i];
+			Results data = resp.data[i];
 			// PRINT WORD AND READING
 				// data.slug BROKEN
 			if(data.slug.startsWith("5186") && data.slug.length() == 24) {
@@ -69,7 +69,7 @@ public class Jisho {
 			
 			// ENGLISH DEFINITIONS
 			for(int j = 0; j < data.senses.length && j < maxSensesResults; j++) {
-				senses sense = data.senses[j];
+				Senses sense = data.senses[j];
 				String definitions = "";
 				for(String definition: sense.english_definitions) {
 					definitions+= ", "+definition;
@@ -85,28 +85,28 @@ public class Jisho {
 	
 	// Structure of jisho keyword lookup response, starting in JishoResponse class
 	public class JishoResponse{
-		int status;
-		data[] data;
+		public int status;
+		public Results[] data;
 	}
 	
-	public class data{
-		String slug;
-		boolean is_common;
-		String[] tags;
-		String[] jlpt;
-		japanese[] japanese;
-		senses[] senses;
+	public class Results{
+		public String slug;
+		public boolean is_common;
+		public String[] tags;
+		public String[] jlpt;
+		public Japanese[] japanese;
+		public Senses[] senses;
 	}
 	
-	public class japanese{
-		String word;
-		String reading;
+	public class Japanese{
+		public String word;
+		public String reading;
 	}
 	
-	public class senses{
-		String[] english_definitions;
-		String[] parts_of_speech;
-		String[] tags;
+	public class Senses{
+		public String[] english_definitions;
+		public String[] parts_of_speech;
+		public String[] tags;
 	}
 
 }

@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0.0 (17th of January 2021)
+
+:chicken:
+- First multiserver compatible version
+- Allow Kreis & guild owners to manipulate music session volume
+- MegJump
+- MegForce
+- VoiceChannel subscriptions
+- MegWiki as embed
+- Shuffle music playlist
+- MusicWrapper and MiddlewareConfig
+- Shutdown and Starting presence info
+
 ## 1.0.5.1 (5th of December 2020)
 Christmas update :christmas_tree:
 - Middleware mayAccept is now a Predicate, accepting a message object as param

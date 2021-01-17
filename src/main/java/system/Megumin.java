@@ -1,7 +1,7 @@
 package system;
 
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Random;
@@ -9,9 +9,16 @@ import java.util.Random;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
-import discord4j.voice.AudioProvider;
+import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.core.object.presence.Activity;
+import discord4j.core.object.presence.Presence;
+import discord4j.rest.util.Color;
 import exceptions.IllegalMagicException;
 import exceptions.NoPermissionException;
 import exceptions.SurveyCreateIllegalDurationException;
@@ -22,82 +29,65 @@ import japanese.ToRomajiConverter;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
 import musicBot.MusicVariables;
+import musicBot.MusicTrackInfo.ScheduleType;
 import musicBot.MusicVariables.TrackLink;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
 import security.SecurityProvider;
-import services.Emoji;
-import services.Help;
-import services.Markdown;
-import services.TimePrint;
 import snowflakes.ChannelID;
 import snowflakes.GuildID;
+import util.Emoji;
+import util.HTTPRequests;
+import util.Help;
+import util.Markdown;
+import util.Pair;
+import util.TimePrint;
 import start.RuntimeVariables;
 import survey.Survey;
+import survey.VoteChange;
 import weather.Weather;
 import wiki.Wikipedia;
+import wiki.Wikipedia.WikiPage;
 
 public class Megumin extends ResponseType {
 
-	public Megumin(final Snowflake guildId, GatewayDiscordClient client, AudioProvider audioProvider,
-			ArrayList<Survey> surveys, AudioEventHandler audioEventHandler, TaskManager<RefinedTimerTask> systemTasks) {
-		super(guildId, client, audioProvider, surveys, audioEventHandler, systemTasks);
+	protected int chicken = 0;
+
+	public Megumin(MiddlewareConfig config, TaskManager<RefinedTimerTask> localTasks) {
+		super(config, localTasks);
+		if (!RuntimeVariables.IS_DEBUG && !this.isPrivate()) {
+			try {
+				MessageChannel channel = this.getGuildId().equals(GuildID.UNSER_SERVER) ? this.getChannelByID(ChannelID.MEGUMIN) : this.getSystemChannel();
+				Message message = channel
+						.createMessage(
+								"Ich bin Online und einsatzbereit! Schreib " + Markdown.toCodeBlock("MegHelp") + "!")
+						.block();
+				this.config.helloMessage = message;
+			} catch (Exception e) {
+				System.out.println("Failed to post hello message in guild " + this.getGuild().getName());
+			}
+		}
 	}
 
 	@Override
 	protected void onGreeting() {
-		this.sendInSameChannel("Hey " + this.getMessageAuthorObject().getMention() + "!");
+		this.sendInSameChannel("Hey " + this.getMessage().getUser().getMention() + "!");
 	}
 
 	@Override
 	protected void onLogout() {
 		if (this.hasPermission(SecurityLevel.ADM)) {
-			final String logoutText = "Logout wird ausgeführt...";
+			Message logOutMsg = this.sendInSameChannel("Logout wird ausgeführt. Das kann kurz etwas dauern...");
 
-			// ########## CLEAN MUSIC SESSION ##########
-			System.out.println("Cleaning up mussic session...");
-			Message logOutMsg = this.sendInSameChannel(logoutText + "\n" + "Musik Session wird beendet...");
-			this.audioEventHandler.clearList();
-			if (this.audioEventHandler.isPlaying()) {
-				this.audioEventHandler.stop();
-			}
-			if (this.isVoiceConnected()) {
-				this.leaveVoiceChannel();
-			}
-
-			// ########## CLEAN INFO CHANNEL ##########
-			System.out.println("Deleting messages in info channel...");
-			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText + "\n" + "Lösche Botnachrichten...")).block();
-
-			try {
-				this.deleteAllMessages(ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
-				System.out.println("Messages deleted!");
-			} catch (Exception e) {
-				e.printStackTrace();
-				this.sendInSameChannel("Beim Löschen von Botnachrichten ist ein Fehler aufgetreten!");
-			}
-
-			// ########## STOP SURVEYS ##########
-			System.out.println("Stopping surveys...");
-			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText + "\n" + "Beende existierende Umfragen..."))
-					.block();
-
-			this.surveys.forEach(survey -> {
-				survey.stop();
-			});
-
-			// ########## STOP TASKS ##########
-			System.out.println("Stopping tasks...");
-			logOutMsg = logOutMsg.edit(edit -> edit.setContent(logoutText + "\n" + "Beende System-Tasks..."))
-					.block();
-			this.cleanSystemTasks();
+			this.getClient().updatePresence(Presence.doNotDisturb(Activity.playing("Herunterfahren..."))).block();
+			this.getGlobalProxy().purgeAllGuilds();
 
 			// ########## LOGOUT ##########
-			System.out.println("Cleanup finished, logging out!");
+			System.out.println("Logging out!");
 			logOutMsg = logOutMsg.edit(edit -> edit.setContent("Bis bald!")).block();
 
-			this.logOut();
+			this.getGlobalProxy().logout();
 		} else {
 			this.noPermission();
 		}
@@ -143,8 +133,9 @@ public class Megumin extends ResponseType {
 			// Submit result
 			case 2:
 				String surveyKey = arguments[0];
-				if (this.surveyExists(surveyKey)) {
-					Survey survey = this.getSurveyForKey(surveyKey);
+				Snowflake userId = this.getMessage().getUser().getId();
+				if (this.surveyExistsUserScoped(surveyKey, userId)) {
+					Survey survey = this.getSurveyForKeyUserScoped(surveyKey, userId);
 					String surveyOption = survey.getOptionTextFromIndex(arguments[1]);
 					if (survey.optionExists(surveyOption)) {
 						boolean inPrivate = this.isPrivate();
@@ -152,24 +143,24 @@ public class Megumin extends ResponseType {
 							this.deleteReceivedMessage();
 							this.sendPrivateAnswer(
 									"Du hast öffentlich für eine Umfrage abgestimmt. Ich habe diese Nachricht gelöscht,\n"
-											+ "eventuell hat aber jemand schon deine tiefsten Geheimnisse gesehen! :cold_sweat:");
+											+ "eventuell hat aber jemand schon deinen geheimen Vote gesehen! :cold_sweat:");
 						}
-						String resp = this.getSurveyForKey(surveyKey).receiveVote(getMessageAuthorObject(),
-								surveyOption);
+						VoteChange resp = this.getSurveyForKeyUserScoped(surveyKey, userId)
+								.receiveVote(this.getMessage().getUser(), surveyOption);
 						switch (resp) {
-							case Survey.VOTE_ADDED:
+							case ADDED:
 								this.sendPrivateAnswer("Du hast für die Umfrage '"
 										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 										+ " abgestimmt!\nDu hast abgestimmt für: '" + Markdown.toBold(surveyOption)
 										+ "'\nDanke für die Teilnahme!");
 								break;
-							case Survey.VOTE_DELETED:
+							case DELETED:
 								this.sendPrivateAnswer("Deine Stimme aus der Umfrage '"
 										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 										+ " wurde entfernt!\nDu hattest vorher '" + Markdown.toBold(surveyOption)
 										+ "' gewählt. ");
 								break;
-							case Survey.VOTE_REJECTED:
+							case REJECTED:
 								// Not currently used
 								this.sendPrivateAnswer(
 										"Mehrfache Antworten sind ausgeschaltet.\nDeine Stimme aus der Umfrage '"
@@ -177,7 +168,7 @@ public class Megumin extends ResponseType {
 														.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 												+ " ist also nicht gültig.\nWenn du deine Antwort ändern möchtest, musst du sie zunächst löschen (für die zu löschende Auswahl nochmal abstimmen!)");
 								break;
-							case Survey.VOTE_CHANGED:
+							case CHANGED:
 								this.sendPrivateAnswer("Du hast für die Umfrage '"
 										+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
 										+ " bereits abgestimmt, aber mehrfache Antworten sind nicht erlaubt!\n"
@@ -192,11 +183,15 @@ public class Megumin extends ResponseType {
 					}
 
 				} else {
-					this.sendAnswer("diese Umfrage existiert nicht!");
+					this.sendAnswer("diese Umfrage existiert nicht oder ist für dich nicht verfügbar!");
 				}
 				break;
 			// Create new survey
 			case 3:
+				if(this.isPrivate()){
+					this.notInPrivate();
+					return;
+				}
 
 				final String[] options = arguments[1].split(";");
 				final String description = arguments[0];
@@ -204,7 +199,7 @@ public class Megumin extends ResponseType {
 
 				try {
 					new Survey(description, options, Integer.parseInt(duration), this.getMessageChannel(),
-							this.getMessageAuthorObject(), this.surveys, isMulti);
+							this.getMessage().getUser(), this.getSurveyListVerbose(), isMulti, this.getGuildId());
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
 					this.sendAnswer("das letzte Argument (Anzahl Minuten bis Ende) ist falsch!");
@@ -220,12 +215,13 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onSurveyLeave() {
+		Snowflake userId = this.getMessage().getUser().getId();
 		if (this.getArgumentSection().equals("")) {
 			this.sendAnswer("du musst eine Umfrage (ID) angeben! Die ID findest du in einer Umfrage immer unten!");
-		} else if (this.surveyExists(this.getArgumentSection())) {
-			Survey survey = this.getSurveyForKey(this.getArgumentSection());
-			if (survey.userHasParticipated(this.getMessageAuthorObject())) {
-				survey.removeAllVotesForUser(this.getMessageAuthorObject());
+		} else if (this.surveyExistsUserScoped(this.getArgumentSection(), userId)) {
+			Survey survey = this.getSurveyForKeyUserScoped(this.getArgumentSection(), userId);
+			if (survey.userHasParticipated(this.getMessage().getUser())) {
+				survey.removeAllVotesForUser(this.getMessage().getUser());
 				this.deleteReceivedMessage();
 				this.sendPrivateAnswer("Alle deine Stimmen für die Umfrage '"
 						+ Markdown.toBold(survey.description + "' (" + survey.getIDPrint() + ")")
@@ -234,7 +230,7 @@ public class Megumin extends ResponseType {
 				this.sendAnswer("du hast für diese Umfrage nicht abgestimmt!");
 			}
 		} else {
-			this.sendAnswer("diese Umfrage existiert nicht!");
+			this.sendAnswer("diese Umfrage existiert nicht oder ist für dich nicht verfügbar!");
 		}
 	}
 
@@ -253,7 +249,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onTest() {
 		try {
-			SecurityProvider.checkPermission(getMessageAuthorObject(), SecurityLevel.DEV, this.getOwner().getId());
+			SecurityProvider.checkPermission(this.getMessage().getUser(), SecurityLevel.DEV, this.getOwner().getId());
 
 			this.sendAnswer("Keine Testfunktion angegeben!");
 
@@ -274,11 +270,11 @@ public class Megumin extends ResponseType {
 	}
 
 	@Override
-	protected void onReceiveMusicRequest(boolean isPrio) {
-		if (this.isAuthorVoiceConnected()) {
+	protected void onReceiveMusicRequest(ScheduleType scheduleType) {
+		if (this.handleMusicCheck(true, false)) {
 			if (this.getArgumentSection().equals("")) {
-				this.sendAnswer("du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link!\n"
-						+ "Schreib " + Markdown.toCodeBlock("MegMusikIdee") + " für Anregungen!");
+				this.sendAnswer(
+						"du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link oder einen Suchbegriff!");
 			} else {
 				// Join authors voice channel, if bot is not connected to voice or not to the
 				// same channel (only true if player was not active before)
@@ -289,8 +285,9 @@ public class Megumin extends ResponseType {
 				// MUSIC PLAYBACK
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
-							this.getMessageAuthorObject(), this.audioEventHandler, this.getMessageObject(), isPrio);
-					this.audioEventHandler.schedule(musicTrack, this);
+							this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(),
+							this.getMessage().getMessageObject(), scheduleType);
+					this.getMusicWrapper().getMusicBotHandler().schedule(musicTrack, this);
 					this.sendAnswer("dein Track wurde hinzugefügt!"
 							+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n" + AudioEventHandler.MUSIC_WARN : ""));
 					this.deleteReceivedMessage();
@@ -298,27 +295,26 @@ public class Megumin extends ResponseType {
 				} catch (Exception e) {
 					// Should not occur
 					this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/ Bandcamp-Link!");
-					if (!this.audioEventHandler.isPlaying()) {
+					if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 						this.leaveVoiceChannel();
 					}
 					e.printStackTrace();
 				}
 			}
-		} else {
-			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 		}
 	}
 
 	@Override
 	protected void onPauseMusic() {
-		if (this.handleMusicCheck(true)) {
-			if (!this.audioEventHandler.isPlaying()) {
+		if (this.handleMusicCheck(true, true)) {
+			if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
-			} else if (!this.audioEventHandler.isPaused()) {
-				this.audioEventHandler.pause();
+			} else if (!this.getMusicWrapper().getMusicBotHandler().isPaused()) {
+				this.getMusicWrapper().getMusicBotHandler().pause();
 				this.sendAnswer("Musik wurde pausiert! :pause_button:");
+				this.deleteReceivedMessage();
 			} else {
-				this.sendAnswer("Musik ist bereits pausiert! Schreib 'MegMusikPlay', um die Wiedergabe fortzuführen!");
+				this.sendAnswer("Musik ist bereits pausiert! Schreib 'MegPlay', um die Wiedergabe fortzuführen!");
 			}
 		}
 	}
@@ -326,42 +322,46 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onResumeMusic() {
 		// Interpret as music add request, if there are arguments
-		if(!this.getArgumentSection().equals("")){
-			this.onReceiveMusicRequest(false);
+		if (!this.getArgumentSection().equals("")) {
+			this.onReceiveMusicRequest(ScheduleType.NORMAL);
 		}
-		// Else interpret as music pause request
-		else if (this.handleMusicCheck(true)) {
-			if (!this.audioEventHandler.isPlaying()) {
+		// Else interpret as music resume request
+		else if (this.handleMusicCheck(true, true)) {
+			if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
-			} else if (this.audioEventHandler.isPaused()) {
-				this.audioEventHandler.pause();
+			} else if (this.getMusicWrapper().getMusicBotHandler().isPaused()) {
+				this.getMusicWrapper().getMusicBotHandler().pause();
 				this.sendAnswer("Musik wird wieder abgespielt! :arrow_forward:");
+				this.deleteReceivedMessage();
 			} else {
-				this.sendAnswer("Musik spielt bereits! Schreib 'MegMusikPause', um die Wiedergabe zu pausieren!");
+				this.sendAnswer("Musik spielt bereits! Schreib 'MegPause', um die Wiedergabe zu pausieren!");
 			}
 		}
 	}
 
 	@Override
 	protected void onStopMusic() {
-		if (this.handleMusicCheck(true)) {
-			this.audioEventHandler.clearList();
-			this.audioEventHandler.stop();
-			this.sendAnswer("Musikwiedergabe wurde komplett gestoppt! :stop_button:");
+		if (this.handleMusicCheck(true, true)) {
+			this.getMusicWrapper().getMusicBotHandler().clearList();
+			this.getMusicWrapper().getMusicBotHandler().stop();
+			this.sendAnswer("Musikwiedergabe wurde komplett gestoppt!");
+			this.deleteReceivedMessage();
 		}
 	}
 
 	@Override
 	protected void onNextMusic() {
-		if (this.handleMusicCheck(true)) {
-			if (!this.audioEventHandler.isPlaying()) {
+		if (this.handleMusicCheck(true, true)) {
+			if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.sendAnswer("es wird nichts abgespielt!");
+				this.deleteReceivedMessage();
 			} else {
 				int count = 1;
 				// Stop music, if queue is empty
-				if (this.audioEventHandler.getListSize() == 0) {
+				if (this.getMusicWrapper().getMusicBotHandler().getListSize() == 0) {
 					this.sendAnswer("keine Musik in der Warteschlange. Musik wird gestoppt.");
-					this.audioEventHandler.stop();
+					this.deleteReceivedMessage();
+					this.getMusicWrapper().getMusicBotHandler().stop();
 				}
 				// Queue not empty
 				else {
@@ -373,30 +373,39 @@ public class Megumin extends ResponseType {
 						}
 					}
 					this.sendAnswer("überspringe Musik...");
+					this.deleteReceivedMessage();
 				}
-				this.audioEventHandler.next(count);// Count = 1, unless a different number was parsed
+				this.getMusicWrapper().getMusicBotHandler().next(count);// Count = 1, unless a different number was
+																		// parsed
 			}
 		}
 
 	}
 
-	protected boolean handleMusicCheck(boolean requireSameChannel) {
+	/**
+	 * 
+	 * @param requireSameChannel
+	 * @return true if author is connected to voice and not in private, sends an
+	 *         error message otherwise
+	 */
+	protected boolean handleMusicCheck(boolean requireSameChannel, boolean requireBotConnected) {
 		// Private chat
 		if (this.isPrivate()) {
 			this.notInPrivate();
 			return false;
 		}
 		// Author not connected to voice
-		else if (!this.isVoiceConnected()) {
-			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
-			return false;
-			// Bot not connected to voice
-		} else if (!this.isAuthorVoiceConnected()) {
+	    else if (!this.isAuthorVoiceConnectedGuildScoped()) {
 			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			return false;
 		}
+		// Bot not connected to voice
+		else if (!this.isVoiceConnected() && requireBotConnected) {
+			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
+			return false;
+		}
 		// Author connected to different voice channel
-		else if (requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
+		else if (requireBotConnected && requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
 			this.sendAnswer("du musst dafür im selben VoiceChannel wie ich sein!");
 			return false;
 		}
@@ -421,17 +430,14 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onMusicVol() {
 		if (this.getArgumentSection().equals("")) {
-			int vol = this.audioEventHandler.getVolume();
+			int vol = this.getMusicWrapper().getMusicBotHandler().getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (this.hasPermission(SecurityLevel.ADM)) {
+		} else if (this.hasPermission(SecurityLevel.KREIS) || this.authorIsGuildOwner()) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
-				if (vol > 200) {
-					vol = 200;
-				} else if (vol < 0) {
-					vol = 0;
-				}
-				this.audioEventHandler.setVolume(vol);
+				vol = Math.max(0, vol);
+				vol = Math.min(200, vol);
+				this.getMusicWrapper().getMusicBotHandler().setVolume(vol);
 				this.sendAnswer("Lautstärke wurde auf " + vol + " gestellt! " + Emoji.getVol(vol));
 			} catch (Exception e) {
 				this.sendAnswer("konnte die Zahl nicht auslesen!");
@@ -452,12 +458,10 @@ public class Megumin extends ResponseType {
 				Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ") + this.getAppInfo().getName()
 						+ "\n" + Markdown.toBold("Beschreibung: ") + this.getAppInfo().getDescription() + "\n"
 						/* + Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" */
-						+ Markdown.toBold("Online seit: ")
-						+ TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
-						+ Markdown.toBold("Mein Entwickler: ")
-						+ this.getOwner().asMember(GuildID.UNSER_SERVER).block().getDisplayName() + "\n"
-						+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " "
-						+ (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
+						+ Markdown.toBold("Online seit: ") + TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
+						+ Markdown.toBold("Anzahl Server: ") + this.getGlobalProxy().getClient().getGuilds().buffer().next().map(guildList -> guildList.size()).block()+"\n"
+						+ Markdown.toBold("Mein Entwickler: ") + this.getOwner().getUsername() + "\n"
+						+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " " + (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
 						+ Markdown.toBold("GitHub: ") + RuntimeVariables.GIT_URL);
 	}
 
@@ -474,8 +478,7 @@ public class Megumin extends ResponseType {
 					int amount = Integer.parseInt(this.getArgumentSection());
 
 					// Calculate response
-					final int deleted = this.deleteMessages(this.getMessageChannel().getId(),
-							this.getMessageGuild().getId(), amount);
+					final int deleted = this.deleteMessages(this.getMessageChannel().getId(), amount);
 					if (deleted == 1) {
 						this.sendAnswer("eine Nachricht gelöscht!");
 					} else {
@@ -493,15 +496,13 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onMusicIdea() {
 		if (MusicVariables.trackLinks.length == 0) {
-			this.sendAnswer("seltsam, es gibt keine Musiktipps...\n" +
-			this.getOwner().getMention()
-			+ ", kannst du das bitte prüfen?");
-		}
-		else {
+			this.sendAnswer("seltsam, es gibt keine Musiktipps...\n" + this.getOwner().getMention()
+					+ ", kannst du das bitte prüfen?");
+		} else {
 			String msg = "Hier sind einige Anregungen. Du kannst auch gerne"
-			+ "Anregungen für diese Liste empfehlen!\n\n";
+					+ "Anregungen für diese Liste empfehlen!\n\n";
 			for (TrackLink element : MusicVariables.trackLinks) {
-				msg += element.getLink() + " " + Markdown.toBold(element.getTitle())+"\n";
+				msg += element.getLink() + " " + Markdown.toBold(element.getTitle()) + "\n";
 			}
 			this.sendAnswer(msg);
 		}
@@ -509,39 +510,44 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onMusicQueue() {
-		if (this.isVoiceConnected()) {
-			AudioTrack curTrack = this.audioEventHandler.getCurrentAudioTrack();
+		if (this.handleMusicCheck(false, true)) {
+			AudioTrack curTrack = this.getMusicWrapper().getMusicBotHandler().getCurrentAudioTrack();
 			// Leave if no track is playing (this should not happen)
 			if (curTrack == null) {
 				throw new NullPointerException("There is no current track!");
 			}
-			String curTrackUser = AudioEventHandler.getSubmittedByUserName(curTrack, this.getMessageGuild().getId());
+			String curTrackUser = AudioEventHandler.getSubmittedByUserName(curTrack, this.config.guildId);
 			// Build String
-
 			String out = "aktuell wird abgespielt:\n" + Markdown.toBold(curTrack.getInfo().title) + " von "
 					+ Markdown.toBold(curTrack.getInfo().author)
 					+ (curTrackUser != null ? ", vorgeschlagen von " + Markdown.toBold(curTrackUser) : "") + "\n\n"
-					+ this.audioEventHandler.getQueueInfoString();
+					+ this.getMusicWrapper().getMusicBotHandler().getQueueInfoString();
 
-			out += this.audioEventHandler.getListSize() > 0 ? "\n" : "";
+			out += this.getMusicWrapper().getMusicBotHandler().getListSize() > 0 ? "\n\n" : "";
 
 			// Build String for each track in queue
 
 			int parsed = -1;
-			if(!this.argumentSection.equals("") && !this.argumentSection.equals("all")){
-				try{
+			if (!this.argumentSection.equals("") && !this.argumentSection.equals("all")) {
+				try {
 					parsed = Integer.parseInt(this.argumentSection);
-				}
-				catch(Exception e){
+				} catch (Exception e) {
 				}
 			}
 			final String ALL = "all";
-			final LinkedList<AudioTrack> list = this.audioEventHandler.getDeepListCopy();
-			// Use parsed value if valid, else use all if contains all, else use default value
-			final int MAX_OUT = parsed > 0 ? parsed : (this.argumentSection.toLowerCase().equals(ALL) || this.commandSection.endsWith(ALL)) ? Integer.MAX_VALUE : 5;
+			final LinkedList<AudioTrack> list = this.getMusicWrapper().getMusicBotHandler().getDeepListCopy();
+			// Use parsed value if valid, else use all if contains all, else use default
+			// value
+			final int MAX_OUT = parsed > 0 ? parsed
+					: (this.argumentSection.toLowerCase().equals(ALL) || this.commandSection.endsWith(ALL))
+							? Integer.MAX_VALUE
+							: 5;
 			for (int i = 0; i < list.size() && i < MAX_OUT; i++) {
+				if(i == 0){
+					out += Markdown.toUnsafeMultilineBlockQuotes("");
+				}
 				final AudioTrack track = list.get(i);
-				String trackUser = AudioEventHandler.getSubmittedByUserName(track, this.getMessageGuild().getId());
+				String trackUser = AudioEventHandler.getSubmittedByUserName(track, this.config.guildId);
 
 				out += Markdown.toBold(i + 1 + ".") + " " + Markdown.toBold(track.getInfo().title) + " von "
 						+ Markdown.toBold(track.getInfo().author)
@@ -550,12 +556,10 @@ public class Megumin extends ResponseType {
 			if (list.size() > MAX_OUT) {
 				final int diff = list.size() - MAX_OUT;
 
-				out += "\nEs gibt noch " + (diff == 1 ? Markdown.toBold("einen") + " weiteren Track!"
+				out += "Es gibt noch " + (diff == 1 ? Markdown.toBold("einen") + " weiteren Track!"
 						: Markdown.toBold("" + diff) + " weitere Tracks!");
 			}
 			this.sendAnswer(out);
-		} else {
-			this.sendAnswer("es läuft aktuell keine Musik!");
 		}
 	}
 
@@ -565,7 +569,21 @@ public class Megumin extends ResponseType {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
 			} else {
-				this.sendInChannel(this.getArgumentSection(), ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
+				this.sendInChannel(this.getArgumentSection(), this.getSystemChannel().getId());
+			}
+		} else {
+			this.noPermission();
+		}
+
+	}
+
+	@Override
+	protected void onGlobalPSA() {
+		if (this.hasPermission(SecurityLevel.DEV)) {
+			if (this.getArgumentSection().equals("")) {
+				this.sendAnswer("keine Nachricht angegeben!");
+			} else {
+				this.globalAnnounce(this.getArgumentSection());
 			}
 		} else {
 			this.noPermission();
@@ -575,9 +593,9 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onClearMusicQueue() {
-		if (this.handleMusicCheck(true)) {
+		if (this.handleMusicCheck(true, true)) {
 			// List already empty
-			if (this.audioEventHandler.getListSize() == 0) {
+			if (this.getMusicWrapper().getMusicBotHandler().getListSize() == 0) {
 				final String[] responses = { "Warteschlange wird gele- Moment, die Liste ist schon leer!",
 						"Leerer als leer kann die Liste glaub ich nicht werden!",
 						"Your call was absorbed by the darkness.", "Die Warteschlange ist bereits leer!" };
@@ -586,7 +604,7 @@ public class Megumin extends ResponseType {
 			}
 			// Clear list
 			else {
-				this.audioEventHandler.clearList();
+				this.getMusicWrapper().getMusicBotHandler().clearList();
 				this.sendAnswer("Die Musikqueue ist nun leer!");
 			}
 		}
@@ -602,12 +620,10 @@ public class Megumin extends ResponseType {
 		if (this.hasPermission(SecurityLevel.DEV)) {
 			if (this.argumentSection.equals("")) {
 				this.sendAnswer("du hast keinen Namen angegeben!");
-			}
-			else if(this.isPrivate()){
+			} else if (this.isPrivate()) {
 				this.notInPrivate();
-			}
-			else {
-				this.getMessageGuild().changeSelfNickname(this.argumentSection).block();
+			} else {
+				this.getGuildByID(this.config.guildId).changeSelfNickname(this.argumentSection).block();
 				this.sendAnswer("Name erfolgreich geändert!");
 			}
 		} else {
@@ -618,15 +634,12 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onUpdatePSA() {
 		if (this.hasPermission(SecurityLevel.DEV)) {
-			final String INTRO = "Ein neues Update ist verfügbar! :christmas_tree: Was ist neu?\n";
+			final String INTRO = "Ein neues Update ist verfügbar! :chicken: Was ist neu?\n";
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
-			} else if(!RuntimeVariables.IS_DEBUG){
-				this.sendInChannel(
-						INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()),
-						ChannelID.ANKUENDIGUNGEN, GuildID.UNSER_SERVER);
-			}
-			else{
+			} else if (!RuntimeVariables.IS_DEBUG) {
+				this.globalAnnounce(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
+			} else {
 				this.sendMessageToOwner(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 			}
 		} else {
@@ -644,7 +657,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onYesNo() {
-		if(this.getArgumentSection().equals("")){
+		if (this.getArgumentSection().equals("")) {
 			this.sendAnswer("du musst mir eine Frage stellen!");
 			return;
 		}
@@ -652,43 +665,338 @@ public class Megumin extends ResponseType {
 		final String[] posResp = { "ja.", "tatsache.", "das ist sehr wahrscheinlich.", "völlig korrekt.", "in der Tat.",
 				"absolut.", "aber natürlich!", "auf jeden Fall!", "definitiv.", "daran besteht kein Zweifel.",
 				"davon würde ich definitiv ausgehen.", "zweifellos!", "offensichtlich ja.", "yes.", "jawohl!", "klar!",
-				"rein objektiv gesehen: Ja.", "jup.", "jep.", "jo.", "selbstverständlich!", "klingt nach einer hervorragenden Idee!", ":thumbsup:" };
+				"rein objektiv gesehen: Ja.", "jup.", "jep.", "jo.", "selbstverständlich!",
+				"klingt nach einer hervorragenden Idee!", ":thumbsup:" };
 		final String[] negResp = { "nein.", "überhaupt nicht.", "auf garkeinen Fall.", "völlig unmöglich.",
 				"definitiv nicht.", "no!", "offensichtlich nicht.", "das ist nicht möglich.",
 				"davon würde ich sowas von abraten!", "bloß nicht!", "rein objektiv gesehen: Nein.",
-				"nein, wieso auch?", "eher nicht.", "ne.", "nope.", "nö", "nichts da!", "klingt wenn du mich fragst nach einer scheiß Idee.", ":thumbsdown:" };
+				"nein, wieso auch?", "eher nicht.", "ne.", "nope.", "nö", "nichts da!",
+				"klingt wenn du mich fragst nach einer scheiß Idee.", ":thumbsdown:" };
 		final Random rand = new Random();
-		String resp = "";
-		if (rand.nextBoolean()) {
-			resp = posResp[rand.nextInt(posResp.length)];
-		} else {
-			resp = negResp[rand.nextInt(negResp.length)];
-		}
-		this.sendAnswer(resp);
+
+		this.sendAnswer(
+				rand.nextBoolean() ? posResp[rand.nextInt(posResp.length)] : negResp[rand.nextInt(negResp.length)]);
 	}
 
 	@Override
 	protected void onWiki() {
-		if(this.argumentSection.equals("")){
+		if (this.argumentSection.equals("")) {
 			this.sendAnswer("du musst mir einen Begriff nennen!");
 			return;
 		}
 
-		this.sendAnswer(Wikipedia.buildMessage(Wikipedia.getWikiPage(this.argumentSection)));
+		final Message loadingMessage = this
+				.sendAnswer("einen Moment bitte, ich versuche auf Wikipedia etwas geeignetes zu finden...");
+
+		WikiPage page = Wikipedia.getWikiPage(this.argumentSection);
+
+		if (page == null) {
+			this.sendAnswer("konnte unter diesem Begriff nichts finden!");
+		}
+		else{
+			if (page.CUSTOM_PROP_LANGUAGE == null || page.CUSTOM_PROP_LANGUAGE.equals("")) {
+				throw new IllegalMagicException("CUSTOM_PROP_LANGUAGE must not be null or empty");
+			}
+	
+			final String humanUrl = "https://" + page.CUSTOM_PROP_LANGUAGE + "." + Wikipedia.WIKI_NORMAL_BASE_URL
+					+ HTTPRequests.urlEncode(page.title.replace(" ", "_"));
+	
+			this.getMessageChannel().createEmbed(spec -> {
+				spec.setColor(Color.CYAN)
+				.setTitle(page.title)
+				.setUrl(humanUrl)
+				.setDescription(page.extract);
+	
+				if (page.original != null) {
+					spec.setImage(page.original.source);
+				}
+			}).block();
+		}
+
+		loadingMessage.delete("Deleting info concerning async tasks").block();
 	}
 
 	@Override
 	protected void onFeedback() {
-		if(this.getArgumentSection().equals("")){
+		if (this.getArgumentSection().equals("")) {
 			this.sendAnswer("ein leeres Feedback ist kein Feedback!");
 			return;
 		}
-		String response = "Wir haben Feedback von "+Markdown.toBold(this.getMessageAuthorName())+" erhalten:\n"
-							+ Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection());
+		String response = "Wir haben Feedback von " + Markdown.toBold(this.getMessage().getAuthorName())
+				+ " erhalten:\n" + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection());
 		this.sendMessageToOwner(response);
-		this.sendPrivateAnswer("Vielen Dank! Ich habe dein Feedback an "+this.getOwner().getUsername()+" weitergeleitet! "
-								+"Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:\n"
-								+Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
+		this.sendPrivateAnswer("Vielen Dank! Ich habe dein Feedback an " + this.getOwner().getUsername()
+				+ " weitergeleitet! "
+				+ "Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:\n"
+				+ Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 		this.deleteReceivedMessage();
+	}
+
+	@Override
+	protected void onFastForwardMusic() {
+		if (!this.handleMusicCheck(true, true)) {
+			return;
+		}
+
+		if(this.getMusicWrapper().getMusicBotHandler().currentIsStream()){
+			this.sendAnswer("es läuft ein Livestream, hier kannst du nicht springen!");
+			return;
+		}
+
+		if (this.getArgumentSection().equals("")) {
+			this.sendAnswer("mir ist nicht klar, wie viel ich skippen soll!");
+			return;
+		}
+
+		int skipSeconds = 0;
+		try {
+			skipSeconds = Integer.parseInt(this.getArgumentSection());
+			if(skipSeconds == 0){
+				this.sendAnswer("nichts passiert...");
+				return;
+			}
+			long pos = this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
+			this.sendAnswer("springe "+skipSeconds+" "+(Math.abs(skipSeconds) > 1 ? "Sekunden" : "Sekunde")+"!\nNeue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
+			this.deleteReceivedMessage();
+		} catch (NumberFormatException e) {
+			this.sendAnswer(
+					"ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");
+		}
+	}
+
+	@Override
+	protected void onMusicRandom() {
+		if (this.handleMusicCheck(true, true)) {
+			if (this.getMusicWrapper().getMusicBotHandler().getListSize() <= 1) {
+				this.sendAnswer(
+						"es müssen mindestens zwei Tracks in der Warteschlange sein, sonst macht das ganze keinen Sinn!");
+					this.deleteReceivedMessage();
+			} else {
+				this.getMusicWrapper().getMusicBotHandler().randomize();
+				this.sendAnswer(
+						"*ratter* *ratter* *schüttel* *schüttel*  Die Warteschlange wurde einmal kräftig durchgemischt!");
+				this.deleteReceivedMessage();
+			}
+		}
+	}
+
+	@Override
+	protected void onChicken() {
+		if(this.isPrivate()){
+			this.notInPrivate();
+			return;
+		}
+
+		if (this.chicken == Integer.MAX_VALUE) {
+			this.sendAnswer("Mehr geht nicht!");
+			return;
+		}
+
+		final String appendString = ":chicken:";
+
+		this.chicken++;
+
+		if (this.chicken <= 200) {
+			StringBuilder response = new StringBuilder(this.chicken * appendString.length());
+			for (int i = 0; i < this.chicken; i++) {
+				response.append(appendString);
+			}
+			this.sendAnswer(response.toString());
+		} else {
+			this.sendAnswer(this.chicken + " " + appendString);
+		}
+	}
+
+	@Override
+	protected void onNuggets() {
+		if(this.isPrivate()){
+			this.sendAnswer("Chicken Nuggets isst man am besten mit Freunden und nicht alleine im Privatchat!");
+			return;
+		}
+
+		String response = "";
+
+		switch (this.chicken) {
+			case 0:
+				response = "keine Zutaten für Nuggets verfügbar!";
+				break;
+			case 1:
+				response = "hier hast du eine Portion Chicken Nuggets!";
+				break;
+			case 2:
+				response = "hier sind Chicken Nuggets für zwei Personen!";
+				break;
+			case 3:
+				response = "hier sind 3 Chicken Nuggets für dich und deine Freunde!";
+				break;
+			case 420:
+				response = "diese 420 Chicken Nuggets riechen seltsam...";
+				break;
+			default:
+				if (this.chicken >= 4) {
+					response = "hier sind " + this.chicken + " Portionen Chicken Nuggets!";
+				} else if (this.chicken >= 10) {
+					response = "hier sind " + this.chicken + " Portionen Chicken Nuggets, genug für eine Großfamilie!";
+				} else if (this.chicken >= 50) {
+					response = "hier ist deine McDonalds Tageslieferung an Chicken Nuggets (" + this.chicken
+							+ " Portionen)";
+				} else if (this.chicken >= 200) {
+					response = this.chicken
+							+ " Hühner wurden gewaltsam umgebra- Hier sind deine Chicken Nuggets, Mahlzeit!";
+				} else if (this.chicken == Integer.MAX_VALUE) {
+					response = "du hast das Maximum an Chicken Nuggets erreicht (" + this.chicken
+							+ ")! Das ist ein Achievement Wert aber sowas gibt es bei mir nicht!";
+				}
+		}
+
+		this.sendAnswer(response);
+		this.chicken = 0;
+	}
+
+	@Override
+	protected void onPommes() {
+		this.sendAnswer("Pommes gibt es bei mir nicht!");
+	}
+
+	@Override
+	protected void onVoiceStateEvent(VoiceStateUpdateEvent event) {
+		if(event.isJoinEvent() || event.isMoveEvent()){
+			// Notify users if voice channel is in subscriber hashmap
+			if(this.config.voiceSubscriberMap.containsKey(event.getCurrent().getChannelId().get())){
+				final User joinedUser = event.getCurrent().getUser().block();
+				// Ignore if its the user himself or if its the bot
+				if(event.getCurrent().getUserId().equals(joinedUser.getId()) || event.getCurrent().getUserId().equals(this.getClient().getSelfId())){
+					return;
+				}
+				// Notify every subscribed user
+				this.config.voiceSubscriberMap.get(event.getCurrent().getChannelId().get()).forEach(userId ->{
+					this.getClient().getUserById(userId)
+					.flatMap(user -> user.getPrivateChannel())
+					.flatMap(channel -> channel.createMessage(spec ->{
+						// Notify subscriber, if he is not in the same voice channel
+						VoiceChannel voiceChannel = event.getCurrent().getChannel().block();
+						if(!(this.isAuthorVoiceConnectedVerbose() && this.getAuthorVoiceChannel().getId().equals(voiceChannel.getId()))){
+							spec.setContent(joinedUser.getUsername()+" ist soeben auf "+this.getGuild().getName()+" dem "+voiceChannel.getName()+" VoiceChannel beigetreten. Komm und sag Hallo!\n"
+							+"Du erhälst diese Benachrichtigung, weil du diesen VoiceChannel abonniert hast. Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!");
+						}
+					})).block();
+				});
+			}
+		}
+	}
+
+	@Override
+	protected void onSubscribeVoice() {
+		if(this.isPrivate()){
+			this.notInPrivate();
+			return;
+		}
+
+		String channelIdentifier = this.argumentSection;
+		if(channelIdentifier.equals("")){
+			// Use connected voice channel, if author is connected
+			if(this.isAuthorVoiceConnectedGuildScoped()){
+				channelIdentifier = this.getAuthorVoiceChannel().getId().asString();
+			}
+			else{
+				this.sendAnswer("du musst mir einen gültigen Namen oder eine ID nennen! Alternativ kannst du einem VoiceChannel beitreten und es erneut versuchen!");
+				return;
+			}
+		}
+
+		for(GuildChannel channel : this.getVoiceChannels()){
+			// Find corresponding voice channel
+			if(channel.getId().asString().equals(channelIdentifier) || channel.getName().equals(channelIdentifier)){
+				final Snowflake userId = this.getMessage().getUser().getId();
+				final String okayMessage = "du hast "+channel.getName()+" abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen wieder zu deabonnieren!";
+				// Found channel in HashMap
+				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
+					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
+					if(subscriberSet.contains(userId)){
+						this.sendAnswer("du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen zu deabonnieren!");
+					}
+					else{
+						subscriberSet.add(userId);
+						this.sendAnswer(okayMessage);
+					}
+				}
+				// Create new entry in HashMap, if channel not found in HashMap
+				else{
+					HashSet<Snowflake> set = new HashSet<>();
+					set.add(userId);
+					this.config.voiceSubscriberMap.put(channel.getId(), set);
+					this.sendAnswer(okayMessage);
+				}
+				return;
+			}
+		}
+
+		this.sendAnswer("konnte diesen Kanal nicht finden!");
+	}
+
+	@Override
+	protected void onUnsubscribeVoice() {
+		if(this.isPrivate()){
+			this.notInPrivate();
+			return;
+		}
+
+		String channelIdentifier = this.argumentSection;
+		if(channelIdentifier.equals("")){
+			// Use connected voice channel, if author is connected
+			if(this.isAuthorVoiceConnectedGuildScoped()){
+				channelIdentifier = this.getAuthorVoiceChannel().getId().asString();
+			}
+			else{
+				this.sendAnswer("du musst mir einen gültigen Namen oder eine ID nennen! Alternativ kannst du einem VoiceChannel beitreten und es erneut versuchen!");
+				return;
+			}
+		}
+
+		for(GuildChannel channel : this.getVoiceChannels()){
+			// Find corresponding voice channel
+			if(channel.getId().asString().equals(channelIdentifier) || channel.getName().equals(channelIdentifier)){
+				final Snowflake userId = this.getMessage().getUser().getId();
+				final String errorMessage = "du hast diesen Kanal nicht abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegFollow "+channel.getId().asString())+", um diesen zu abonnieren!";
+				// Found channel in HashMap
+				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
+					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
+					if(subscriberSet.remove(userId)){
+						this.sendAnswer("du hast "+channel.getName()+" deabonniert!");
+					}
+					else{
+						this.sendAnswer(errorMessage);
+					}
+				}
+				// Channel not found in HashMap -> user was not subscribed!
+				else{
+					this.sendAnswer(errorMessage);
+				}
+				return;
+			}
+		}
+
+		this.sendAnswer("konnte diesen Kanal nicht finden!");
+	}
+
+	@Override
+	protected void onGetVoiceSubscriptions() {
+		this.deleteReceivedMessage();
+		HashSet<Pair<Guild, VoiceChannel>> set = this.getGlobalProxy().getSubscribedGuildChannelPairs(this.getMessage().getUser().getId());
+
+		if(set.isEmpty()){
+			this.sendPrivateAnswer("Du hast noch keinen VoiceChannel abonniert. Schreib auf einem entsprechendem Server "+Markdown.toCodeBlock("MegFollow ChannelName/Snowflake")+", um Benachrichtigungen für einen VoiceChannel zu erhalten!");
+			return;
+		}
+
+		String response = "Du hast "+set.size()+" "+(set.size() == 1 ? "VoiceChannel" : "VoiceChannels")+" abonniert:\n";
+		response += Markdown.toUnsafeMultilineBlockQuotes("");
+		for(Pair<Guild, VoiceChannel> pair : set){
+			response += "Server: "+Markdown.toBold(pair.key.getName())+" - VoiceChannel: "+Markdown.toBold(pair.value.getName())+"\n";
+		}
+
+		response += "\n\nSchreib auf dem entsprechendem Server(!) "+Markdown.toCodeBlock("MegUnfollow ChannelName/Snowflake")+" um einen Kanal zu deabonnieren!";
+
+		this.sendPrivateAnswer(response);
 	}
 }

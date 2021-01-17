@@ -23,7 +23,7 @@ public class WeatherResponses {
         /**
          * Single only
          */
-        int cod;
+        public int cod;
     }
 
     public class ForecastResponse{

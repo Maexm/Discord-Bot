@@ -1,7 +1,7 @@
 package japanese;
 
 import discord4j.core.object.entity.channel.MessageChannel;
-import services.Markdown;
+import util.Markdown;
 
 public class RomajiPreparer {
 	

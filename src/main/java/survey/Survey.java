@@ -5,12 +5,13 @@ import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
 import exceptions.SurveyCreateIllegalDurationException;
-import services.Markdown;
-import services.TimePrint;
+import util.Markdown;
+import util.TimePrint;
 import start.RuntimeVariables;
 
 public class Survey {
@@ -27,31 +28,15 @@ public class Survey {
 	private final TimerTask endTask;
 	private final Calendar endTime;
 	public final User createdBy;
-	public final Message publicMessage;
+	private final Message publicMessage;
 	private final ArrayList<Survey> surveyList;
 	private final ArrayList<User> participants;
 	public final boolean isMulti;
-
-	/**
-	 * Vote has been added successfully
-	 */
-	public final static String VOTE_ADDED = "VOTE_ADDED";
-	/**
-	 * Vote has been deleted
-	 */
-	public final static String VOTE_DELETED = "VOTE_DELETED";
-	/**
-	 * Vote has been rejected
-	 */
-	public final static String VOTE_REJECTED = "VOTE_REJECTED";
-	/**
-	 * Only applies if not multi answer survey: Old option has been "unvoted" and
-	 * vote for new option has been added
-	 */
-	public final static String VOTE_CHANGED = "VOTE_CHANGED";
+	public VoteEndReason endReason = VoteEndReason.TIMED_OUT;
+	public final Snowflake guildId;
 
 	public Survey(final String description, final String[] options, final int duration, final MessageChannel channel,
-			final User createdBy, final ArrayList<Survey> surveyList, final boolean isMulti)
+			final User createdBy, final ArrayList<Survey> surveyList, final boolean isMulti, final Snowflake guildId)
 			throws SurveyCreateIllegalDurationException {
 
 		// Check duration
@@ -71,6 +56,7 @@ public class Survey {
 		this.createdBy = createdBy;
 		this.isMulti = isMulti;
 		this.participants = new ArrayList<User>();
+		this.guildId = guildId;
 
 		// Calculate and set end time and also save current time
 		Calendar startTime = Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
@@ -91,6 +77,7 @@ public class Survey {
 			public void run() {
 
 				System.out.println("Survey '" + key + "' has finished!");
+				try{
 				final String results = timerParent.createOptionsText();
 
 				String multiChoice = "";
@@ -105,9 +92,25 @@ public class Survey {
 					participantsText += user.getMention() + " ";
 				}
 
+				String reason = "";
+				switch (endReason) {
+					case TIMED_OUT:
+						reason = " ";
+						break;
+					case BROKEN:
+						reason = " aufgrund eines Fehlers ";
+						break;
+					case CREATOR_STOPPED:
+						reason = " vorzeitig vom Ersteller ";
+						break;
+					case LOGOUT:
+						reason = " beim Herunterfahren vorzeitig ";
+						break;
+				}
+
 				// Write survey-completed message
 				channel.createMessage(">>> Die Umfrage " + Markdown.toBold(description) + " ("
-						+ Markdown.toBold("NR. " + key) + ") wurde beendet!\n" + "Das Resultat:\n" + results + "\n"
+						+ Markdown.toBold("NR. " + key) + ") wurde"+reason+"beendet!\n" + "Das Resultat:\n" + results + "\n"
 						+ multiChoice + "\n" + "Die Umfrage wurde von " + createdBy.getMention()
 						+ " initiiert und begann am " + Markdown.toBold(TimePrint.DD_MMMM_YYYY_HH_MM_SS(startTime))
 						+ ".\n\n" + "Es haben teilgenommen: " + participantsText + "\n").block();
@@ -116,10 +119,12 @@ public class Survey {
 				publicMessage.delete().block();
 
 				surveyList.remove(timerParent);
-
-				this.cancel();
-				timer.purge();
-				timer.cancel();
+				}
+				catch(Exception e){
+					this.cancel();
+					timer.purge();
+					timer.cancel();
+				}
 			}
 
 		};
@@ -127,7 +132,8 @@ public class Survey {
 		this.timer.schedule(endTask, this.endTime.getTime());
 	}
 
-	public void stop() {
+	public void stop(VoteEndReason reason) {
+		this.endReason = reason;
 		this.endTask.run();
 	}
 
@@ -259,19 +265,19 @@ public class Survey {
 	 * @param option His option
 	 * @return Survey vote status strings (ADDED, DELETED, REJECTED, CHANGED)
 	 */
-	public String receiveVote(User user, String option) {
+	public VoteChange receiveVote(User user, String option) {
 		if (!this.optionExists(option)) {
 			throw new IllegalArgumentException("'" + option + "' does not exist!");
 		}
 
-		String ret = "";
+		VoteChange ret;
 
 		SurveyOption optionObject = this.getOption(option);
 		// Add vote, if user has not participated yet
 		if (!this.userHasParticipated(user)) {
 			optionObject.addVote(user);
 			this.participants.add(user);
-			ret = Survey.VOTE_ADDED;
+			ret = VoteChange.ADDED;
 		}
 		// Delete vote, if user has voted for this before
 		else if (optionObject.hasVoted(user)) {
@@ -282,7 +288,7 @@ public class Survey {
 				this.participants.remove(user);
 				// User does not participate anymore
 			}
-			ret = Survey.VOTE_DELETED;
+			ret = VoteChange.DELETED;
 		}
 		// User has voted for something else (but has participated before!)
 		else {
@@ -293,13 +299,13 @@ public class Survey {
 			// Add vote to option
 			optionObject.addVote(user);
 			if (!this.isMulti) {
-				ret = Survey.VOTE_CHANGED;
+				ret = VoteChange.CHANGED;
 			} else {
-				ret = Survey.VOTE_ADDED;
+				ret = VoteChange.ADDED;
 			}
 		}
 		// Update message
-		if (ret.equals(Survey.VOTE_ADDED) || ret.equals(Survey.VOTE_DELETED) || ret.equals(VOTE_CHANGED)) {
+		if (ret.equals(VoteChange.ADDED) || ret.equals(VoteChange.DELETED) || ret.equals(VoteChange.CHANGED)) {
 			this.updateMessage();
 		}
 		return ret;

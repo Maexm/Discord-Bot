@@ -3,8 +3,8 @@ package weather;
 import com.google.gson.Gson;
 
 import exceptions.IllegalMagicException;
-import services.HTTPRequests;
-import services.Markdown;
+import util.HTTPRequests;
+import util.Markdown;
 import start.RuntimeVariables;
 import util.Format;
 import util.Range;
@@ -52,7 +52,7 @@ public class Weather {
                     +Markdown.toCodeBlock("Luftdruck:")+" "+Markdown.toBold(resp.main.pressure+"hPa")
                     +"\n"
                     +Markdown.toCodeBlock("Wind:")+" "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.speed), 2)+" km/h") + " aus " + Markdown.toBold(Weather.getWindDirection(resp.wind.deg))
-                    +(resp.wind.gust != 0 ? ("\nEs sind Böen bis "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.gust), 2)+ " km/h")+ " möglich! :dash:") : "") +".";
+                    +(resp.wind.gust != 0 ? ("\nEs sind Böen bis "+Markdown.toBold(Format.truncateDouble(Units.msToKmh(resp.wind.gust), 2)+ " km/h")+ " möglich! :dash:") : "");
         return ret;
     }
 

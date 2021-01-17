@@ -5,22 +5,15 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import exceptions.StartUpException;
 import start.RuntimeVariables;
 import start.StartUp;
 
 public class TestStartUp {
     
-    @Test
+    @Test(expected = StartUpException.class)
     public void rejectEmptyToken(){
-        boolean exceptionThrown = false;
-        try{
-           StartUp.main(new String[]{""}); 
-        }
-        catch(Exception e){
-            exceptionThrown = true;
-        }
-        
-        assertTrue("Empty tokens should throw an exception during startUp" , exceptionThrown);
+        StartUp.main(new String[]{""}); 
     }
 
     @Test

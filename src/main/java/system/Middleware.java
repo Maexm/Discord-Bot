@@ -15,53 +15,36 @@ import discord4j.core.object.entity.GuildEmoji;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.Channel;
+import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.GuildMessageChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
 import discord4j.voice.AudioProvider;
-import musicBot.AudioEventHandler;
+import musicBot.MusicWrapper;
 import reactor.core.publisher.Mono;
 import security.SecurityProvider;
-import snowflakes.GuildID;
 import start.RuntimeVariables;
+import start.GlobalDiscordHandler.GlobalDiscordProxy;
 import survey.Survey;
 
 
 public abstract class Middleware {
 
-    protected String msgContent;
-	protected MessageCreateEvent msgEvent;
-	protected Message msgObject;
-	protected String msgAuthorName;
-	protected User msgAuthorObject;
-	//protected VoiceConnection voiceConnection = null;
-	protected final GatewayDiscordClient client;
-	protected String commandSection = "";
-	protected String argumentSection = "";
-	protected final ArrayList<Survey> surveys;
-	private final Predicate<Message> mayAccept;
-	protected final Snowflake guildId;
+	protected DecompiledMessage msg;
+	protected final MiddlewareConfig config;
+	protected final Predicate<Message> mayAccept;
 
-	// AUDIO
-	protected final AudioEventHandler audioEventHandler;
-
-	protected final AudioProvider audioProvider;
-
-	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
-			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler) {
-		this(guildId, client, audioProvider, surveys, audioEventHandler, msg -> true);
+	public Middleware(MiddlewareConfig config) {
+		this(config, config.UNSAFE_mayAccept());
 	}
 
-	public Middleware(final Snowflake guildId, final GatewayDiscordClient client, final AudioProvider audioProvider,
-			final ArrayList<Survey> surveys, final AudioEventHandler audioEventHandler, final Predicate<Message> mayAccept) {
-		this.guildId = guildId;
-		this.client = client;
-		this.audioEventHandler = audioEventHandler;
-		this.audioProvider = audioProvider;
-		this.surveys = surveys;
+	public Middleware(MiddlewareConfig config, Predicate<Message> mayAccept){
+		this.config = config;
 		this.mayAccept = mayAccept;
+		
 	}
 
 	/**
@@ -70,83 +53,56 @@ public abstract class Middleware {
 	 * 
 	 * @param messageEvent
 	 */
-	public final boolean acceptEvent(final MessageCreateEvent messageEvent) {
-
-		if(!this.mayAccept.test(messageEvent.getMessage())){
+	public final boolean acceptEvent(final DecompiledMessage message) {
+		this.msg = message;
+		if(!this.mayAccept.test(message.getMessageObject())){
 			return true; // Skip if this Middleware may not handle event
 		}
-
-		boolean fetchSuccess = true;
 		boolean ret = true;
 
-		try {
-			// Save message and other useful variables for easy access
-			this.msgEvent = messageEvent;
-			this.msgObject = this.msgEvent.getMessage();
-			this.msgContent = this.msgObject.getContent();
-			this.msgAuthorObject = this.msgObject.getAuthor().orElse(null);
-			this.msgAuthorName = this.msgAuthorObject != null? this.msgAuthorObject.getUsername(): "";
-			this.argumentSection = "";
-			this.commandSection = "";
-		} catch (Exception e) {
-			System.out.println("Something went wrong, while accepting event!");
-			e.printStackTrace();
-			fetchSuccess = false;
-		}
-
 		// Start redirecting
-		if (fetchSuccess) {
-			try {
-				ret = this.handle();
-				// ERROR HANDLING
-			} catch (Exception e) {
-				e.printStackTrace();
-					try {
-						this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
-					} catch (Exception e2) {
-						System.out.println("Cannot send messages at all!");
-					}
+		try {
+			ret = this.handle();
+			// ERROR HANDLING
+		} catch (Exception e) {
+			e.printStackTrace();
+				try {
+					System.out.println("Message '"+this.getMessage().getContent()+"' in guild "+this.getGuild().getName()+" caused an error!");
+					this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
+				} catch (Exception e2) {
+					System.out.println("Cannot send messages at all!");
 				}
 		}
-		return ret && fetchSuccess;
+		return ret;
 	}
 
-    protected abstract boolean handle();
-
-    /**
-	 * Returns the message string content
-	 * 
-	 * @return Received message content as string representation
-	 */
-	protected final String getMessageContent() {
-		return this.msgContent;
+	protected abstract boolean handle();
+	
+	protected final DecompiledMessage getMessage(){
+		return this.msg;
 	}
 
-	/**
-	 * Returns the message as Message object
-	 * 
-	 * @return Received message as Message object
-	 */
-	protected final Message getMessageObject() {
-		return this.msgObject;
+	protected final MusicWrapper getMusicWrapper(){
+		return this.config.musicWrapper;
 	}
 
-	/**
-	 * Returns the user name string of the author of the received message
-	 * 
-	 * @return Author user name of received message as String
-	 */
-	protected final String getMessageAuthorName() {
-		return this.msgAuthorName;
+	protected final GlobalDiscordProxy getGlobalProxy(){
+		return this.config.globalProxy;
 	}
 
-	/**
-	 * Returns the author of the message as User object
-	 * 
-	 * @return Author of received message as User
-	 */
-	protected final User getMessageAuthorObject() {
-		return this.msgAuthorObject;
+	protected final boolean authorIsGuildOwner(){
+		if(this.isPrivate()){
+			return false;
+		}
+		return this.getMessage().getUser().getId().equals(this.getGuild().getOwnerId());
+	}
+
+	protected final Guild getGuild(){
+		return this.getGuildByID(this.getGuildId());
+	}
+
+	public final Snowflake getGuildId(){
+		return this.config.guildId;
 	}
 
 	/**
@@ -156,7 +112,7 @@ public abstract class Middleware {
 	 */
 	protected final Member getMessageAuthorMember() {
 		if (!this.isPrivate()) {
-			return this.msgEvent.getMember().orElse(null);
+			return this.getMessage().getEvent().getMember().orElse(null);
 		}
 		return null;
 	}
@@ -167,36 +123,7 @@ public abstract class Middleware {
 	 * @return Channel associated to the received message as MessageChannel
 	 */
 	protected final MessageChannel getMessageChannel() {
-		return this.msgObject.getChannel().block();
-	}
-
-	/**
-	 * Returns the guild, where the received message was sent to
-	 * 
-	 * @return Guild associated to the received message as Guild
-	 */
-	public final Guild getMessageGuild() {
-		return this.msgObject.getGuild().block();
-	}
-
-	/**
-	 * Returns the order section of a Meg[ORDER] message. Returns an empty string,
-	 * if there is no order section.
-	 * 
-	 * @return The order section of the message
-	 */
-	protected final String getCommandSection() {
-		return this.commandSection;
-	}
-
-	/**
-	 * Returns the argument section of a Meg[ORDER] [ARGUMENTS] message. Returns an
-	 * empty string, if there are no arguments.
-	 * 
-	 * @return The argument section
-	 */
-	protected final String getArgumentSection() {
-		return this.argumentSection;
+		return this.getMessage().getMessageObject().getChannel().block();
 	}
 
 	/**
@@ -205,7 +132,7 @@ public abstract class Middleware {
 	 * @return the event
 	 */
 	protected final MessageCreateEvent getMessageEvent() {
-		return this.msgEvent;
+		return this.getMessage().getEvent();
 	}
 
 	/**
@@ -214,7 +141,7 @@ public abstract class Middleware {
 	 * @return the audio provider
 	 */
 	protected final AudioProvider getAudioProvider() {
-		return this.audioProvider;
+		return this.getMusicWrapper().getAudioProvider();
 	}
 
 	/**
@@ -223,7 +150,7 @@ public abstract class Middleware {
 	 * @return This bot as client
 	 */
 	public final GatewayDiscordClient getClient() {
-		return this.client;
+		return this.config.globalProxy.getClient();
 	}
 
 	/**
@@ -236,11 +163,15 @@ public abstract class Middleware {
 	}
 
 	/**
-	 * Returns whether or not the author is connected to voice
+	 * Returns whether or not the author is connected to voice in this guild
 	 * 
 	 * @return Author connected to voice (true) or not (false)
 	 */
-	protected final boolean isAuthorVoiceConnected() {
+	protected final boolean isAuthorVoiceConnectedGuildScoped() {
+		return this.getAuthorVoiceState() != null && this.getAuthorVoiceState().getGuildId().equals(this.getGuildId());
+	}
+
+	protected final boolean isAuthorVoiceConnectedVerbose() {
 		return this.getAuthorVoiceState() != null;
 	}
 
@@ -260,11 +191,17 @@ public abstract class Middleware {
 	 * @return The voice channel, the bot is currently connected to
 	 */
 	protected final VoiceChannel getMyVoiceChannel() {
-		return this.getMyVoiceChannelAsync().block();
+		try{
+			return this.getMyVoiceChannelAsync().block();
+		}
+		catch(Exception e){
+			return null;
+		}
+		
 	}
 	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
-		return this.client.getSelf()
-			.flatMap(self -> self.asMember(this.guildId))
+		return this.getClient().getSelf()
+			.flatMap(self -> self.asMember(this.getGuildId()))
 			.flatMap(member -> member.getVoiceState())
 			.flatMap(voiceState -> voiceState != null ? voiceState.getChannel() : null);
 	}
@@ -284,7 +221,7 @@ public abstract class Middleware {
 	 * @return Private channel object of author
 	 */
 	protected final PrivateChannel getMessageAuthorPrivateChannel() {
-		return this.msgAuthorObject.getPrivateChannel().block();
+		return this.getMessage().getUser().getPrivateChannel().block();
 	}
 
 	/**
@@ -293,7 +230,7 @@ public abstract class Middleware {
 	 * @return True if message comes from private channel, false otherwise
 	 */
 	protected final boolean isPrivate() {
-		return this.getMessageChannel().getId().equals(this.getMessageAuthorPrivateChannel().getId());
+		return this.getGuildId() == null;
 	}
 
 	protected final long getResponseTime() {
@@ -304,8 +241,8 @@ public abstract class Middleware {
 		return this.getClient().getApplicationInfo().block();
 	}
 
-	protected final GuildEmoji getEmoji(Snowflake guildID, Snowflake emojiID) {
-		List<GuildEmoji> emojiList = this.getEmojiList(guildID);
+	protected final GuildEmoji getEmoji(Snowflake emojiID) {
+		List<GuildEmoji> emojiList = this.getEmojiList();
 		for (GuildEmoji emoji : emojiList) {
 			if (emoji.getId().equals(emojiID)) {
 				return emoji;
@@ -314,24 +251,24 @@ public abstract class Middleware {
 		return null;
 	}
 
-	protected final String getEmojiFormat(Snowflake guildID, Snowflake emojiID) {
-		GuildEmoji emoji = this.getEmoji(guildID, emojiID);
+	protected final String getEmojiFormat(Snowflake emojiID) {
+		GuildEmoji emoji = this.getEmoji(emojiID);
 		if (emoji != null) {
 			return emoji.asFormat();
 		}
 		return "";
 	}
 
-	protected final List<GuildEmoji> getEmojiList(Snowflake guildID) {
-		return this.getClient().getGuildById(guildID).block().getEmojis().buffer().blockFirst();
+	protected final List<GuildEmoji> getEmojiList() {
+		return this.getGuild().getEmojis().buffer().blockFirst();
 	}
 
 	protected final Guild getGuildByID(Snowflake guildID) {
-		return this.client.getGuildById(guildID).block();
+		return this.getClient().getGuildById(guildID).block();
 	}
 
-	protected final GuildMessageChannel getChannelByID(Snowflake channelID, Snowflake guildID) {
-		return (GuildMessageChannel) this.getGuildByID(guildID).getChannelById(channelID).block();
+	protected final GuildMessageChannel getChannelByID(Snowflake channelID) {
+		return (GuildMessageChannel) this.getGuild().getChannelById(channelID).block();
     }
 
     protected final Member getMember(Snowflake userId, Snowflake guildId){
@@ -350,6 +287,18 @@ public abstract class Middleware {
 		return this.getAppInfo().getOwner().map(owner -> owner.getMention());
 	}
 
+	public final MessageChannel getSystemChannel(){
+		return this.getGuild().getSystemChannel().block();
+	}
+
+	public final List<GuildChannel> getVoiceChannels(){
+		return this.getGuild().getChannels()
+		.filter(channel -> channel.getType().compareTo(Channel.Type.GUILD_VOICE) == 0)
+		.buffer()
+		.next()
+		.block();
+	}
+
 	// ########## INTERACTIVE METHODS ##########
 
 	/**
@@ -361,14 +310,6 @@ public abstract class Middleware {
 	 */
 	protected final Message sendInSameChannel(String message) {
 		return this.getMessageChannel().createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
-	}
-
-	/**
-	 * Logs the bot out
-	 */
-	protected final void logOut() {
-		System.out.println("LOGGING OUT");
-		this.client.logout().block();
 	}
 
 	/**
@@ -385,7 +326,7 @@ public abstract class Middleware {
 	 */
 	protected final void deleteReceivedMessage() {
 		if(!this.isPrivate()){
-			this.getMessageObject().delete().block();
+			this.getMessage().getMessageObject().delete().block();
 		}
 	}
 
@@ -396,7 +337,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendAnswer(String message) {
-		return this.sendInSameChannel(this.msgAuthorObject.getMention() + ", " + message);
+		return this.sendInSameChannel(this.getMessage().getUser().getMention() + ", " + message);
 	}
 
 	/**
@@ -407,8 +348,8 @@ public abstract class Middleware {
 	 * @param guildID
 	 * @return
 	 */
-	public final Message sendInChannel(String message, Snowflake channelID, Snowflake guildID) {
-		MessageChannel channel = this.getChannelByID(channelID, guildID);
+	public final Message sendInChannel(String message, Snowflake channelID) {
+		MessageChannel channel = this.getChannelByID(channelID);
 		return channel.createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
 	}
 
@@ -456,7 +397,7 @@ public abstract class Middleware {
 		// 	return;
 		// }
 		try {
-			this.getClient().getVoiceConnectionRegistry().disconnect(GuildID.UNSER_SERVER).doOnTerminate(() -> {System.out.println("Left voice channel");}).subscribe();
+			this.getClient().getVoiceConnectionRegistry().disconnect(this.config.guildId).doOnTerminate(() -> {System.out.println("Left voice channel");}).subscribe();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -469,9 +410,9 @@ public abstract class Middleware {
 	 * @param guildID
 	 * @return The amount of deleted messages
 	 */
-	protected final int deleteAllMessages(Snowflake channelID, Snowflake guildID) {
+	protected final int deleteAllMessages(Snowflake channelID) {
 		int ret = 0;
-		MessageChannel megChannel = this.getChannelByID(channelID, guildID);
+		MessageChannel megChannel = this.getChannelByID(channelID);
 		Message lastMessage = megChannel.getLastMessage().block();
 		List<Message> messages = megChannel.getMessagesBefore(lastMessage.getId()).collectList().block();
 
@@ -492,10 +433,10 @@ public abstract class Middleware {
 	 * @param amount
 	 * @return The amount of deleted messages
 	 */
-	protected final int deleteMessages(Snowflake channelID, Snowflake guildID, int amount) {
+	protected final int deleteMessages(Snowflake channelID, int amount) {
 		int ret = 0;
 		if (amount > 0) {
-			MessageChannel channel = this.getChannelByID(channelID, guildID);
+			MessageChannel channel = this.getChannelByID(channelID);
 			for (int i = 0; i < amount; i++) {
 				Message lastMessage = channel.getLastMessage().block();
 				this.deleteMessage(lastMessage);
@@ -512,22 +453,42 @@ public abstract class Middleware {
 			.block();
 	}
 
-	// TECHNICAL METHODS
-
-	protected final boolean surveyExists(String keyWord) {
-		return this.getSurveyForKey(keyWord) != null;
-	}
-
-	protected final Survey getSurveyForKey(String keyWord) {
-		for (Survey survey : this.surveys) {
-			if (survey.key.equals(keyWord)) {
-				return survey;
+	public final void globalAnnounce(final String content){
+		for(MessageChannel channel : this.getGlobalProxy().getGlobalSystemChannels()){
+			try{
+				channel.createMessage(content).block();
+			}
+			catch(Exception e){
+				System.out.println("Failed to send psa message in a guild");
+				e.printStackTrace();
 			}
 		}
-		return null;
+	}
+
+	// TECHNICAL METHODS
+
+	protected final boolean surveyExistsUserScoped(String keyword, Snowflake userId){
+		return this.getGlobalProxy().getSurveyForKeyUserScoped(keyword, userId) != null;
+	}
+
+
+	protected final Survey getSurveyForKeyUserScoped(String keyword, Snowflake userId) {
+		return this.getGlobalProxy().getSurveyForKeyUserScoped(keyword, userId);
+	}
+
+	protected final Survey getSurveyForKeyVerbose(String keyword){
+		return this.getGlobalProxy().getSurveyForKeyVerbose(keyword);
+	}
+
+	protected final boolean surveyExistsVerbose(String keyword){
+		return this.getSurveyForKeyVerbose(keyword) != null;
+	}
+
+	protected final ArrayList<Survey> getSurveyListVerbose(){
+		return this.getGlobalProxy().getSurveysVerbose();
 	}
 
 	protected final boolean hasPermission(int required){
-		return SecurityProvider.hasPermission(this.getMessageAuthorObject(), required, this.getOwner().getId());
+		return SecurityProvider.hasPermission(this.getMessage().getUser(), required, this.getOwner().getId());
 	}
 }

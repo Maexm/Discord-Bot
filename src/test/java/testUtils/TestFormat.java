@@ -19,7 +19,7 @@ public class TestFormat {
         pairs.add(new Pair<String, String>("alles wird groß", "Alles Wird Groß"));
 
         for(Pair<String,String> pair : pairs){
-            assertEquals(pair.value, Format.firstCharsCapitalized(pair.key, " "));
+            assertEquals(pair.value, Format.firstCharsCapitalized(pair.key, ' '));
         }
     }
 }

@@ -42,7 +42,7 @@ public class SecurityProvider {
 			return SecurityLevel.DEV;
 		}
 		
-		// Else check their roles (users from outside the guild are blocked)
+		// Else check their roles (users from outside the main guild are blocked)
 		try {
 			Member userAsMember = user.asMember(GuildID.UNSER_SERVER).block();
 			

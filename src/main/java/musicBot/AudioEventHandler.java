@@ -1,5 +1,6 @@
 package musicBot;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -13,23 +14,21 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.presence.Activity;
-import discord4j.core.object.presence.Presence;
 import discord4j.rest.http.client.ClientException;
 import system.ResponseType;
-import services.Emoji;
-import services.Markdown;
-import services.TimePrint;
+import util.Emoji;
+import util.Markdown;
+import util.TimePrint;
 import snowflakes.ChannelID;
 import snowflakes.GuildID;
-import start.RuntimeVariables;
 
 public class AudioEventHandler extends AudioEventAdapter {
 
 	private final AudioPlayer player;
 	private final LinkedList<AudioTrack> tracks;
 	public final static String MUSIC_WARN = "";//":warning: Wiedergabe und Suche von YouTube Tracks funktioniert aktuell unzuverlässig!";
-	public final static String MUSIC_LOADING = ":musical_note: Musik wird geladen..."; 
+	public final static String MUSIC_LOADING = ":musical_note: Musik wird geladen...";
+	@Deprecated
 	public final static String MUSIC_STOPPED = ":musical_note: Eine Musiksession wurde beendet. Danke fürs Zuhören!";
 	public final static String MUSIC_INFO_PREFIX = ":musical_note: Es wird abgespielt:";
 	/**
@@ -47,6 +46,12 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 * Required for voice channel disconnect
 	 */
 	private ResponseType parent = null;
+	/**
+	 * Change between two different states for loading text (e.g. switch between / and \)
+	 */
+	private boolean loadFlag = true;
+
+	private Snowflake musicChannelId;
 
 	public AudioEventHandler(final AudioPlayer player, final AudioPlayerManager playerManager,
 			final TrackLoader loadScheduler, final LinkedList<AudioTrack> tracks,
@@ -57,8 +62,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.playerManager = playerManager;
 		this.loadScheduler = loadScheduler;
 		this.refreshTimer = null;
-
 	}
+
+	// TODO: Shorten this file
 
 	public void schedule(MusicTrackInfo track, ResponseType parent) {
 		boolean loadRightNow = this.loadingQueue.isEmpty();
@@ -73,6 +79,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null && loadRightNow) {
+			this.musicChannelId = parent.getGuildId().equals(GuildID.UNSER_SERVER) ? ChannelID.MEGUMIN : track.userRequestMessage.getChannelId();
 			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...");
 		}
 		// Update radioMessage, if one does already exist.
@@ -182,6 +189,42 @@ public class AudioEventHandler extends AudioEventAdapter {
 			this.tracks.remove(0);
 		}
 	}
+	/**
+	 * Sets the position for the current track.
+	 * Does nothing, if track is a stream
+	 * @param pos
+	 */
+	public void setPosition(long pos){
+		if(!this.currentIsStream()){
+			this.getCurrentAudioTrack().setPosition(pos);
+		}
+	}
+	/**
+	 * Moves forward or backwards in the currently playing track. Starts from zero or moves to the end of the track, if new position is out of range.
+	 * @param amount Amount to move in milliseconds
+	 * @return New position of track
+	 */
+	public long jump(long amount){
+		// ignore streams
+		if(this.currentIsStream()){
+			return 0l;
+		}
+		long newTrackPos = this.getCurrentAudioTrack().getPosition() + amount;
+		newTrackPos = Math.max(0l, newTrackPos);
+		newTrackPos = Math.min(this.getCurrentAudioTrack().getDuration(), newTrackPos);
+
+		this.setPosition(newTrackPos);
+
+		return newTrackPos;
+	}
+
+	public boolean currentIsStream(){
+		return this.getCurrentAudioTrack().getInfo().isStream;
+	}
+
+	public void randomize(){
+		Collections.shuffle(this.tracks);
+	}
 
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
@@ -239,23 +282,23 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	void ended() {
 		System.out.println("Music ended!");
-		this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
+		//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 		this.active = false;
-		this.parent.leaveVoiceChannel();
 		this.refreshTask.cancel();
 		this.refreshTimer.purge();
 		this.refreshTimer.cancel();
 		this.refreshTimer = null;
+
 		//Message oldMessage = this.radioMessage;
 		try{
-			this.radioMessage.edit(spec -> {
-			spec.setContent(AudioEventHandler.MUSIC_STOPPED);
-			}).block();
+			this.parent.leaveVoiceChannel();
+			this.radioMessage.delete().block();
 		}catch(Exception e){
-			System.out.println("Could not edit radio message while ending music session");
+			System.out.println("Could not delete radio message while ending music session");
 		}
 		
 		this.radioMessage = null;
+		this.musicChannelId = null;
 	}
 
 	@Override
@@ -268,7 +311,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		// Set discord status
-		this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).subscribe();
+		//this.parent.getClient().updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), track.getInfo().uri))).subscribe();
 
 		// Create refresh task
 		final AudioEventHandler timerParent = this;
@@ -322,17 +365,23 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		// progress bar
 		String progressBar = "";
-		final int barLength = 30;
-		double perc = 1. * track.getPosition() / track.getDuration();
-		for (int i = 0; i < barLength; i++) {
+		if(track.getInfo().isStream){
+			progressBar += ":red_circle: LIVE STREAM " + (this.loadFlag ? "/" : "\\");
+			this.loadFlag = !this.loadFlag;
+		}
+		else{
+			final int barLength = 30;
+			double perc = 1. * track.getPosition() / track.getDuration();
+			for (int i = 0; i < barLength; i++) {
 			if (i <= barLength * perc) {
 				progressBar += "█";
 			} else {
 				progressBar += "░";
+				}
 			}
+			progressBar += "\n" + Markdown.toBold(TimePrint.msToPretty(track.getPosition())) + " von "
+					+ Markdown.toBold(TimePrint.msToPretty(track.getDuration()));
 		}
-		progressBar += "\n" + Markdown.toBold(TimePrint.msToPretty(track.getPosition())) + " von "
-				+ Markdown.toBold(TimePrint.msToPretty(track.getDuration()));
 
 		// ########## RETURNING ##########
 		return 	AudioEventHandler.MUSIC_INFO_PREFIX + " "
@@ -348,10 +397,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (this.tracks.size() == 0) {
 			queueInfo = "Die Warteschlange ist " + Markdown.toBold("leer") + "!";
 		} else if (this.tracks.size() == 1) {
-			queueInfo = "Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
+			queueInfo = " Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
 		} else {
 			queueInfo = "Es befinden sich " + Markdown.toBold(Integer.toString(this.tracks.size()))
 					+ " Lieder in der Warteschlange!";
+		}
+		if(this.tracks.size() > 0){
+			queueInfo += " Schreib "+Markdown.toCodeBlock("MegClear")+", um die Warteschlange zu löschen!";
 		}
 		return queueInfo;
 	}
@@ -397,7 +449,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private Message createRadioMessage(String msg){
 		Message ret = null;
 		try{
-			ret = parent.sendInChannel(msg, ChannelID.MEGUMIN, GuildID.UNSER_SERVER);
+			ret = parent.sendInChannel(msg, this.musicChannelId);
 			this.radioMessage = ret;
 		}
 		catch(Exception e){
