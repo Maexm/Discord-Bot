@@ -391,7 +391,8 @@ public class Megumin extends ResponseType {
 			this.notInPrivate();
 			return false;
 		}
-	    else if (requireSameChannel && requireBotConnected && !this.isAuthorVoiceConnected()) {
+		// Author not connected to voice
+	    else if (!this.isAuthorVoiceConnectedGuildScoped()) {
 			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			return false;
 		}
@@ -399,7 +400,6 @@ public class Megumin extends ResponseType {
 		else if (!this.isVoiceConnected() && requireBotConnected) {
 			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
 			return false;
-			// Author not connected to voice
 		}
 		// Author connected to different voice channel
 		else if (requireBotConnected && requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
@@ -515,13 +515,12 @@ public class Megumin extends ResponseType {
 			}
 			String curTrackUser = AudioEventHandler.getSubmittedByUserName(curTrack, this.config.guildId);
 			// Build String
-
 			String out = "aktuell wird abgespielt:\n" + Markdown.toBold(curTrack.getInfo().title) + " von "
 					+ Markdown.toBold(curTrack.getInfo().author)
 					+ (curTrackUser != null ? ", vorgeschlagen von " + Markdown.toBold(curTrackUser) : "") + "\n\n"
 					+ this.getMusicWrapper().getMusicBotHandler().getQueueInfoString();
 
-			out += this.getMusicWrapper().getMusicBotHandler().getListSize() > 0 ? "\n" : "";
+			out += this.getMusicWrapper().getMusicBotHandler().getListSize() > 0 ? "\n\n" : "";
 
 			// Build String for each track in queue
 
@@ -541,6 +540,9 @@ public class Megumin extends ResponseType {
 							? Integer.MAX_VALUE
 							: 5;
 			for (int i = 0; i < list.size() && i < MAX_OUT; i++) {
+				if(i == 0){
+					out += Markdown.toUnsafeMultilineBlockQuotes("");
+				}
 				final AudioTrack track = list.get(i);
 				String trackUser = AudioEventHandler.getSubmittedByUserName(track, this.config.guildId);
 
@@ -551,7 +553,7 @@ public class Megumin extends ResponseType {
 			if (list.size() > MAX_OUT) {
 				final int diff = list.size() - MAX_OUT;
 
-				out += "\nEs gibt noch " + (diff == 1 ? Markdown.toBold("einen") + " weiteren Track!"
+				out += "Es gibt noch " + (diff == 1 ? Markdown.toBold("einen") + " weiteren Track!"
 						: Markdown.toBold("" + diff) + " weitere Tracks!");
 			}
 			this.sendAnswer(out);
@@ -756,14 +758,14 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onMusicRandom() {
 		if (this.handleMusicCheck(true, true)) {
-			if (this.getMusicWrapper().getMusicBotHandler().getListSize() >= 1) {
+			if (this.getMusicWrapper().getMusicBotHandler().getListSize() <= 1) {
 				this.sendAnswer(
 						"es müssen mindestens zwei Tracks in der Warteschlange sein, sonst macht das ganze keinen Sinn!");
 					this.deleteReceivedMessage();
 			} else {
 				this.getMusicWrapper().getMusicBotHandler().randomize();
 				this.sendAnswer(
-						"*ratter* *ratter* *schüttel* *schüttel* Die Warteschlange wurde einmal kräftig durchgemischt!");
+						"*ratter* *ratter* *schüttel* *schüttel*  Die Warteschlange wurde einmal kräftig durchgemischt!");
 				this.deleteReceivedMessage();
 			}
 		}
@@ -864,7 +866,7 @@ public class Megumin extends ResponseType {
 					.flatMap(channel -> channel.createMessage(spec ->{
 						// Notify subscriber, if he is not in the same voice channel
 						VoiceChannel voiceChannel = event.getCurrent().getChannel().block();
-						if(!(this.isAuthorVoiceConnected() && this.getAuthorVoiceChannel().getId().equals(voiceChannel.getId()))){
+						if(!(this.isAuthorVoiceConnectedVerbose() && this.getAuthorVoiceChannel().getId().equals(voiceChannel.getId()))){
 							spec.setContent(joinedUser.getUsername()+" ist soeben auf "+this.getGuild().getName()+" dem "+voiceChannel.getName()+" VoiceChannel beigetreten. Komm und sag Hallo!\n"
 							+"Du erhälst diese Benachrichtigung, weil du diesen VoiceChannel abonniert hast. Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!");
 						}
@@ -884,7 +886,7 @@ public class Megumin extends ResponseType {
 		String channelIdentifier = this.argumentSection;
 		if(channelIdentifier.equals("")){
 			// Use connected voice channel, if author is connected
-			if(this.isAuthorVoiceConnected()){
+			if(this.isAuthorVoiceConnectedGuildScoped()){
 				channelIdentifier = this.getAuthorVoiceChannel().getId().asString();
 			}
 			else{
@@ -916,9 +918,11 @@ public class Megumin extends ResponseType {
 					this.config.voiceSubscriberMap.put(channel.getId(), set);
 					this.sendAnswer(okayMessage);
 				}
-				break;
+				return;
 			}
 		}
+
+		this.sendAnswer("konnte diesen Kanal nicht finden!");
 	}
 
 	@Override
@@ -931,7 +935,7 @@ public class Megumin extends ResponseType {
 		String channelIdentifier = this.argumentSection;
 		if(channelIdentifier.equals("")){
 			// Use connected voice channel, if author is connected
-			if(this.isAuthorVoiceConnected()){
+			if(this.isAuthorVoiceConnectedGuildScoped()){
 				channelIdentifier = this.getAuthorVoiceChannel().getId().asString();
 			}
 			else{
@@ -959,9 +963,11 @@ public class Megumin extends ResponseType {
 				else{
 					this.sendAnswer(errorMessage);
 				}
-				break;
+				return;
 			}
 		}
+
+		this.sendAnswer("konnte diesen Kanal nicht finden!");
 	}
 
 	@Override

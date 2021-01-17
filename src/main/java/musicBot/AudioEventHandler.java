@@ -395,7 +395,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 					+ " Lieder in der Warteschlange!";
 		}
 		if(this.tracks.size() > 0){
-			queueInfo += "Schreib "+Markdown.toCodeBlock("MegClear")+", um die Warteschlange zu löschen!";
+			queueInfo += " Schreib "+Markdown.toCodeBlock("MegClear")+", um die Warteschlange zu löschen!";
 		}
 		return queueInfo;
 	}

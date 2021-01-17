@@ -162,11 +162,15 @@ public abstract class Middleware {
 	}
 
 	/**
-	 * Returns whether or not the author is connected to voice
+	 * Returns whether or not the author is connected to voice in this guild
 	 * 
 	 * @return Author connected to voice (true) or not (false)
 	 */
-	protected final boolean isAuthorVoiceConnected() {
+	protected final boolean isAuthorVoiceConnectedGuildScoped() {
+		return this.getAuthorVoiceState() != null && this.getAuthorVoiceState().getGuildId().equals(this.getGuildId());
+	}
+
+	protected final boolean isAuthorVoiceConnectedVerbose() {
 		return this.getAuthorVoiceState() != null;
 	}
 
@@ -186,7 +190,13 @@ public abstract class Middleware {
 	 * @return The voice channel, the bot is currently connected to
 	 */
 	protected final VoiceChannel getMyVoiceChannel() {
-		return this.getMyVoiceChannelAsync().block();
+		try{
+			return this.getMyVoiceChannelAsync().block();
+		}
+		catch(Exception e){
+			return null;
+		}
+		
 	}
 	protected final Mono<VoiceChannel> getMyVoiceChannelAsync() {
 		return this.getClient().getSelf()

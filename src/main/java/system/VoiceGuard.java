@@ -10,7 +10,7 @@ public class VoiceGuard extends Middleware {
 
     @Override
     protected boolean handle() {
-        if(this.getMessage().getMessageObject().getChannelId().equals(ChannelID.VOICE) && !this.isAuthorVoiceConnected()){
+        if(this.getMessage().getMessageObject().getChannelId().equals(ChannelID.VOICE) && !this.isAuthorVoiceConnectedGuildScoped()){
             this.sendPrivateAnswer("Bitte verwende den VoiceChannel nur dann, wenn du auch wirklich in einem Voicechannel bist!\n"
             + "Für alles andere sind die anderen Textkanäle gedacht."
             +"\n\n"

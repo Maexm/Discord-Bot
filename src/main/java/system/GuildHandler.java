@@ -150,6 +150,7 @@ public final class GuildHandler {
 	public void onPurge(){
 		try{
 			this.responseSet.purge();
+			System.out.println("Purge completed!");
 		}
 		catch(Exception e){
 			System.out.println("Failed to purge guild session, continuing...");

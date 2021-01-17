@@ -315,7 +315,13 @@ public abstract class ResponseType extends Middleware {
 	}
 
 	protected final void purge(){
-		System.out.println("########## Purging session for guild: "+this.getGuild().getName()+" ###########");
+		try{
+			System.out.println("########## Purging session for guild: "+this.getGuild().getName()+" ###########");
+		}
+		catch(Exception e){
+			System.out.println("Guild name unabailable!");
+		}
+		
 		// ########## CLEAN MUSIC SESSION ##########
 			System.out.println("Cleaning up mussic session...");
 			this.getMusicWrapper().getMusicBotHandler().clearList();
