@@ -10,6 +10,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
@@ -864,8 +865,8 @@ public class Megumin extends ResponseType {
 			// Notify users if voice channel is in subscriber hashmap
 			if(this.config.voiceSubscriberMap.containsKey(event.getCurrent().getChannelId().get())){
 				final User joinedUser = event.getCurrent().getUser().block();
-				// Ignore if its the user himself or if its the bot
-				if(event.getCurrent().getUserId().equals(joinedUser.getId()) || event.getCurrent().getUserId().equals(this.getClient().getSelfId())){
+				// ignore if its the bot
+				if(event.getCurrent().getUserId().equals(this.getClient().getSelfId())){
 					return;
 				}
 				// Notify every subscribed user
@@ -875,7 +876,11 @@ public class Megumin extends ResponseType {
 					.flatMap(channel -> channel.createMessage(spec ->{
 						// Notify subscriber, if he is not in the same voice channel
 						VoiceChannel voiceChannel = event.getCurrent().getChannel().block();
-						if(!(this.isAuthorVoiceConnectedVerbose() && this.getAuthorVoiceChannel().getId().equals(voiceChannel.getId()))){
+						VoiceState userVoiceState = this.getClient().getMemberById(this.getGuildId(), userId).flatMap(mem -> mem.getVoiceState()).block();
+						if(!joinedUser.getId().equals(userId)){
+							if(userVoiceState != null && !userVoiceState.getChannelId().get().equals(channel.getId())){
+								return;
+							}
 							spec.setContent(joinedUser.getUsername()+" ist soeben auf "+this.getGuild().getName()+" dem "+voiceChannel.getName()+" VoiceChannel beigetreten. Komm und sag Hallo!\n"
 							+"Du erhälst diese Benachrichtigung, weil du diesen VoiceChannel abonniert hast. Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!");
 						}
