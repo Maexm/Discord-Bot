@@ -8,7 +8,7 @@ public class MusicTrackInfo {
 
 	private final String url;
 	private final User submittedByUser;
-	private final static String[] MUSIC_URL_PREFIXES = {"youtube.com", "youtu.be", "soundcloud.com", "open.spotify.com", "spotify.com"}; // Spotify to be tested
+	private final static String[] MUSIC_URL_PREFIXES = {"youtube.com", "youtu.be", "soundcloud.com"};
 	public final AudioEventHandler audioEventHandler;
 	public final Message userRequestMessage;
 	private final ScheduleType scheduleType;

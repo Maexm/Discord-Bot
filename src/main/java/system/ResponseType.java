@@ -68,6 +68,8 @@ public abstract class ResponseType extends Middleware {
 				this.commandSection = this.getMessage().getContent().toLowerCase().replaceFirst(PREFIX, "");
 			}
 
+			boolean isCommand = true;
+
 			// Redirect // TODO: Outsource
 			switch (this.commandSection.replace("musik", "music").replace("ä", "ae").replace("ö", "oe").replace("ü", "ue")) {
 			case "logout":
@@ -307,6 +309,10 @@ public abstract class ResponseType extends Middleware {
 				break;
 			default:
 				// Nothing, user typed in a command that does not exist
+				isCommand = false;
+			}
+			if(isCommand){
+				System.out.println("Command used: "+this.commandSection+" in guild "+this.getGuild().getName());
 			}
 		}
 		// Reset

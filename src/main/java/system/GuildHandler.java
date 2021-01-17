@@ -43,7 +43,7 @@ public final class GuildHandler {
 
 		// ########## RESPONSE SETS ##########
 		// TODO: Shorten this hell
-		this.middlewareBefore.add(new Logger(this.middlewareConfig));
+		//this.middlewareBefore.add(new Logger(this.middlewareConfig));
 		this.middlewareBefore.add(new RoleFilter(this.middlewareConfig,
 				msg -> RuntimeVariables.IS_DEBUG
 						&& msg.getContent().toLowerCase().startsWith(RuntimeVariables.MESSAGE_PREFIX.toLowerCase()),

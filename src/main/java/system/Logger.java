@@ -1,5 +1,7 @@
 package system;
 
+import start.RuntimeVariables;
+
 public class Logger extends Middleware {
 
     public Logger(MiddlewareConfig config) {

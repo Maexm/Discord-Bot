@@ -67,6 +67,7 @@ public abstract class Middleware {
 		} catch (Exception e) {
 			e.printStackTrace();
 				try {
+					System.out.println("Message '"+this.getMessage().getContent()+"' in guild "+this.getGuild().getName()+" caused an error!");
 					this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
 				} catch (Exception e2) {
 					System.out.println("Cannot send messages at all!");
