@@ -38,7 +38,7 @@ public abstract class Middleware {
 	protected final Predicate<Message> mayAccept;
 
 	public Middleware(MiddlewareConfig config) {
-		this(config, config.mayAccept);
+		this(config, config.UNSAFE_mayAccept());
 	}
 
 	public Middleware(MiddlewareConfig config, Predicate<Message> mayAccept){
@@ -54,8 +54,8 @@ public abstract class Middleware {
 	 * @param messageEvent
 	 */
 	public final boolean acceptEvent(final DecompiledMessage message) {
-
-		if(!this.config.mayAccept.test(message.getMessageObject())){
+		this.msg = message;
+		if(!this.mayAccept.test(message.getMessageObject())){
 			return true; // Skip if this Middleware may not handle event
 		}
 		boolean ret = true;
@@ -440,6 +440,18 @@ public abstract class Middleware {
 		return this.getOwner().getPrivateChannel()
 			.flatMap(channel -> channel.createMessage(MESSAGE))
 			.block();
+	}
+
+	public final void globalAnnounce(final String content){
+		for(MessageChannel channel : this.getGlobalProxy().getGlobalSystemChannels()){
+			try{
+				channel.createMessage(content).block();
+			}
+			catch(Exception e){
+				System.out.println("Failed to send psa message in a guild");
+				e.printStackTrace();
+			}
+		}
 	}
 
 	// TECHNICAL METHODS

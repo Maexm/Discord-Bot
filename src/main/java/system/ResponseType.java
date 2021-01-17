@@ -169,6 +169,7 @@ public abstract class ResponseType extends Middleware {
 			case "jump":
 			case "huepfen":
 			case "ueberspringen":
+			case "jmp":
 				this.onFastForwardMusic();
 				break;
 			case "multiumfrage":
@@ -298,10 +299,18 @@ public abstract class ResponseType extends Middleware {
 			case "following":
 				this.onGetVoiceSubscriptions();
 				break;
+			case "global":
+			case "globalpsa":
+			case "psaglobal":
+				this.onGlobalPSA();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 			}
 		}
+		// Reset
+		this.commandSection = "";
+		this.argumentSection = "";
 		return true;
 	}
 
@@ -324,13 +333,14 @@ public abstract class ResponseType extends Middleware {
 			}
 			catch(Exception e){
 				System.out.println("Failed to remove message, continuing... ");
+				e.printStackTrace();
 			}
 
 			// ########## STOP SURVEYS ##########
 			System.out.println("Stopping surveys...");
 
 			this.getSurveyListVerbose().forEach(survey ->{
-				if(survey.publicMessage.getGuildId().get().equals(this.config.guildId)){
+				if(survey.guildId.equals(this.config.guildId)){
 					survey.stop(VoteEndReason.LOGOUT);
 				}
 			});
@@ -490,5 +500,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onUnsubscribeVoice();
 
 	protected abstract void onGetVoiceSubscriptions();
+
+	protected abstract void onGlobalPSA();
 
 }

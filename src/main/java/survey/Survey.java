@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -27,14 +28,15 @@ public class Survey {
 	private final TimerTask endTask;
 	private final Calendar endTime;
 	public final User createdBy;
-	public final Message publicMessage;
+	private final Message publicMessage;
 	private final ArrayList<Survey> surveyList;
 	private final ArrayList<User> participants;
 	public final boolean isMulti;
 	public VoteEndReason endReason = VoteEndReason.TIMED_OUT;
+	public final Snowflake guildId;
 
 	public Survey(final String description, final String[] options, final int duration, final MessageChannel channel,
-			final User createdBy, final ArrayList<Survey> surveyList, final boolean isMulti)
+			final User createdBy, final ArrayList<Survey> surveyList, final boolean isMulti, final Snowflake guildId)
 			throws SurveyCreateIllegalDurationException {
 
 		// Check duration
@@ -54,6 +56,7 @@ public class Survey {
 		this.createdBy = createdBy;
 		this.isMulti = isMulti;
 		this.participants = new ArrayList<User>();
+		this.guildId = guildId;
 
 		// Calculate and set end time and also save current time
 		Calendar startTime = Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);

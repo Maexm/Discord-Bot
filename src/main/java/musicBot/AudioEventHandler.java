@@ -389,7 +389,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (this.tracks.size() == 0) {
 			queueInfo = "Die Warteschlange ist " + Markdown.toBold("leer") + "!";
 		} else if (this.tracks.size() == 1) {
-			queueInfo = "Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
+			queueInfo = " Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
 		} else {
 			queueInfo = "Es befinden sich " + Markdown.toBold(Integer.toString(this.tracks.size()))
 					+ " Lieder in der Warteschlange!";

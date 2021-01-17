@@ -86,47 +86,87 @@ public class StartUp {
 		// ########## On received message ##########
 
 		client.getEventDispatcher().on(MessageCreateEvent.class).log().subscribe(event -> {
-			if (RuntimeVariables.IS_DEBUG) {
+			try{
+				if (RuntimeVariables.IS_DEBUG) {
 				System.out.println("Event received!");
+				}
+				if(discordHandlerWrapper[0] != null){
+					discordHandlerWrapper[0].acceptEvent(event);
+				}
 			}
-			if(discordHandlerWrapper[0] != null){
-				discordHandlerWrapper[0].acceptEvent(event);
+			catch(Exception e){
+				System.out.println("Something went terribly wrong!");
+				e.printStackTrace();
 			}
+			
 		});
 
 		// ########## Guild events ##########
 
 		client.getEventDispatcher().on(GuildCreateEvent.class).subscribe(event ->{
 			if(discordHandlerWrapper[0] != null){
-				discordHandlerWrapper[0].addGuild(event.getGuild());
+				try{
+					discordHandlerWrapper[0].addGuild(event.getGuild());
+				}
+				catch(Exception e){
+					System.out.println("Something went terribly wrong!");
+					e.printStackTrace();
+				}
 			}
 		});
 
 		client.getEventDispatcher().on(GuildDeleteEvent.class).subscribe(event ->{
-			// Event might fire, when guild has an outage, ignore this case
-			if(!event.isUnavailable() && discordHandlerWrapper[0] != null){
-				discordHandlerWrapper[0].removeGuild(event.getGuild().get());
+			try{
+				// Event might fire, when guild has an outage, ignore this case
+				if(!event.isUnavailable() && discordHandlerWrapper[0] != null){
+					discordHandlerWrapper[0].removeGuild(event.getGuild().get());
+				}
+			}
+			catch(Exception e){
+				System.out.println("Something went terribly wrong!");
+				e.printStackTrace();
 			}
 		});
 
 		client.getEventDispatcher().on(MemberLeaveEvent.class).subscribe(event -> {
-			if(discordHandlerWrapper[0] != null){
-				discordHandlerWrapper[0].onMemberLeavesGuild(event);
+			try{
+				if(discordHandlerWrapper[0] != null){
+					discordHandlerWrapper[0].onMemberLeavesGuild(event);
+				}
 			}
+			catch(Exception e){
+				System.out.println("Something went terribly wrong!");
+				e.printStackTrace();
+			}
+			
 		});
 
 		// ########## Voice events ##########
 
 		client.getEventDispatcher().on(VoiceStateUpdateEvent.class).subscribe(event -> {
-			if(discordHandlerWrapper[0] != null){
-				discordHandlerWrapper[0].onVoiceStateEvent(event);
+			try{
+				if(discordHandlerWrapper[0] != null){
+					discordHandlerWrapper[0].onVoiceStateEvent(event);
+				}
 			}
+			catch(Exception e){
+				System.out.println("Something went terribly wrong!");
+				e.printStackTrace();
+			}
+			
 		});
 
 		client.getEventDispatcher().on(VoiceChannelDeleteEvent.class).subscribe(event -> {
-			if(discordHandlerWrapper[0] != null){
+			try{
+				if(discordHandlerWrapper[0] != null){
 				discordHandlerWrapper[0].onVoiceChannelDeleted(event);
+				}
 			}
+			catch(Exception e){
+				System.out.println("Something went terribly wrong!");
+				e.printStackTrace();
+			}
+			
 		});
 		
 		// ########## On logout ##########

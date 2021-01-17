@@ -30,15 +30,16 @@ public final class GuildHandler {
 	private final MusicWrapper musicWrapper;
 	private final Guild guild;
 
-	public GuildHandler(final Snowflake guildId, final GlobalDiscordProxy globalProxy) {
+	public GuildHandler(final Snowflake guildId, final GlobalDiscordProxy globalProxy, final MusicWrapper musicWrapper) {
 
 		this.middlewareBefore = new ArrayList<Middleware>();
 		this.localTasks = new TaskManager<>(true);
 		this.guildId = guildId;
 		this.globalProxy = globalProxy;
-		this.musicWrapper = new MusicWrapper();
+
+		this.musicWrapper = musicWrapper;
 		this.middlewareConfig = new MiddlewareConfig(this.guildId, this.musicWrapper, this.globalProxy, null, new HashMap<>());
-		this.guild = this.globalProxy.getClient().getGuildById(this.guildId).block();
+		this.guild = this.guildId != null ? this.globalProxy.getClient().getGuildById(this.guildId).block() : null;
 
 		// ########## RESPONSE SETS ##########
 		// TODO: Shorten this hell
@@ -52,7 +53,7 @@ public final class GuildHandler {
 		this.middlewareBefore.add(
 				new AutoReact(this.middlewareConfig, msg -> {
 					final String[] expressions = { "explosion", "kaboom", "bakuhatsu", "bakuretsu", "ばくれつ", "爆裂", "ばくはつ",
-							"爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "explodier"};
+							"爆発", "explode", "feuerwerk", "böller", "explosiv", "detonation", "explodier", "hanabi", "はなび", "花火"};
 					final String evalStr = msg.getContent().toLowerCase();
 					for (String expr : expressions) {
 						if (evalStr.contains(expr)) {
@@ -152,6 +153,7 @@ public final class GuildHandler {
 		}
 		catch(Exception e){
 			System.out.println("Failed to purge guild session, continuing...");
+			e.printStackTrace();
 		}
 	}
 
@@ -193,5 +195,9 @@ public final class GuildHandler {
 		this.middlewareConfig.voiceSubscriberMap.forEach((channelId, set) -> {
 			set.remove(event.getUser().getId());
 		});
+	}
+
+	public final ResponseType getResponseType(){
+		return this.responseSet;
 	}
 }

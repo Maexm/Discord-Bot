@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
+
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
@@ -13,8 +18,10 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import exceptions.IllegalMagicException;
+import musicBot.MusicWrapper;
 import survey.Survey;
 import survey.VoteEndReason;
 import system.GuildHandler;
@@ -27,19 +34,25 @@ public class GlobalDiscordHandler {
     private final GlobalDiscordProxy globalProxy;
     private final GatewayDiscordClient client;
     private final ArrayList<Survey> surveys;
+    private final AudioPlayerManager playerManager;
 
     public GlobalDiscordHandler(ReadyEvent readyEvent) {
         this.globalProxy = new GlobalDiscordProxy(this);
         this.client = readyEvent.getClient();
 
+        this.playerManager = new DefaultAudioPlayerManager();
+		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
+        AudioSourceManagers.registerRemoteSources(playerManager);
+
         // Prepare guilds
         this.guildMap = new HashMap<>();
 
         readyEvent.getGuilds().forEach(guild -> {
-            GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy);
+            MusicWrapper musicWrapper = new MusicWrapper(this.playerManager);
+            GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy, musicWrapper);
             this.guildMap.put(guild.getId(), guildHandler);
         });
-        this.privateHandler = new GuildHandler(null, this.globalProxy);
+        this.privateHandler = new GuildHandler(null, this.globalProxy, null);
 
         this.surveys = new ArrayList<>();
     }
@@ -60,7 +73,8 @@ public class GlobalDiscordHandler {
     void addGuild(Guild guild){
         if(!this.guildMap.containsKey(guild.getId())){
             System.out.println("Bot was added to guild "+guild.getName());
-            GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy);
+            MusicWrapper musicWrapper = new MusicWrapper(this.playerManager);
+            GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy, musicWrapper);
             this.guildMap.put(guild.getId(), guildHandler);
         }
     }
@@ -134,14 +148,14 @@ public class GlobalDiscordHandler {
 
         public Survey getSurveyForKeyGuildScoped(String keyword, Snowflake guildId){
             Survey survey = this.getSurveyForKeyVerbose(keyword);
-            return survey.publicMessage.getGuildId().get().equals(guildId) ? survey : null;
+            return survey.guildId.equals(guildId) ? survey : null;
         }
 
         public Survey getSurveyForKeyUserScoped(String keyword, Snowflake userId){
             Survey survey = this.getSurveyForKeyVerbose(keyword);
             Member member;
             try{
-                member = survey.publicMessage.getGuild().flatMap(guild -> guild.getMemberById(userId)).block();
+                member = parent.getClient().getGuildById(survey.guildId).flatMap(guild -> guild.getMemberById(userId)).block();
             }
             catch(Exception e){
                 member = null;
@@ -175,6 +189,15 @@ public class GlobalDiscordHandler {
                         }
                     });
                 }
+            });
+
+            return ret;
+        }
+
+        public ArrayList<MessageChannel> getGlobalSystemChannels(){
+            ArrayList<MessageChannel> ret = new ArrayList<>();
+            parent.getGuildMap().forEach((guildId, guildHandler) ->{
+                ret.add(guildHandler.getResponseType().getSystemChannel());
             });
 
             return ret;

@@ -17,12 +17,14 @@ public class Wikipedia {
     public final static String[] LANGUAGES = {"de", "en"};
 
     public static WikiPage getWikiPage(String keyword){
-        keyword = Format.firstCharsCapitalized(keyword, " ");
+        keyword = Format.firstCharsCapitalized(keyword, ' ');
+        keyword = Format.firstCharsCapitalized(keyword, '-');
         keyword = HTTPRequests.urlEncode(keyword);
+        
 
         // Try configured languages until a valid page has been found
         for(String language : Wikipedia.LANGUAGES){
-            final String[] variations = {keyword, keyword.replace("%20", "%2D")};
+            final String[] variations = {keyword, keyword.replace("%20", "%2D"), keyword.replace("-", "%2D")};
             // Try different keyword variations until a valid page has been found
             for(int i = 0; i < variations.length; i++){ 
                 if(i > 0 && variations[i].equals(keyword)){

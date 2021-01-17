@@ -14,6 +14,7 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.rest.util.Color;
 import exceptions.IllegalMagicException;
@@ -32,6 +33,8 @@ import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
 import security.SecurityProvider;
+import snowflakes.ChannelID;
+import snowflakes.GuildID;
 import util.Emoji;
 import util.HTTPRequests;
 import util.Help;
@@ -53,7 +56,8 @@ public class Megumin extends ResponseType {
 		super(config, localTasks);
 		if (!RuntimeVariables.IS_DEBUG && !this.isPrivate()) {
 			try {
-				Message message = this.getSystemChannel()
+				MessageChannel channel = this.getGuildId().equals(GuildID.UNSER_SERVER) ? this.getChannelByID(ChannelID.MEGUMIN) : this.getSystemChannel();
+				Message message = channel
 						.createMessage(
 								"Ich bin Online und einsatzbereit! Schreib " + Markdown.toCodeBlock("MegHelp") + "!")
 						.block();
@@ -192,7 +196,7 @@ public class Megumin extends ResponseType {
 
 				try {
 					new Survey(description, options, Integer.parseInt(duration), this.getMessageChannel(),
-							this.getMessage().getUser(), this.getSurveyListVerbose(), isMulti);
+							this.getMessage().getUser(), this.getSurveyListVerbose(), isMulti, this.getGuildId());
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
 					this.sendAnswer("das letzte Argument (Anzahl Minuten bis Ende) ist falsch!");
@@ -264,7 +268,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onReceiveMusicRequest(ScheduleType scheduleType) {
-		if (this.isAuthorVoiceConnected()) {
+		if (this.handleMusicCheck(true, false)) {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer(
 						"du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link oder einen Suchbegriff!");
@@ -294,14 +298,12 @@ public class Megumin extends ResponseType {
 					e.printStackTrace();
 				}
 			}
-		} else {
-			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 		}
 	}
 
 	@Override
 	protected void onPauseMusic() {
-		if (this.handleMusicCheck(true)) {
+		if (this.handleMusicCheck(true, true)) {
 			if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
 			} else if (!this.getMusicWrapper().getMusicBotHandler().isPaused()) {
@@ -320,8 +322,8 @@ public class Megumin extends ResponseType {
 		if (!this.getArgumentSection().equals("")) {
 			this.onReceiveMusicRequest(ScheduleType.NORMAL);
 		}
-		// Else interpret as music pause request
-		else if (this.handleMusicCheck(true)) {
+		// Else interpret as music resume request
+		else if (this.handleMusicCheck(true, true)) {
 			if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.sendAnswer("es wird momentan keine Musik abgespielt!");
 			} else if (this.getMusicWrapper().getMusicBotHandler().isPaused()) {
@@ -336,7 +338,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onStopMusic() {
-		if (this.handleMusicCheck(true)) {
+		if (this.handleMusicCheck(true, true)) {
 			this.getMusicWrapper().getMusicBotHandler().clearList();
 			this.getMusicWrapper().getMusicBotHandler().stop();
 			this.sendAnswer("Musikwiedergabe wurde komplett gestoppt!");
@@ -346,7 +348,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onNextMusic() {
-		if (this.handleMusicCheck(true)) {
+		if (this.handleMusicCheck(true, true)) {
 			if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.sendAnswer("es wird nichts abgespielt!");
 				this.deleteReceivedMessage();
@@ -383,23 +385,24 @@ public class Megumin extends ResponseType {
 	 * @return true if author is connected to voice and not in private, sends an
 	 *         error message otherwise
 	 */
-	protected boolean handleMusicCheck(boolean requireSameChannel) {
+	protected boolean handleMusicCheck(boolean requireSameChannel, boolean requireBotConnected) {
 		// Private chat
 		if (this.isPrivate()) {
 			this.notInPrivate();
 			return false;
 		}
-		// Bot not connected to voice
-		else if (!this.isVoiceConnected()) {
-			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
-			return false;
-			// Author not connected to voice
-		} else if (!this.isAuthorVoiceConnected()) {
+	    else if (requireSameChannel && requireBotConnected && !this.isAuthorVoiceConnected()) {
 			this.sendAnswer("du musst dafür in einem Voice Channel sein!");
 			return false;
 		}
+		// Bot not connected to voice
+		else if (!this.isVoiceConnected() && requireBotConnected) {
+			this.sendAnswer("Musik ist nicht an, schreib 'MegMusik URL'!");
+			return false;
+			// Author not connected to voice
+		}
 		// Author connected to different voice channel
-		else if (requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
+		else if (requireBotConnected && requireSameChannel && !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
 			this.sendAnswer("du musst dafür im selben VoiceChannel wie ich sein!");
 			return false;
 		}
@@ -504,7 +507,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onMusicQueue() {
-		if (this.handleMusicCheck(false)) {
+		if (this.handleMusicCheck(false, true)) {
 			AudioTrack curTrack = this.getMusicWrapper().getMusicBotHandler().getCurrentAudioTrack();
 			// Leave if no track is playing (this should not happen)
 			if (curTrack == null) {
@@ -552,8 +555,6 @@ public class Megumin extends ResponseType {
 						: Markdown.toBold("" + diff) + " weitere Tracks!");
 			}
 			this.sendAnswer(out);
-		} else {
-			this.sendAnswer("es läuft aktuell keine Musik!");
 		}
 	}
 
@@ -572,8 +573,22 @@ public class Megumin extends ResponseType {
 	}
 
 	@Override
+	protected void onGlobalPSA() {
+		if (this.hasPermission(SecurityLevel.DEV)) {
+			if (this.getArgumentSection().equals("")) {
+				this.sendAnswer("keine Nachricht angegeben!");
+			} else {
+				this.globalAnnounce(this.getArgumentSection());
+			}
+		} else {
+			this.noPermission();
+		}
+
+	}
+
+	@Override
 	protected void onClearMusicQueue() {
-		if (this.handleMusicCheck(true)) {
+		if (this.handleMusicCheck(true, true)) {
 			// List already empty
 			if (this.getMusicWrapper().getMusicBotHandler().getListSize() == 0) {
 				final String[] responses = { "Warteschlange wird gele- Moment, die Liste ist schon leer!",
@@ -614,12 +629,11 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onUpdatePSA() {
 		if (this.hasPermission(SecurityLevel.DEV)) {
-			final String INTRO = "Ein neues Update ist verfügbar! :christmas_tree: Was ist neu?\n";
+			final String INTRO = "Ein neues Update ist verfügbar! :chicken: Was ist neu?\n";
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
 			} else if (!RuntimeVariables.IS_DEBUG) {
-				this.sendInChannel(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()),
-						this.getSystemChannel().getId());
+				this.globalAnnounce(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 			} else {
 				this.sendMessageToOwner(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 			}
@@ -674,22 +688,27 @@ public class Megumin extends ResponseType {
 		if (page == null) {
 			this.sendAnswer("konnte unter diesem Begriff nichts finden!");
 		}
-		if (page.CUSTOM_PROP_LANGUAGE == null || page.CUSTOM_PROP_LANGUAGE.equals("")) {
-			throw new IllegalMagicException("CUSTOM_PROP_LANGUAGE must not be null or empty");
+		else{
+			if (page.CUSTOM_PROP_LANGUAGE == null || page.CUSTOM_PROP_LANGUAGE.equals("")) {
+				throw new IllegalMagicException("CUSTOM_PROP_LANGUAGE must not be null or empty");
+			}
+	
+			final String humanUrl = "https://" + page.CUSTOM_PROP_LANGUAGE + "." + Wikipedia.WIKI_NORMAL_BASE_URL
+					+ HTTPRequests.urlEncode(page.title.replace(" ", "_"));
+	
+			this.getMessageChannel().createEmbed(spec -> {
+				spec.setColor(Color.CYAN)
+				.setTitle(page.title)
+				.setUrl(humanUrl)
+				.setDescription(page.extract);
+	
+				if (page.original != null) {
+					spec.setImage(page.original.source);
+				}
+			}).block();
 		}
 
-		final String humanUrl = "https://" + page.CUSTOM_PROP_LANGUAGE + "." + Wikipedia.WIKI_NORMAL_BASE_URL
-				+ HTTPRequests.urlEncode(page.title.replace(" ", "_"));
-
-		this.getMessageChannel().createEmbed(spec -> {
-			spec.setColor(Color.CYAN).setTitle(page.title).setUrl(humanUrl).setDescription(page.extract);
-
-			if (page.original != null) {
-				spec.setImage(page.original.source);
-			}
-		}).block();
-
-		loadingMessage.delete("Deleting info concerning async tasks");
+		loadingMessage.delete("Deleting info concerning async tasks").block();
 	}
 
 	@Override
@@ -710,7 +729,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onFastForwardMusic() {
-		if (!this.handleMusicCheck(true)) {
+		if (!this.handleMusicCheck(true, true)) {
 			return;
 		}
 
@@ -722,7 +741,12 @@ public class Megumin extends ResponseType {
 		int skipSeconds = 0;
 		try {
 			skipSeconds = Integer.parseInt(this.getArgumentSection());
-			this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
+			if(skipSeconds == 0){
+				this.sendAnswer("nichts passiert...");
+				return;
+			}
+			long pos = this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
+			this.sendAnswer("springe "+skipSeconds+" "+(Math.abs(skipSeconds) > 1 ? "Sekunden" : "Sekunde")+"!\nNeue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
 		} catch (NumberFormatException e) {
 			this.sendAnswer(
 					"ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");
@@ -731,7 +755,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onMusicRandom() {
-		if (this.handleMusicCheck(true)) {
+		if (this.handleMusicCheck(true, true)) {
 			if (this.getMusicWrapper().getMusicBotHandler().getListSize() >= 1) {
 				this.sendAnswer(
 						"es müssen mindestens zwei Tracks in der Warteschlange sein, sonst macht das ganze keinen Sinn!");
@@ -829,17 +853,20 @@ public class Megumin extends ResponseType {
 			// Notify users if voice channel is in subscriber hashmap
 			if(this.config.voiceSubscriberMap.containsKey(event.getCurrent().getChannelId().get())){
 				final User joinedUser = event.getCurrent().getUser().block();
+				// Ignore if its the user himself or if its the bot
+				if(event.getCurrent().getUserId().equals(joinedUser.getId()) || event.getCurrent().getUserId().equals(this.getClient().getSelfId())){
+					return;
+				}
 				// Notify every subscribed user
 				this.config.voiceSubscriberMap.get(event.getCurrent().getChannelId().get()).forEach(userId ->{
 					this.getClient().getUserById(userId)
 					.flatMap(user -> user.getPrivateChannel())
-					.flatMap(channel -> channel.createEmbed(spec ->{
+					.flatMap(channel -> channel.createMessage(spec ->{
 						// Notify subscriber, if he is not in the same voice channel
 						VoiceChannel voiceChannel = event.getCurrent().getChannel().block();
 						if(!(this.isAuthorVoiceConnected() && this.getAuthorVoiceChannel().getId().equals(voiceChannel.getId()))){
-							spec.setDescription(joinedUser.getUsername()+" ist soeben auf "+this.getGuild().getName()+" dem "+voiceChannel.getName()+" VoiceChannel beigetreten. Komm und sag Hallo!\n\n"
-							+"Du erhälst diese Benachrichtigung, weil du diesen VoiceChannel abonniert hast. Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId())+" um die Benachrichtigung auszuschalten!");
-							spec.setThumbnail(joinedUser.getAvatarUrl());
+							spec.setContent(joinedUser.getUsername()+" ist soeben auf "+this.getGuild().getName()+" dem "+voiceChannel.getName()+" VoiceChannel beigetreten. Komm und sag Hallo!\n"
+							+"Du erhälst diese Benachrichtigung, weil du diesen VoiceChannel abonniert hast. Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!");
 						}
 					})).block();
 				});
@@ -870,12 +897,12 @@ public class Megumin extends ResponseType {
 			// Find corresponding voice channel
 			if(channel.getId().asString().equals(channelIdentifier) || channel.getName().equals(channelIdentifier)){
 				final Snowflake userId = this.getMessage().getUser().getId();
-				final String okayMessage = "du hast "+channel.getName()+" abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegFollow "+channel.getId())+", um diesen wieder zu deabonnieren!";
+				final String okayMessage = "du hast "+channel.getName()+" abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen wieder zu deabonnieren!";
 				// Found channel in HashMap
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
 					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
 					if(subscriberSet.contains(userId)){
-						this.sendAnswer("du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId())+", um diesen zu deabonnieren!");
+						this.sendAnswer("du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen zu deabonnieren!");
 					}
 					else{
 						subscriberSet.add(userId);
@@ -917,7 +944,7 @@ public class Megumin extends ResponseType {
 			// Find corresponding voice channel
 			if(channel.getId().asString().equals(channelIdentifier) || channel.getName().equals(channelIdentifier)){
 				final Snowflake userId = this.getMessage().getUser().getId();
-				final String errorMessage = "du hast diesen Kanal nicht abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegFollow "+channel.getId())+", um diesen zu abonnieren!";
+				final String errorMessage = "du hast diesen Kanal nicht abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegFollow "+channel.getId().asString())+", um diesen zu abonnieren!";
 				// Found channel in HashMap
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
 					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
@@ -943,17 +970,17 @@ public class Megumin extends ResponseType {
 		HashSet<Pair<Guild, VoiceChannel>> set = this.getGlobalProxy().getSubscribedGuildChannelPairs(this.getMessage().getUser().getId());
 
 		if(set.isEmpty()){
-			this.sendAnswer("du hast noch keinen VoiceChannel abonniert. Schreib auf einem entsprechendem Server "+Markdown.toCodeBlock("MegFollow ChannelName/Snowflake")+", um Benachrichtigungen für einen VoiceChannel zu erhalten!");
+			this.sendPrivateAnswer("Du hast noch keinen VoiceChannel abonniert. Schreib auf einem entsprechendem Server "+Markdown.toCodeBlock("MegFollow ChannelName/Snowflake")+", um Benachrichtigungen für einen VoiceChannel zu erhalten!");
 			return;
 		}
 
-		String response = "Du hast "+set.size()+" "+(set.size() == 1 ? "VoiceChannel" : "VoiceChannels")+" abonniert:\n"+Markdown.toCodeBlock("");
+		String response = "Du hast "+set.size()+" "+(set.size() == 1 ? "VoiceChannel" : "VoiceChannels")+" abonniert:\n";
 		for(Pair<Guild, VoiceChannel> pair : set){
 			response += "Server: "+Markdown.toBold(pair.key.getName())+" - VoiceChannel: "+Markdown.toBold(pair.value.getName())+"\n";
 		}
 
-		response += "\n\nSchreib auf dem entsprechendem Server(!)"+Markdown.toCodeBlock("MegUnfollow ChannelName/Snowflake")+" um einen Kanel zu deabonnieren!";
+		response += "\n\nSchreib auf dem entsprechendem Server(!) "+Markdown.toCodeBlock("MegUnfollow ChannelName/Snowflake")+" um einen Kanal zu deabonnieren!";
 
-		this.sendAnswer(response);
+		this.sendPrivateAnswer(response);
 	}
 }

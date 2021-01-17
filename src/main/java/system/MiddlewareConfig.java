@@ -11,7 +11,7 @@ import start.GlobalDiscordHandler.GlobalDiscordProxy;
 
 public class MiddlewareConfig {
 
-	final Predicate<Message> mayAccept;
+	private final Predicate<Message> mayAccept;
 	final Snowflake guildId;
 	final MusicWrapper musicWrapper;
 	final GlobalDiscordProxy globalProxy;
@@ -30,6 +30,10 @@ public class MiddlewareConfig {
 		this.globalProxy = globalProxy;
 		this.helloMessage = helloMessage;
 		this.voiceSubscriberMap = voiceSubscriberMap;
+	}
+
+	public Predicate<Message> UNSAFE_mayAccept(){
+		return this.mayAccept;
 	}
 
 
