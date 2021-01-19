@@ -652,8 +652,11 @@ public class Megumin extends ResponseType {
 	protected void onWeather() {
 		String city = this.getArgumentSection().equals("") ? RuntimeVariables.HOME_TOWN : this.getArgumentSection();
 
+		Message message = this.sendAnswer("suche nach Wetterdaten, gib mir einen Moment...");
+
 		String resp = Weather.buildMessage(Weather.getWeatherResponse(city));
 		this.sendAnswer(resp);
+		message.delete().block();
 	}
 
 	@Override
@@ -885,7 +888,7 @@ public class Megumin extends ResponseType {
 					this.getClient().getUserById(userId)
 					.flatMap(user -> user.getPrivateChannel())
 					.flatMap(channel -> channel.createMessage(spec ->{
-						spec.setContent(Markdown.toSafeMultilineBlockQuotes("Auf "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los!. Komm und sag Hallo!\n\n"
+						spec.setContent(Markdown.toSafeMultilineBlockQuotes("Auf "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los. Komm und sag Hallo!\n\n"
 							+"Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!"));
 					})).block();
 				}
@@ -921,11 +924,11 @@ public class Megumin extends ResponseType {
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
 					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
 					if(subscriberSet.contains(userId)){
-						this.sendAnswer("du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen zu deabonnieren!");
+						this.sendPrivateAnswer("du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen zu deabonnieren!");
 					}
 					else{
 						subscriberSet.add(userId);
-						this.sendAnswer(okayMessage);
+						this.sendPrivateAnswer(okayMessage);
 					}
 				}
 				// Create new entry in HashMap, if channel not found in HashMap
@@ -933,7 +936,7 @@ public class Megumin extends ResponseType {
 					HashSet<Snowflake> set = new HashSet<>();
 					set.add(userId);
 					this.config.voiceSubscriberMap.put(channel.getId(), set);
-					this.sendAnswer(okayMessage);
+					this.sendPrivateAnswer(okayMessage);
 				}
 				this.deleteReceivedMessage();
 				return;
@@ -971,10 +974,10 @@ public class Megumin extends ResponseType {
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
 					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
 					if(subscriberSet.remove(userId)){
-						this.sendAnswer("du hast "+channel.getName()+" deabonniert!");
+						this.sendPrivateAnswer("du hast "+channel.getName()+" deabonniert!");
 					}
 					else{
-						this.sendAnswer(errorMessage);
+						this.sendPrivateAnswer(errorMessage);
 					}
 				this.deleteReceivedMessage();
 				}
