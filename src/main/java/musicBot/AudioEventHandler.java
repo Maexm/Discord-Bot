@@ -251,15 +251,11 @@ public class AudioEventHandler extends AudioEventAdapter {
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
 				Message failedTrackMsg = failedTrack.userRequestMessage;
-				this.parent.getOwnerMentionAsync().flatMap(ownerMention -> 
-					failedTrackMsg.getChannel()
-					.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\n"+ownerMention+", das könnte ein Bug sein!"))
-				).subscribe();
+					failedTrackMsg.getChannel().flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
+					.subscribe();
 			} else if (this.radioMessage != null) {
-				this.parent.getOwnerMentionAsync().flatMap(ownerMention -> 
-					this.radioMessage.getChannel()
-					.flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\n"+ownerMention+", das könnte ein Bug sein!"))
-				).subscribe();
+					this.radioMessage.getChannel().flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
+					.subscribe();
 			}
 		}
 

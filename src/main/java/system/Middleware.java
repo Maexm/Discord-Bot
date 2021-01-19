@@ -67,7 +67,7 @@ public abstract class Middleware {
 		} catch (Exception e) {
 			e.printStackTrace();
 				try {
-					System.out.println("Message '"+this.getMessage().getContent()+"' in guild "+this.getGuild().getName()+" caused an error!");
+					System.out.println("Message '"+this.getMessage().getContent()+"' in guild "+this.getGuildSecureName()+" caused an error!");
 					this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
 				} catch (Exception e2) {
 					System.out.println("Cannot send messages at all!");
@@ -98,7 +98,12 @@ public abstract class Middleware {
 	}
 
 	protected final Guild getGuild(){
-		return this.getGuildByID(this.getGuildId());
+		try{
+			return this.getGuildByID(this.getGuildId());
+		}
+		catch(Exception e){
+			return null;
+		}
 	}
 
 	public final Snowflake getGuildId(){
@@ -297,6 +302,15 @@ public abstract class Middleware {
 		.buffer()
 		.next()
 		.block();
+	}
+
+	public String getGuildSecureName(){
+		try{
+			return this.getGuild().getName();
+		}
+		catch(Exception e){
+			return "ERROR OR PRIVATE";
+		}
 	}
 
 	// ########## INTERACTIVE METHODS ##########

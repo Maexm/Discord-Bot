@@ -439,7 +439,7 @@ public class Megumin extends ResponseType {
 				vol = Math.max(0, vol);
 				vol = Math.min(200, vol);
 				this.getMusicWrapper().getMusicBotHandler().setVolume(vol);
-				this.sendAnswer("Lautstärke wurde auf " + vol + " gestellt! " + Emoji.getVol(vol));
+				this.sendAnswer("Lautstärke wurde auf " + vol + " gestellt! Das kann kurz ein paar Sekunden dauern..." + Emoji.getVol(vol));
 			} catch (Exception e) {
 				this.sendAnswer("konnte die Zahl nicht auslesen!");
 			}
@@ -862,30 +862,33 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onVoiceStateEvent(VoiceStateUpdateEvent event) {
 		if(event.isJoinEvent() || event.isMoveEvent()){
+			final VoiceChannel voiceChannel = event.getCurrent().getChannel().block();
+			final User joinedUser = event.getCurrent().getUser().block();
+			final int connectedAmount = voiceChannel.getVoiceStates().collectList().map(stateList -> stateList.size()).block();
+			
+			// ignore if this bot joined or if there are two or more users
+			if(connectedAmount >= 2 || joinedUser.getId().equals(this.getClient().getSelfId())){
+				return;
+			}
+
 			// Notify users if voice channel is in subscriber hashmap
-			if(this.config.voiceSubscriberMap.containsKey(event.getCurrent().getChannelId().get())){
-				final User joinedUser = event.getCurrent().getUser().block();
-				// ignore if its the bot
-				if(event.getCurrent().getUserId().equals(this.getClient().getSelfId())){
-					return;
-				}
+			if(this.config.voiceSubscriberMap.containsKey(voiceChannel.getId())){
+				
 				// Notify every subscribed user
-				this.config.voiceSubscriberMap.get(event.getCurrent().getChannelId().get()).forEach(userId ->{
+				for(Snowflake userId : this.config.voiceSubscriberMap.get(voiceChannel.getId())){
+					// Ignore if user in list is joined user
+					if(joinedUser.getId().equals(userId)){
+						continue;
+					}
+
+					// Else notify user
 					this.getClient().getUserById(userId)
 					.flatMap(user -> user.getPrivateChannel())
 					.flatMap(channel -> channel.createMessage(spec ->{
-						// Notify subscriber, if he is not in the same voice channel
-						VoiceChannel voiceChannel = event.getCurrent().getChannel().block();
-						VoiceState userVoiceState = this.getClient().getMemberById(this.getGuildId(), userId).flatMap(mem -> mem.getVoiceState()).block();
-						if(!joinedUser.getId().equals(userId)){
-							if(userVoiceState != null && !userVoiceState.getChannelId().get().equals(channel.getId())){
-								return;
-							}
-							spec.setContent(joinedUser.getUsername()+" ist soeben auf "+this.getGuild().getName()+" dem "+voiceChannel.getName()+" VoiceChannel beigetreten. Komm und sag Hallo!\n"
-							+"Du erhälst diese Benachrichtigung, weil du diesen VoiceChannel abonniert hast. Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!");
-						}
+						spec.setContent(Markdown.toSafeMultilineBlockQuotes("Auf "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los!. Komm und sag Hallo!\n\n"
+							+"Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!"));
 					})).block();
-				});
+				}
 			}
 		}
 	}
@@ -932,6 +935,7 @@ public class Megumin extends ResponseType {
 					this.config.voiceSubscriberMap.put(channel.getId(), set);
 					this.sendAnswer(okayMessage);
 				}
+				this.deleteReceivedMessage();
 				return;
 			}
 		}
@@ -972,6 +976,7 @@ public class Megumin extends ResponseType {
 					else{
 						this.sendAnswer(errorMessage);
 					}
+				this.deleteReceivedMessage();
 				}
 				// Channel not found in HashMap -> user was not subscribed!
 				else{
@@ -986,7 +991,6 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onGetVoiceSubscriptions() {
-		this.deleteReceivedMessage();
 		HashSet<Pair<Guild, VoiceChannel>> set = this.getGlobalProxy().getSubscribedGuildChannelPairs(this.getMessage().getUser().getId());
 
 		if(set.isEmpty()){
@@ -1003,5 +1007,6 @@ public class Megumin extends ResponseType {
 		response += "\n\nSchreib auf dem entsprechendem Server(!) "+Markdown.toCodeBlock("MegUnfollow ChannelName/Snowflake")+" um einen Kanal zu deabonnieren!";
 
 		this.sendPrivateAnswer(response);
+		this.deleteReceivedMessage();
 	}
 }

@@ -12,7 +12,7 @@ public class Help {
 			+ "`MegWetter STADT`: Aktuelle Wetterlage in irgendeiner Stadt weltweit :white_sun_cloud:\n\n"
 			+ "`MegFrage FRAGE`: Erhalte schnellen Rat bei Ja-/Nein-Fragen\n\n"
 			+ "`MegWiki BEGRIFF`: Schlage unbekannte Begriffe nach! :books:\n\n"
-			+ "`MegFollow Channel-Name oder Snowflake`: Erhalte eine Benachrichtigung, wenn jemand einem VoiceChannel beitritt (auf dem entsprechendem Server ausführen!)\n\n"
+			+ "`MegFollow Channel-Name oder Snowflake`: Erhalte eine Benachrichtigung, wenn jemand auf dem VoiceChannel etwas passiert :warning: Experimentell!\n\n"
 			+ "`MegUnfollow Channel-Name oder Snowflake`: Deabonniere VoiceChannel (auf dem entsprechendem Server ausführen!)\n\n"
 			+ "`MegAbos`: Betrachte alle VoiceChannels, die du abonniert hast!\n\n"
 			+ "`MegJisho WORT`: Englisch <--> Japanisch Wörterbuch (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n\n"

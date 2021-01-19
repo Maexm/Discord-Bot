@@ -147,8 +147,12 @@ public class TrackLoader implements AudioLoadResultHandler {
 					if(!firstTrackAlreadyPlaying){
 						this.playTrack(track, info);
 						firstTrackAlreadyPlaying = true;
-						break;
 					}
+					else{
+						// First track has been added -> playlist index is ahead of trackList index
+						this.trackList.add(i-1, track);
+					}
+					break;
 				case PRIO:
 					this.trackList.add(i, track);
 					break;

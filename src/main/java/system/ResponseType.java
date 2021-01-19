@@ -28,8 +28,12 @@ public abstract class ResponseType extends Middleware {
 	protected final boolean handle() {
 		
 		final String PREFIX = RuntimeVariables.MESSAGE_PREFIX.toLowerCase();
+
+		// Reset
+		this.argumentSection = "";
+		this.commandSection = "";
 		
-		// Expressions
+		// Basic expressions
 		switch (this.getMessage().getContent().toLowerCase()) {
 		case "hey megumin":
 			this.onGreeting();
@@ -63,7 +67,7 @@ public abstract class ResponseType extends Middleware {
 				}
 				
 			}
-			// No command section exists
+			// No argument section exists
 			else {
 				this.commandSection = this.getMessage().getContent().toLowerCase().replaceFirst(PREFIX, "");
 			}
@@ -312,7 +316,7 @@ public abstract class ResponseType extends Middleware {
 				isCommand = false;
 			}
 			if(isCommand){
-				System.out.println("Command used: "+this.commandSection+" in guild "+this.getGuild().getName());
+				System.out.println("Command used: "+this.commandSection+" in guild "+this.getGuildSecureName());
 			}
 		}
 		// Reset
