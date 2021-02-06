@@ -65,7 +65,7 @@ public final class GuildHandler {
 				}, new ReactionEmoji[] { ReactionEmoji.unicode("\u2764")/* , ReactionEmoji.unicode("\u1F386") */ }));
 		// this.middlewareBefore.add(new VoiceGuard(this.guildId, client,
 		// this.audioProvider, this.surveys, this.playerEventHandler));
-		this.middlewareBefore.add(new MusicRecommendation(this.middlewareConfig));
+		//this.middlewareBefore.add(new MusicRecommendation(this.middlewareConfig));
 		this.responseSet = new Megumin(this.middlewareConfig, this.localTasks);
 
 		// ########## TASKS ##########

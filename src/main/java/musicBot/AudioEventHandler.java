@@ -15,7 +15,6 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.rest.http.client.ClientException;
-import musicBot.MusicTrackInfo.TrackType;
 import system.ResponseType;
 import util.Emoji;
 import util.Markdown;
@@ -79,7 +78,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 			this.playerManager.loadItemOrdered(track, track.getQuery(), this.loadScheduler);
 		}
 		// Create a new radioMessage, if one does not already exist.
-		if (this.radioMessage == null && loadRightNow) {
+		if (this.radioMessage == null) {
 			this.musicChannelId = parent.getGuildId().equals(GuildID.UNSER_SERVER) ? ChannelID.MEGUMIN : track.userRequestMessage.getChannelId();
 			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...");
 		}

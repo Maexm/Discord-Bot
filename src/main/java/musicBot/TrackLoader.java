@@ -206,6 +206,11 @@ public class TrackLoader implements AudioLoadResultHandler {
 	 */
 	private void playTrack(AudioTrack track, MusicTrackInfo info) {
 		if (info.audioEventHandler.isActive()) {
+			long startPos = 0l;
+			startPos = Math.max(0, info.getStartTimeStamp());
+			startPos = Math.min(info.getStartTimeStamp(), track.getDuration());
+			track.setPosition(startPos);
+			
 			this.player.playTrack(track);
 		}
 	}

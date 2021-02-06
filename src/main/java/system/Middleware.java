@@ -36,14 +36,16 @@ public abstract class Middleware {
 	protected DecompiledMessage msg;
 	protected final MiddlewareConfig config;
 	protected final Predicate<Message> mayAccept;
+	protected final boolean quietError;
 
-	public Middleware(MiddlewareConfig config) {
-		this(config, config.UNSAFE_mayAccept());
+	public Middleware(MiddlewareConfig config, boolean quietError) {
+		this(config, quietError, config.UNSAFE_mayAccept());
 	}
 
-	public Middleware(MiddlewareConfig config, Predicate<Message> mayAccept){
+	public Middleware(MiddlewareConfig config, boolean quietError, Predicate<Message> mayAccept){
 		this.config = config;
 		this.mayAccept = mayAccept;
+		this.quietError = quietError;
 		
 	}
 
@@ -68,7 +70,9 @@ public abstract class Middleware {
 			e.printStackTrace();
 				try {
 					System.out.println("Message '"+this.getMessage().getContent()+"' in guild "+this.getGuildSecureName()+" caused an error!");
-					this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
+					if(!this.quietError){
+						this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst!");
+					}
 				} catch (Exception e2) {
 					System.out.println("Cannot send messages at all!");
 				}

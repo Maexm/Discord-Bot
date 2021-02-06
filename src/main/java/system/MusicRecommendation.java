@@ -8,7 +8,7 @@ import snowflakes.ChannelID;
 public class MusicRecommendation extends Middleware {
 
     public MusicRecommendation(MiddlewareConfig config) {
-        super(config);
+        super(config, true);
     }
 
     @Override

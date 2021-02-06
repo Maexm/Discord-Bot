@@ -6,12 +6,12 @@ import util.Help;
 public class HelpSection extends Middleware {
 
     public HelpSection(MiddlewareConfig config) {
-        super(config);
+        super(config, false);
     }
 
     @Override
     protected boolean handle() {
-        switch(this.getMessage().getContent().toLowerCase()){
+        switch(this.getMessage().getContent().toLowerCase().replace("hilfe", "help")){
             // Help section (and ONLY the help section) should be fool proofed
             case "megh":
             case "meghelp":

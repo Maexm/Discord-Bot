@@ -14,7 +14,7 @@ public class RoleFilter extends Middleware {
     }
 
     public RoleFilter(MiddlewareConfig config, Predicate<Message> mayAccept, int required, String message) {
-        super(config, mayAccept);
+        super(config, true, mayAccept);
         this.message = message;
         this.required = required;
     }

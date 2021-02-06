@@ -16,7 +16,7 @@ public abstract class ResponseType extends Middleware {
     protected String argumentSection = "";
 
 	public ResponseType(MiddlewareConfig config, final TaskManager<RefinedTimerTask> localTasks) {
-		super(config);
+		super(config, false);
 		this.localTasks = localTasks;
 	}
 

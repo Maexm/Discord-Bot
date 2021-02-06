@@ -10,7 +10,7 @@ public class AutoReact extends Middleware {
 	private final ReactionEmoji[] emojis;
 
 	public AutoReact(MiddlewareConfig config, Predicate<Message> mayAccept, ReactionEmoji[] emojis){
-		super(config, mayAccept);
+		super(config, true, mayAccept);
 		this.emojis = emojis;
 	}
 	

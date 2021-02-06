@@ -5,7 +5,7 @@ import snowflakes.ChannelID;
 public class VoiceGuard extends Middleware {
 
     public VoiceGuard(MiddlewareConfig config) {
-        super(config);
+        super(config, true);
     }
 
     @Override
