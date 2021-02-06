@@ -16,7 +16,7 @@ public class MusicTrackInfo {
 	private final String trackQuery;
 	private final User submittedByUser;
 	private final String[] protocols = {"https://www.", "https://"}; // ignore http, there is no reason for why you should use that
-	private final String[] MUSIC_URL_HOSTS = {"youtube.com", "youtu.be", "soundcloud.com"};
+	private final String[] MUSIC_URL_HOSTS = {"youtube.com", "youtu.be", "soundcloud.com", "music.youtube.com"};
 	public final AudioEventHandler audioEventHandler;
 	public final Message userRequestMessage;
 	private final ScheduleType scheduleType;
