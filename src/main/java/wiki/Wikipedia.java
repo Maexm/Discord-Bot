@@ -47,7 +47,7 @@ public class Wikipedia {
     }
 
     private static WikiResult fetchResult(final String url){
-        String response = HTTPRequests.getModern(url);
+        String response = HTTPRequests.getSimple(url);
         Gson gson = new Gson();
         return gson.fromJson(response, WikiResult.class);
     }

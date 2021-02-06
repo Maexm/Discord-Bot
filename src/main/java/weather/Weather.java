@@ -24,7 +24,7 @@ public class Weather {
 
         String url = Weather.WEATHER_BASE_URL+Weather.SINGLE_CALL+"&q="+city;
 
-        String response = HTTPRequests.getModern(url);
+        String response = HTTPRequests.getSimple(url);
 			if(response == null) {
 				return null;
             }

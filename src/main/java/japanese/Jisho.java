@@ -20,7 +20,7 @@ public class Jisho {
 
 		String url = Jisho.jishoURLLookup+keyword;
 		
-			String response = HTTPRequests.getModern(url);
+			String response = HTTPRequests.getSimple(url);
 			if(response == null) {
 				return null;
 			}

@@ -1,64 +1,43 @@
 package util;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Scanner;
 
 public class HTTPRequests {
 
-	@Deprecated
-	/**
-	 * Sends a simple HTTPRequest to a given url and returns its response as string.
-	 * Does NOT support additional parameters or authentication.
-	 * 
-	 * @param url
-	 * @return A HtppResponse, including the response in string form. Null if an
-	 *         error occurred.
-	 */
-	public static String get(final String URL) {
-
-		try {
-			URL url = new URL(URL);
-			URLConnection urlCon = url.openConnection();
-			Object content = urlCon.getContent();
-			String ret = "";
-			try (Scanner sc = new Scanner((InputStream) content, StandardCharsets.UTF_8.name())) {
-				while (sc.hasNextLine()) {
-					ret += sc.nextLine();
-				}
-			}
-			return ret;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public static String getModern(final String URL) {
+	public static String getSimple(final String URL) {
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).GET().timeout(Duration.ofSeconds(10l)).build();
+		HttpResponse<String> resp = HTTPRequests.executeHttp(client, req);
 
-		System.out.println("[HTTPRequests] Sending HTTP request to: " + URL);
-		String body = null;
+		return resp != null ? resp.body() : null;	
+	}
+
+	
+
+	/**
+	 * Execute http request with given client and request. Log request
+	 */
+	public static HttpResponse<String> executeHttp(HttpClient client, HttpRequest request){
+		System.out.println("[HTTPRequests] Sending HTTP request to: " + request.uri());
+		HttpResponse<String> resp = null;
 		try {
-			body = client.send(req, BodyHandlers.ofString()).body();
+			resp = client.send(request, BodyHandlers.ofString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 
-		return body;
+		return resp;
 	}
 
 	public static String neutralize(String s) {
