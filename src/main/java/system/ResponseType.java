@@ -311,6 +311,10 @@ public abstract class ResponseType extends Middleware {
 			case "psaglobal":
 				this.onGlobalPSA();
 				break;
+			case "privat":
+			case "private":
+				this.onPrivate();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 				isCommand = false;
@@ -519,5 +523,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onGetVoiceSubscriptions();
 
 	protected abstract void onGlobalPSA();
+
+	protected abstract void onPrivate();
 
 }

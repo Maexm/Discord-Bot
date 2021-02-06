@@ -22,6 +22,7 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
+import discord4j.rest.http.client.ClientException;
 import discord4j.voice.AudioProvider;
 import musicBot.MusicWrapper;
 import reactor.core.publisher.Mono;
@@ -340,11 +341,19 @@ public abstract class Middleware {
 	}
 
 	/**
-	 * Deletes the message that was received, if not in private channel
+	 * Deletes the message that was received, if possible
 	 */
 	protected final void deleteReceivedMessage() {
 		if(!this.isPrivate()){
-			this.getMessage().getMessageObject().delete().block();
+			try{
+				this.getMessage().getMessageObject().delete().block();
+			}
+			catch(ClientException e){
+				if(e.getStatus().code()/100 != 4){
+					throw e;
+				}
+			}
+			
 		}
 	}
 

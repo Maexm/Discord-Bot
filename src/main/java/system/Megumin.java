@@ -10,14 +10,16 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
+import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Color;
 import exceptions.IllegalMagicException;
 import exceptions.NoPermissionException;
@@ -559,6 +561,7 @@ public class Megumin extends ResponseType {
 						: Markdown.toBold("" + diff) + " weitere Tracks!");
 			}
 			this.sendAnswer(out);
+			this.deleteReceivedMessage();
 		}
 	}
 
@@ -863,8 +866,9 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onVoiceStateEvent(VoiceStateUpdateEvent event) {
 		if(event.isJoinEvent() || event.isMoveEvent()){
+			final Guild eventGuild = event.getCurrent().getGuild().block();
 			final VoiceChannel voiceChannel = event.getCurrent().getChannel().block();
-			final User joinedUser = event.getCurrent().getUser().block();
+			final Member joinedUser = event.getCurrent().getUser().flatMap(user -> user.asMember(eventGuild.getId())).block();
 			final int connectedAmount = voiceChannel.getVoiceStates().collectList().map(stateList -> stateList.size()).block();
 			
 			// ignore if this bot joined or if there are two or more users
@@ -877,8 +881,14 @@ public class Megumin extends ResponseType {
 				
 				// Notify every subscribed user
 				for(Snowflake userId : this.config.voiceSubscriberMap.get(voiceChannel.getId())){
-					// Ignore if user in list is joined user
-					if(joinedUser.getId().equals(userId)){
+					// Get user voice state for this perticular user
+					VoiceState listUserVoiceState = null;
+					try{
+						listUserVoiceState= eventGuild.getMemberById(userId).flatMap(member -> member.getVoiceState()).block();
+					}catch(Exception e){}
+
+					// Ignore if user in list is already connected to voice in same guild
+					if(listUserVoiceState != null && !listUserVoiceState.getGuildId().equals(eventGuild.getId())){
 						continue;
 					}
 
@@ -917,12 +927,12 @@ public class Megumin extends ResponseType {
 			// Find corresponding voice channel
 			if(channel.getId().asString().equals(channelIdentifier) || channel.getName().equals(channelIdentifier)){
 				final Snowflake userId = this.getMessage().getUser().getId();
-				final String okayMessage = "du hast "+channel.getName()+" abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen wieder zu deabonnieren!";
+				final String okayMessage = "Du hast "+channel.getName()+" abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen wieder zu deabonnieren!";
 				// Found channel in HashMap
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
 					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
 					if(subscriberSet.contains(userId)){
-						this.sendPrivateAnswer("du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen zu deabonnieren!");
+						this.sendPrivateAnswer("Du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen zu deabonnieren!");
 					}
 					else{
 						subscriberSet.add(userId);
@@ -958,7 +968,7 @@ public class Megumin extends ResponseType {
 				channelIdentifier = this.getAuthorVoiceChannel().getId().asString();
 			}
 			else{
-				this.sendAnswer("du musst mir einen gültigen Namen oder eine ID nennen! Alternativ kannst du einem VoiceChannel beitreten und es erneut versuchen!");
+				this.sendAnswer("du musst mir einen gültigen Namen oder eine ID nennen! Alternativ kannst du einem VoiceChannel beitreten und die selbe Eingabe erneut versuchen!");
 				return;
 			}
 		}
@@ -967,12 +977,12 @@ public class Megumin extends ResponseType {
 			// Find corresponding voice channel
 			if(channel.getId().asString().equals(channelIdentifier) || channel.getName().equals(channelIdentifier)){
 				final Snowflake userId = this.getMessage().getUser().getId();
-				final String errorMessage = "du hast diesen Kanal nicht abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegFollow "+channel.getId().asString())+", um diesen zu abonnieren!";
+				final String errorMessage = "Du hast diesen Kanal nicht abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegFollow "+channel.getId().asString())+", um diesen zu abonnieren!";
 				// Found channel in HashMap
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
 					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
 					if(subscriberSet.remove(userId)){
-						this.sendPrivateAnswer("du hast "+channel.getName()+" deabonniert!");
+						this.sendPrivateAnswer("Du hast "+channel.getName()+" deabonniert!");
 					}
 					else{
 						this.sendPrivateAnswer(errorMessage);
@@ -1008,6 +1018,51 @@ public class Megumin extends ResponseType {
 		response += "\n\nSchreib auf dem entsprechendem Server(!) "+Markdown.toCodeBlock("MegUnfollow ChannelName/Snowflake")+" um einen Kanal zu deabonnieren!";
 
 		this.sendPrivateAnswer(response);
+		this.deleteReceivedMessage();
+	}
+
+	@Override
+	protected void onPrivate() {
+		if(!this.hasPermission(SecurityLevel.DEV)){
+			this.noPermission();
+			return;
+		}
+
+		if(this.getArgumentSection().equals("")){
+			this.sendAnswer("Empfänger und Nachricht sind nötig!");
+			return;
+		}
+
+		String id = this.getArgumentSection().split(" ")[0];
+		if(this.getArgumentSection().length() <= id.length()+1){
+			this.sendAnswer("Nachricht fehlt!");
+			return;
+		}
+
+		String content = this.getArgumentSection().substring(id.length()+1);
+		try{
+			Snowflake userSnowflake = Snowflake.of(id);
+			this.getClient().getUserById(userSnowflake)
+			.flatMap(user -> user.getPrivateChannel())
+			.flatMap(channel -> channel.createMessage("Eine Nachricht vom Botowner ("+this.getOwner().getUsername()+"):\n\n"
+			+ Markdown.toUnsafeMultilineBlockQuotes(content))).block();
+		}
+		catch(ClientException e){
+			switch(e.getStatus().code()){
+				case 404:
+					this.sendPrivateAnswer("konnte Benutzer nicht finden!");
+					break;
+				case 401:
+				case 403:
+					this.sendAnswer("Benutzer hat mich geblockt :(");
+					break;
+				default:
+					this.sendAnswer("konnte Privatnachricht nicht versenden (Fehler "+e.getStatus().code()+")!");
+			}
+		}
+		catch(NumberFormatException e){
+			this.sendPrivateAnswer("fehlerhafte BenutzerId!");
+		}
 		this.deleteReceivedMessage();
 	}
 }

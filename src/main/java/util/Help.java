@@ -6,15 +6,15 @@ import start.RuntimeVariables;
 public class Help {
 
 	public final static String HELPTEXT = "\n>>> Ich verstehe folgende Befehle (NICHT case sensitive):\n\n"
-			+ "`Hey Megumin`: Lass dich von mir begrüßen! :smile:\n\n"
-			+ "`MegHelpMusik`: Alles zu Musik! :musical_note:\n\n"
+			+ "`MegMusik YouTube-URL oder Suchbegriff`: Musikbot - Du musst vorher einem VoiceChannel beitreten!\n\n"
+			+ "`MegHelpMusik`: Mehr Musikbot-Befehle! :musical_note:\n\n"
 			+ "`MegHelpUmfrage`: Alles zu Umfragen! :bar_chart:\n\n"
 			+ "`MegWetter STADT`: Aktuelle Wetterlage in irgendeiner Stadt weltweit :white_sun_cloud:\n\n"
 			+ "`MegFrage FRAGE`: Erhalte schnellen Rat bei Ja-/Nein-Fragen\n\n"
 			+ "`MegWiki BEGRIFF`: Schlage unbekannte Begriffe nach! :books:\n\n"
-			+ "`MegFollow Channel-Name oder Snowflake`: Erhalte eine Benachrichtigung, wenn jemand auf dem VoiceChannel etwas passiert :warning: Experimentell!\n\n"
+			+ "`MegFollow Channel-Name oder Snowflake`: Erhalte eine Benachrichtigung, wenn auf dem VoiceChannel etwas passiert!\n\n"
 			+ "`MegUnfollow Channel-Name oder Snowflake`: Deabonniere VoiceChannel (auf dem entsprechendem Server ausführen!)\n\n"
-			+ "`MegAbos`: Betrachte alle VoiceChannels, die du abonniert hast!\n\n"
+			+ "`MegAbos`: Betrachte alle VoiceChannel, die du abonniert hast!\n\n"
 			+ "`MegJisho WORT`: Englisch <--> Japanisch Wörterbuch (Quelle: jisho.org) :flag_jp: <--> :flag_gb:\n\n"
 			+ "`MegRomaji TEXT`: Hiragana/Katakana -> Lateinisches Alphabet :sa: --> :abc:\n\n"
 			+ "`MegKatakana TEXT`: Lateinisches Alphabet -> Katakana :abc: --> :sa: :warning: Experimentell!\n\n"
@@ -30,7 +30,7 @@ public class Help {
 	
 	public final static String MUSICHELPTEXT = "\n>>> Du möchtest deine Freunde mit deiner furchtbaren Musik nerven? Ich helfe dir dabei! :musical_note:\n\n"
 			+ "*Du musst für die meisten Befehle selber im VoiceChannel sein!*\n"
-			+ "`MegMusik YTSUCHE/URL`: Ich spiele Musik anhand eines Youtube- SoundCloud- oder Bandcamp-Links ab! Alternativ kannst du auch einfach ein Wort eingeben "
+			+ "`MegMusik YTSUCHE/URL`: Ich spiele Musik anhand eines Youtube- SoundCloud- Bandcamp- oder Spotify-Links ab! Alternativ kannst du auch einfach einen Suchbegriff eingeben "
 			+ "und ich werde danach auf YouTube suchen!"
 			+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n"+AudioEventHandler.MUSIC_WARN+"\n" : "")
 			+ "\n\n"
