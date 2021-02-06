@@ -14,18 +14,22 @@ import util.Time;
 public class MusicTrackInfo {
 
 	private final String trackQuery;
+	private final String originalQuery;
 	private final User submittedByUser;
 	private final String[] protocols = {"https://www.", "https://"}; // ignore http, there is no reason for why you should use that
 	private final String[] MUSIC_URL_HOSTS = {"youtube.com", "youtu.be", "soundcloud.com", "music.youtube.com"};
 	public final AudioEventHandler audioEventHandler;
 	public final Message userRequestMessage;
+	public final Message botInfoMessage;
+
 	private final ScheduleType scheduleType;
 	private final long startTimeStamp;
 	private TrackType trackType;
 
-	public MusicTrackInfo(String url, final User submittedByUser, final AudioEventHandler audioEventHandler,
-			final Message userRequestMessage, final ScheduleType scheduleType, final SpotifyResolver spotifyResolver) {
+	public MusicTrackInfo(final String url, final User submittedByUser, final AudioEventHandler audioEventHandler,
+			final Message userRequestMessage, final Message botInfoMessage, final ScheduleType scheduleType, final SpotifyResolver spotifyResolver) {
 
+		this.originalQuery = url;
 		this.trackQuery = this.evalUrl(url, spotifyResolver); // Determine search term for track loader & determine track type
 
 		// URL tracks can have a timestamp
@@ -39,10 +43,12 @@ public class MusicTrackInfo {
 		this.submittedByUser = submittedByUser;
 		this.audioEventHandler = audioEventHandler;
 		this.userRequestMessage = userRequestMessage;
+		this.botInfoMessage = botInfoMessage;
 		this.scheduleType = scheduleType;
 	}
 
 	private MusicTrackInfo(MusicTrackInfo copySrc){
+		this.originalQuery = copySrc.originalQuery;
 		this.trackQuery = copySrc.trackQuery;
 		this.submittedByUser = copySrc.submittedByUser;
 		this.audioEventHandler = copySrc.audioEventHandler;
@@ -50,6 +56,7 @@ public class MusicTrackInfo {
 		this.scheduleType = copySrc.scheduleType;
 		this.startTimeStamp = copySrc.startTimeStamp;
 		this.trackType = copySrc.trackType;
+		this.botInfoMessage = copySrc.botInfoMessage;
 	}
 
 	private long extractTimeStamp(final String url) {
@@ -180,13 +187,19 @@ public class MusicTrackInfo {
 	}
 
 	public TrackType getTrackType(){
-		return trackType;
+		return this.trackType;
 	}
-	
+	/**
+	 * @return The string query, ready to be loaded by a track loader
+	 */
 	public final String getQuery() {
 		return this.trackQuery;
 	}
 	
+	public final String getOriginalQuery(){
+		return this.originalQuery;
+	}
+
 	public final User getSubmittedByUser() {
 		return this.submittedByUser;
 	}

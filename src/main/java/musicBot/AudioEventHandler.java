@@ -15,6 +15,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.rest.http.client.ClientException;
+import musicBot.MusicTrackInfo.TrackType;
 import system.ResponseType;
 import util.Emoji;
 import util.Markdown;
@@ -75,7 +76,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (loadRightNow) {
 			System.out.println("Loading track");
 			// Track will load IMMEDIATELY
-			this.playerManager.loadItemOrdered(track, track.getURL(), this.loadScheduler);
+			this.playerManager.loadItemOrdered(track, track.getQuery(), this.loadScheduler);
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null && loadRightNow) {
@@ -345,18 +346,30 @@ public class AudioEventHandler extends AudioEventAdapter {
 		// Volume
 		String volume = "Lautstärke: " + Markdown.toBold(this.getVolume() + "% ") + Emoji.getVol(this.getVolume());
 
-		// ytSearch and userName
+		// Query info and userName
 		String ytSearch = "";
 		String userName = "FEHLER";
-		if (track != null && track.getUserData(MusicTrackInfo.class) != null) {
-			if (track.getUserData(MusicTrackInfo.class).getURL().startsWith("ytsearch:")) {
-				ytSearch = "Das Video wurde auf YouTube unter dem Begriff "
+		MusicTrackInfo trackInfo = track.getUserData(MusicTrackInfo.class);
+		if (track != null && trackInfo != null) {
+			switch(trackInfo.getTrackType()){
+				case YOUTUBE_SEARCH:
+					ytSearch = "Die Musik wurde auf YouTube unter dem Begriff "
+					+ Markdown
+							.toBold(trackInfo.getQuery().replaceFirst("ytsearch:", ""))
+					+ " gefunden.\n";
+					break;
+				case SPOTIFY:
+					ytSearch = "Die Musik wurde auf YouTube unter dem Begriff "
 						+ Markdown
-								.toBold(track.getUserData(MusicTrackInfo.class).getURL().replaceFirst("ytsearch:", ""))
-						+ " gefunden.\n";
+								.toBold(trackInfo.getQuery().replaceFirst("ytsearch:", ""))
+						+ " gefunden, war aber vorher ein Spotify-Link: "+Markdown.noLinkPreview(trackInfo.getOriginalQuery());
+					break;
+				default:
 			}
-			userName = track.getUserData(MusicTrackInfo.class).getSubmittedByUser()
-					.asMember(this.radioMessage.getGuild().block().getId()).block().getDisplayName();
+
+			userName = this.radioMessage.getGuild()
+			.flatMap(guild -> trackInfo.getSubmittedByUser().asMember(guild.getId()))
+			.map(member -> member.getDisplayName()).block();
 		}
 
 		// progress bar

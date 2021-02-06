@@ -10,7 +10,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
-import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
@@ -284,23 +283,22 @@ public class Megumin extends ResponseType {
 					this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
 				}
 				// MUSIC PLAYBACK
+				Message infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet...");
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
 							this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(),
-							this.getMessage().getMessageObject(), scheduleType);
+							this.getMessage().getMessageObject(), infoMsg, scheduleType, this.getMusicWrapper().getSpotifyResolver());
+					
 					this.getMusicWrapper().getMusicBotHandler().schedule(musicTrack, this);
-					this.sendAnswer("dein Track wurde hinzugefügt!"
-							+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n" + AudioEventHandler.MUSIC_WARN : ""));
-					this.deleteReceivedMessage();
-
 				} catch (Exception e) {
-					// Should not occur
-					this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/ Bandcamp-Link!");
+					this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/Bandcamp- oder Spotify-Link!");
 					if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 						this.leaveVoiceChannel();
 					}
+					infoMsg.delete().block();
 					e.printStackTrace();
 				}
+				this.deleteReceivedMessage();
 			}
 		}
 	}
