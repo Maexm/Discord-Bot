@@ -1,6 +1,7 @@
 package util;
 
 import java.util.Calendar;
+import java.util.IllegalFormatFlagsException;
 
 import start.RuntimeVariables;
 
@@ -38,7 +39,7 @@ public class Time {
         return Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
     }
 
-    public static long revertMsToPretty(String text, String delimiterRegex){
+    public static long revertMsToPretty(String text, String delimiterRegex) throws Exception{
         final int maxLength = 3;
         String[] splitted = text.split(delimiterRegex);
         long ret = 0l;
@@ -47,16 +48,32 @@ public class Time {
             throw new IllegalArgumentException("String must have no more than "+ maxLength +" time values");
         }
 
-        for(int i = 0; i < splitted.length; i++){
-            switch(i){
+        for(int i = splitted.length - 1; i >= 0; i--){
+            // Find correct multiplier
+            long multiplier = 0l;
+            switch(splitted.length - i - 1){
                 case 0:
+                    multiplier = Time.SECOND;
+                    break;
+                case 1:
+                    multiplier = Time.MINUTE;
+                    break;
+                case 2:
+                    multiplier = Time.HOUR;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Too many entries");
             }
+            
+            int splittedValue = Integer.parseInt(splitted[i]);
+
+            ret += multiplier * splittedValue;
         }
         
         return ret;
     }
 
-    public static long revertMsToPretty(String text){
+    public static long revertMsToPretty(String text) throws Exception{
         return Time.revertMsToPretty(text, ":");
     }
 

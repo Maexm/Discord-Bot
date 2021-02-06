@@ -24,6 +24,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import exceptions.IllegalMagicException;
 import musicBot.MusicWrapper;
+import spotify.SpotifyResolver;
 import survey.Survey;
 import survey.VoteEndReason;
 import system.GuildHandler;
@@ -50,7 +51,7 @@ public class GlobalDiscordHandler {
         this.guildMap = new HashMap<>();
 
         readyEvent.getGuilds().forEach(guild -> {
-            MusicWrapper musicWrapper = new MusicWrapper(this.playerManager);
+            MusicWrapper musicWrapper = new MusicWrapper(this.playerManager, this.createSpotifyResolver());
             GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy, musicWrapper);
             this.guildMap.put(guild.getId(), guildHandler);
         });
@@ -61,6 +62,10 @@ public class GlobalDiscordHandler {
         this.client.updatePresence(Presence
 					.online(Activity.playing(RuntimeVariables.getStatus())))
 					.block();
+    }
+
+    private SpotifyResolver createSpotifyResolver(){
+        return new SpotifyResolver("TODO", "TODO");
     }
 
     public HashMap<Snowflake, GuildHandler> getGuildMap(){
@@ -79,7 +84,7 @@ public class GlobalDiscordHandler {
     void addGuild(Guild guild){
         if(!this.guildMap.containsKey(guild.getId())){
             System.out.println("Bot was added to guild "+guild.getName());
-            MusicWrapper musicWrapper = new MusicWrapper(this.playerManager);
+            MusicWrapper musicWrapper = new MusicWrapper(this.playerManager, this.createSpotifyResolver());
             GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy, musicWrapper);
             this.guildMap.put(guild.getId(), guildHandler);
         }
