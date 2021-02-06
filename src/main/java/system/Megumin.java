@@ -727,13 +727,13 @@ public class Megumin extends ResponseType {
 			this.sendAnswer("ein leeres Feedback ist kein Feedback!");
 			return;
 		}
-		String response = "Wir haben Feedback von " + Markdown.toBold(this.getMessage().getAuthorName())
-				+ " erhalten:\n" + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection());
-		this.sendMessageToOwner(response);
+		this.sendMessageToOwner("Wir haben Feedback von " + Markdown.toBold(this.getMessage().getAuthorName())
+				+ " erhalten! BenutzerId: "+ Markdown.toCodeBlock(this.getMessage().getUser().getId().toString()));
+		this.sendMessageToOwner(Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 		this.sendPrivateAnswer("Vielen Dank! Ich habe dein Feedback an " + this.getOwner().getUsername()
 				+ " weitergeleitet! "
-				+ "Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:\n"
-				+ Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
+				+ "Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:");
+		this.sendPrivateAnswer(Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 		this.deleteReceivedMessage();
 	}
 
