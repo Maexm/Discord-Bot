@@ -36,9 +36,6 @@ import musicBot.MusicVariables.TrackLink;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
-import security.SecurityProvider;
-import snowflakes.ChannelID;
-import snowflakes.GuildID;
 import util.Emoji;
 import util.HTTPRequests;
 import util.Help;
@@ -58,16 +55,16 @@ public class Megumin extends ResponseType {
 
 	public Megumin(MiddlewareConfig config, TaskManager<RefinedTimerTask> localTasks) {
 		super(config, localTasks);
-		if (!RuntimeVariables.IS_DEBUG && !this.isPrivate()) {
+		if (!RuntimeVariables.IS_DEBUG && !this.isPrivate() && this.config.psaNote){
 			try {
-				MessageChannel channel = this.getGuildId().equals(GuildID.UNSER_SERVER) ? this.getChannelByID(ChannelID.MEGUMIN) : this.getSystemChannel();
+				MessageChannel channel = this.getPsaChannel();
 				Message message = channel
 						.createMessage(
 								"Ich bin Online und einsatzbereit! Schreib " + Markdown.toCodeBlock("MegHelp") + "!")
 						.block();
 				this.config.helloMessage = message;
 			} catch (Exception e) {
-				System.out.println("Failed to post hello message in guild " + this.getGuild().getName());
+				System.out.println("Failed to post hello message in guild " + this.getGuildSecureName());
 			}
 		}
 	}
@@ -251,7 +248,9 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onTest() {
 		try {
-			SecurityProvider.checkPermission(this.getMessage().getUser(), SecurityLevel.DEV, this.getOwner().getId());
+			this.config.getSecurityProvider().checkPermission(this.getMessage().getUser(), SecurityLevel.DEV);
+
+			//this.getGuild().getadmin
 
 			this.sendAnswer("Keine Testfunktion angegeben!");
 
@@ -433,7 +432,7 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			int vol = this.getMusicWrapper().getMusicBotHandler().getVolume();
 			this.sendAnswer("die aktuelle Lautstärke ist " + vol + " " + Emoji.getVol(vol));
-		} else if (this.hasPermission(SecurityLevel.KREIS) || this.authorIsGuildOwner()) {
+		} else if (this.hasPermission(SecurityLevel.GUILD_SPECIAL)) {
 			try {
 				int vol = Integer.parseInt(this.getArgumentSection());
 				vol = Math.max(0, vol);

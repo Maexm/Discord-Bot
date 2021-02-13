@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import discord4j.common.util.Snowflake;
 import discord4j.voice.AudioProvider;
 import spotify.SpotifyResolver;
 
@@ -18,6 +19,7 @@ public class MusicWrapper {
 	private final LinkedList<MusicTrackInfo> addInfo;
 	private final AudioEventHandler playerEventHandler;
 	private final SpotifyResolver spotifyResolver;
+	private Snowflake musicChannelId = null; 
     
     public MusicWrapper(final AudioPlayerManager playerManager, final SpotifyResolver spotifyResolver){
 		this.spotifyResolver = spotifyResolver;
@@ -42,6 +44,14 @@ public class MusicWrapper {
 
 	public final SpotifyResolver getSpotifyResolver(){
 		return this.spotifyResolver;
+	}
+
+	public final Snowflake getMusicChannelId(){
+		return this.musicChannelId;
+	}
+
+	public final void setMusicChannelId(Snowflake id){
+		this.musicChannelId = id;
 	}
 
 }

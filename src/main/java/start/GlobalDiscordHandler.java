@@ -12,10 +12,12 @@ import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBu
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -128,6 +130,18 @@ public class GlobalDiscordHandler {
         }
     }
 
+    public void onTextChannelDeleted(TextChannelDeleteEvent event){
+        if(this.guildMap.containsKey(event.getChannel().getGuildId())){
+            this.guildMap.get(event.getChannel().getGuildId()).onTextChannelDeleted(event);
+        }
+    }
+
+    public void onRoleDeleted(RoleDeleteEvent event){
+        if(this.guildMap.containsKey(event.getGuildId())){
+            this.guildMap.get(event.getGuildId()).onRoleDeleted(event);
+        }
+    }
+
     public class GlobalDiscordProxy {
 
         private final GlobalDiscordHandler parent;
@@ -209,6 +223,17 @@ public class GlobalDiscordHandler {
             ArrayList<MessageChannel> ret = new ArrayList<>();
             parent.getGuildMap().forEach((guildId, guildHandler) ->{
                 ret.add(guildHandler.getResponseType().getSystemChannel());
+            });
+
+            return ret;
+        }
+
+        public ArrayList<MessageChannel> getGlobalPsaChannels(){
+            ArrayList<MessageChannel> ret = new ArrayList<>();
+            parent.getGuildMap().forEach((guildId, guildHandler) ->{
+                if(guildHandler.getResponseType().getPsaChannel() != null){
+                    ret.add(guildHandler.getResponseType().getPsaChannel());
+                }
             });
 
             return ret;

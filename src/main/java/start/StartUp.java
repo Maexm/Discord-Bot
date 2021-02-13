@@ -5,12 +5,14 @@ import java.io.Console;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import exceptions.StartUpException;
@@ -167,6 +169,30 @@ public class StartUp {
 				e.printStackTrace();
 			}
 			
+		});
+
+		client.getEventDispatcher().on(TextChannelDeleteEvent.class).subscribe(event -> {
+			try{
+				if(discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].onTextChannelDeleted(event);
+				}
+			}
+			catch(Exception e){
+				System.out.println("Something went terribly wrong!");
+				e.printStackTrace();
+			}
+		});
+
+		client.getEventDispatcher().on(RoleDeleteEvent.class).subscribe(event -> {
+			try{
+				if(discordHandlerWrapper[0] != null){
+				discordHandlerWrapper[0].onRoleDeleted(event);
+				}
+			}
+			catch(Exception e){
+				System.out.println("Something went terribly wrong!");
+				e.printStackTrace();
+			}
 		});
 		
 		// ########## On logout ##########

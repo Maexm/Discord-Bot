@@ -7,17 +7,23 @@ import java.util.function.Predicate;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import musicBot.MusicWrapper;
+import security.SecurityProvider;
 import start.GlobalDiscordHandler.GlobalDiscordProxy;
 
 public class MiddlewareConfig {
 
 	private final Predicate<Message> mayAccept;
-	final Snowflake guildId;
+	public final Snowflake guildId;
 	final MusicWrapper musicWrapper;
 	final GlobalDiscordProxy globalProxy;
 	public final HashMap<Snowflake, HashSet<Snowflake>> voiceSubscriberMap;
+	public Snowflake announcementChannelId = null;
+	public boolean updateNote = true;
+	public boolean psaNote = true;
+	private final SecurityProvider securityProvider;
+	public String homeTown = null;
 
-	Message helloMessage;
+	Message helloMessage = null;
     
     public MiddlewareConfig(final Snowflake guildId, MusicWrapper musicWrapper, GlobalDiscordProxy globalProxy, final Message helloMessage, HashMap<Snowflake, HashSet<Snowflake>> voiceSubscriberMap){
         this(guildId, musicWrapper, globalProxy, helloMessage, voiceSubscriberMap, msg -> true);
@@ -30,11 +36,22 @@ public class MiddlewareConfig {
 		this.globalProxy = globalProxy;
 		this.helloMessage = helloMessage;
 		this.voiceSubscriberMap = voiceSubscriberMap;
+		this.securityProvider = new SecurityProvider(null, this);
 	}
 
 	public Predicate<Message> UNSAFE_mayAccept(){
 		return this.mayAccept;
 	}
 
+	public SecurityProvider getSecurityProvider(){
+		return this.securityProvider;
+	}
 
+	public GlobalDiscordProxy getGlobalDiscordProxy(){
+		return this.globalProxy;
+	}
+
+	public MusicWrapper getMusicWrapper(){
+		return this.musicWrapper;
+	}
 }

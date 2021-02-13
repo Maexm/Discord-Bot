@@ -1,16 +1,25 @@
 package system;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.google.gson.Gson;
+
+import config.FileManager;
+import config.GuildConfig;
+import config.GuildConfig.VoiceSubscription;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.reaction.ReactionEmoji;
 import musicBot.MusicWrapper;
 import schedule.RefinedTimerTask;
@@ -32,6 +41,7 @@ public final class GuildHandler {
 
 	public GuildHandler(final Snowflake guildId, final GlobalDiscordProxy globalProxy, final MusicWrapper musicWrapper) {
 
+		// Initialize objects with defaults
 		this.middlewareBefore = new ArrayList<Middleware>();
 		this.localTasks = new TaskManager<>(true);
 		this.guildId = guildId;
@@ -40,6 +50,13 @@ public final class GuildHandler {
 		this.musicWrapper = musicWrapper;
 		this.middlewareConfig = new MiddlewareConfig(this.guildId, this.musicWrapper, this.globalProxy, null, new HashMap<>());
 		this.guild = this.guildId != null ? this.globalProxy.getClient().getGuildById(this.guildId).block() : null;
+
+		// Load from save file
+		try{
+			this.loadConfig();
+		}catch(Exception e){
+		}
+		
 
 		// ########## RESPONSE SETS ##########
 		// TODO: Shorten this hell
@@ -188,6 +205,10 @@ public final class GuildHandler {
 		return this.guild;
 	}
 
+	public final MiddlewareConfig getMiddlewareConfig(){
+		return this.middlewareConfig;
+	}
+
 	public final void onVoiceChannelDeleted(VoiceChannelDeleteEvent event){
 		this.middlewareConfig.voiceSubscriberMap.remove(event.getChannel().getId());
 	}
@@ -198,7 +219,135 @@ public final class GuildHandler {
 		});
 	}
 
+	public final void onTextChannelDeleted(TextChannelDeleteEvent event){
+		if(this.middlewareConfig.announcementChannelId != null && this.middlewareConfig.announcementChannelId.equals(event.getChannel().getId())){
+			this.middlewareConfig.announcementChannelId = null;
+		}
+		if(this.middlewareConfig.musicWrapper.getMusicChannelId() != null && this.middlewareConfig.musicWrapper.getMusicChannelId().equals(event.getChannel().getId())){
+			this.middlewareConfig.musicWrapper.setMusicChannelId(null);
+		}
+	}
+
+	public final void onRoleDeleted(RoleDeleteEvent event){
+		if(this.middlewareConfig.getSecurityProvider().specialRoleId != null && this.middlewareConfig.getSecurityProvider().specialRoleId.equals(event.getRoleId())){
+			this.middlewareConfig.getSecurityProvider().specialRoleId = null;
+		}
+	}
+
 	public final ResponseType getResponseType(){
 		return this.responseSet;
+	}
+
+	public final boolean isVoiceChannel(Snowflake id){
+		return this.getGuild().getChannelById(id)
+		.onErrorResume(err -> null)
+		.map(channel -> channel != null && channel.getType().equals(Type.GUILD_VOICE))
+		.block();
+	}
+
+	public final boolean isTextChannel(Snowflake id){
+		return this.getGuild().getChannelById(id)
+		.onErrorResume(err -> null)
+		.map(channel -> channel != null && channel.getType().equals(Type.GUILD_TEXT))
+		.block();
+	}
+
+	public final boolean isRole(Snowflake id){
+		return this.getGuild().getRoleById(id)
+		.onErrorResume(err -> null)
+		.map(role -> role != null)
+		.block();
+	}
+
+	public final void loadConfig(){
+		File configFile = new File("guildConfig.json");
+		String rawConfig = FileManager.read(configFile);
+		if(rawConfig == null){
+			System.out.println("Warning: No guild config file found: "+configFile.getAbsolutePath());
+		}
+		else{
+			// Read config file and find correct config for this guild
+			Gson gson = new Gson();
+			GuildConfig[] allGuildConfigs = gson.fromJson(rawConfig, GuildConfig[].class);
+			GuildConfig  guildConfig = null;
+			for(GuildConfig config : allGuildConfigs){
+				if(Snowflake.of(config.guildId).equals(this.guildId)){
+					guildConfig = config;
+					break;
+				}
+			}
+			// Apply values from config, if guild was found in config file
+			if(guildConfig != null){
+				// ########## MUSIC TEXTCHANNEL ##########
+				this.musicWrapper.setMusicChannelId(null);
+				if(guildConfig.musicChannelId != 0){
+					Snowflake musicChannelId = Snowflake.of(guildConfig.musicChannelId);
+					if(this.isTextChannel(musicChannelId)){
+						this.musicWrapper.setMusicChannelId(musicChannelId);
+					}
+				}
+				// ########## VOICE SUBSCRIPTIONS ##########
+				this.getVoiceSubscriptions().clear();
+				if(guildConfig.voiceSubscriptions != null){
+					for(VoiceSubscription voiceSubscription : guildConfig.voiceSubscriptions){
+						// Ignore broken voice subscriptions (empty values)
+						if(voiceSubscription.voiceChannelId == 0 || voiceSubscription.userIds == null){
+							continue;
+						}
+						
+						// Check users if voiceId corresponds to a valid voice channel
+						Snowflake voiceId = Snowflake.of(voiceSubscription.voiceChannelId);
+						if(this.isVoiceChannel(voiceId)){
+							//  Put voiceId into map, if not already present in map
+							if(!this.getVoiceSubscriptions().containsKey(voiceId)){
+								this.getVoiceSubscriptions().put(voiceId, new HashSet<>());
+							}
+							// Check and add subscribers (users)
+							for(long rawUserId : voiceSubscription.userIds){
+								// Skip empty user id
+								if(rawUserId == 0){
+									continue;
+								}
+								Snowflake userId = Snowflake.of(rawUserId);
+								// Add user if userId is present in this guild
+								if(this.hasUser(userId)){
+									this.getVoiceSubscriptions().get(voiceId).add(userId);
+								}
+							}
+						}
+					}
+				}
+
+				// ########## ANNOUNCEMENT CHANNEL ID ##########
+				this.middlewareConfig.announcementChannelId = null;
+				if(guildConfig.announcementChannelId != 0){
+					Snowflake announcementChannelId = Snowflake.of(guildConfig.announcementChannelId);
+					if(this.isTextChannel(announcementChannelId)){
+						this.middlewareConfig.announcementChannelId = announcementChannelId;
+					}
+				}
+
+				// ########## RECEIVE UPDATE NOTIFICATION ##########
+				this.middlewareConfig.updateNote = guildConfig.updateNote;
+
+				// ########## RECEIVE PSA NOTIFICATION ##########
+				this.middlewareConfig.psaNote = guildConfig.psaNote;
+
+				// ########## SPECIAL ROLE ID ##########
+				this.middlewareConfig.getSecurityProvider().specialRoleId= null;
+				if(guildConfig.specialRoleId != 0){
+					Snowflake specialRoleId = Snowflake.of(guildConfig.specialRoleId);
+					if(this.isRole(specialRoleId)){
+						this.middlewareConfig.getSecurityProvider().specialRoleId = specialRoleId;
+					}
+				}
+
+				// ########## HOME TOWN ##########
+				this.middlewareConfig.homeTown = null;
+				if(guildConfig.homeTown != null && !guildConfig.homeTown.equals("")){
+					this.middlewareConfig.homeTown = guildConfig.homeTown;
+				}
+			}
+		}
 	}
 }

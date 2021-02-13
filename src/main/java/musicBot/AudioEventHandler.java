@@ -19,8 +19,6 @@ import system.ResponseType;
 import util.Emoji;
 import util.Markdown;
 import util.TimePrint;
-import snowflakes.ChannelID;
-import snowflakes.GuildID;
 
 public class AudioEventHandler extends AudioEventAdapter {
 
@@ -51,8 +49,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 */
 	private boolean loadFlag = true;
 
-	private Snowflake musicChannelId;
-
 	public AudioEventHandler(final AudioPlayer player, final AudioPlayerManager playerManager,
 			final TrackLoader loadScheduler, final LinkedList<AudioTrack> tracks,
 			final LinkedList<MusicTrackInfo> loadingQueue) {
@@ -79,7 +75,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null) {
-			this.musicChannelId = parent.getGuildId().equals(GuildID.UNSER_SERVER) ? ChannelID.MEGUMIN : track.userRequestMessage.getChannelId();
 			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...");
 		}
 		// Update radioMessage, if one does already exist.
@@ -288,13 +283,12 @@ public class AudioEventHandler extends AudioEventAdapter {
 		//Message oldMessage = this.radioMessage;
 		try{
 			this.parent.leaveVoiceChannel();
-			this.radioMessage.delete().block();
+			this.radioMessage.delete().subscribe();
 		}catch(Exception e){
 			System.out.println("Could not delete radio message while ending music session");
 		}
 		
 		this.radioMessage = null;
-		this.musicChannelId = null;
 	}
 
 	@Override
@@ -427,7 +421,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 			catch(ClientException clientException){
 				if(clientException.getStatus().code() == 404){
 					System.out.println("Could not find radio message, creating new one!");
-					this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
+					this.radioMessage = this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
 				}
 			} 
 			catch (Exception e) {
@@ -455,9 +449,15 @@ public class AudioEventHandler extends AudioEventAdapter {
 	}
 
 	private Message createRadioMessage(String msg){
+		Snowflake channelId = this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? this.parent.getConfig().getMusicWrapper().getMusicChannelId() : (this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class) != null ? this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class).userRequestMessage.getChannelId() : null);
 		Message ret = null;
+
+		if(channelId == null){
+			return ret;
+		}
+
 		try{
-			ret = parent.sendInChannel(msg, this.musicChannelId);
+			ret = parent.sendInChannel(msg, channelId);
 			this.radioMessage = ret;
 		}
 		catch(Exception e){

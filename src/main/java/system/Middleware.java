@@ -26,7 +26,7 @@ import discord4j.rest.http.client.ClientException;
 import discord4j.voice.AudioProvider;
 import musicBot.MusicWrapper;
 import reactor.core.publisher.Mono;
-import security.SecurityProvider;
+import security.SecurityLevel;
 import start.RuntimeVariables;
 import start.GlobalDiscordHandler.GlobalDiscordProxy;
 import survey.Survey;
@@ -278,7 +278,12 @@ public abstract class Middleware {
 	}
 
 	protected final GuildMessageChannel getChannelByID(Snowflake channelID) {
-		return (GuildMessageChannel) this.getGuild().getChannelById(channelID).block();
+		try{
+			return (GuildMessageChannel) this.getGuild().getChannelById(channelID).block();
+		}
+		catch(Exception e){
+			return null;
+		}
     }
 
     protected final Member getMember(Snowflake userId, Snowflake guildId){
@@ -298,7 +303,11 @@ public abstract class Middleware {
 	}
 
 	public final MessageChannel getSystemChannel(){
-		return this.getGuild().getSystemChannel().block();
+		return this.getGuild().getSystemChannel().onErrorResume(err -> null).block();
+	}
+
+	public final MessageChannel getPsaChannel(){
+		return this.config.announcementChannelId != null ? this.getChannelByID(this.config.announcementChannelId) : this.getSystemChannel();
 	}
 
 	public final List<GuildChannel> getVoiceChannels(){
@@ -316,6 +325,10 @@ public abstract class Middleware {
 		catch(Exception e){
 			return "ERROR OR PRIVATE";
 		}
+	}
+
+	public MiddlewareConfig getConfig(){
+		return this.config;
 	}
 
 	// ########## INTERACTIVE METHODS ##########
@@ -481,7 +494,7 @@ public abstract class Middleware {
 	}
 
 	public final void globalAnnounce(final String content){
-		for(MessageChannel channel : this.getGlobalProxy().getGlobalSystemChannels()){
+		for(MessageChannel channel : this.getGlobalProxy().getGlobalPsaChannels()){
 			try{
 				channel.createMessage(content).block();
 			}
@@ -515,7 +528,7 @@ public abstract class Middleware {
 		return this.getGlobalProxy().getSurveysVerbose();
 	}
 
-	protected final boolean hasPermission(int required){
-		return SecurityProvider.hasPermission(this.getMessage().getUser(), required, this.getOwner().getId());
+	protected final boolean hasPermission(SecurityLevel required){
+		return this.config.getSecurityProvider().hasPermission(this.getMessage().getUser(), required);
 	}
 }

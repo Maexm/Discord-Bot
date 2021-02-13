@@ -3,17 +3,18 @@ package system;
 import java.util.function.Predicate;
 
 import discord4j.core.object.entity.Message;
+import security.SecurityLevel;
 
 public class RoleFilter extends Middleware {
 
-    public int required;
+    public SecurityLevel required;
     public String message;
 
-    public RoleFilter(MiddlewareConfig config, Predicate<Message> mayAccept, int required) {
+    public RoleFilter(MiddlewareConfig config, Predicate<Message> mayAccept, SecurityLevel required) {
             this(config, mayAccept, required, "");
     }
 
-    public RoleFilter(MiddlewareConfig config, Predicate<Message> mayAccept, int required, String message) {
+    public RoleFilter(MiddlewareConfig config, Predicate<Message> mayAccept, SecurityLevel required, String message) {
         super(config, true, mayAccept);
         this.message = message;
         this.required = required;
