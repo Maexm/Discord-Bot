@@ -341,7 +341,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendInSameChannel(String message) {
-		return this.getMessageChannel().createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
+		return this.getMessageChannel().createMessage(RuntimeVariables.getInstance().getAnsPrefix() + message + RuntimeVariables.getInstance().getAnsSuffix()).block();
 	}
 
 	/**
@@ -390,7 +390,7 @@ public abstract class Middleware {
 	 */
 	public final Message sendInChannel(String message, Snowflake channelID) {
 		MessageChannel channel = this.getChannelByID(channelID);
-		return channel.createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
+		return channel.createMessage(RuntimeVariables.getInstance().getAnsPrefix()+message + RuntimeVariables.getInstance().getAnsSuffix()).block();
 	}
 
 	/**
@@ -400,7 +400,7 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendPrivateAnswer(String message) {
-		return this.getMessageAuthorPrivateChannel().createMessage(RuntimeVariables.ANS_PREFIX + message + RuntimeVariables.ANS_SUFFIX).block();
+		return this.getMessageAuthorPrivateChannel().createMessage(RuntimeVariables.getInstance().getAnsPrefix() + message + RuntimeVariables.getInstance().getAnsSuffix()).block();
 	}
 
 	/**
@@ -487,7 +487,7 @@ public abstract class Middleware {
 	}
 
 	protected final Message sendMessageToOwner(String msg){
-		final String MESSAGE = RuntimeVariables.ANS_PREFIX + msg + RuntimeVariables.ANS_SUFFIX;
+		final String MESSAGE = RuntimeVariables.getInstance().getAnsPrefix() + msg + RuntimeVariables.getInstance().getAnsSuffix();
 		return this.getOwner().getPrivateChannel()
 			.flatMap(channel -> channel.createMessage(MESSAGE))
 			.block();

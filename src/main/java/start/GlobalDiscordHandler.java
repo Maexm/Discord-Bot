@@ -64,7 +64,7 @@ public class GlobalDiscordHandler {
     }
 
     private SpotifyResolver createSpotifyResolver(){
-        return new SpotifyResolver("TODO", "TODO");
+        return new SpotifyResolver(RuntimeVariables.getInstance().getSpotifyClientId(), RuntimeVariables.getInstance().getSpotifyClientSecret());
     }
 
     public HashMap<Snowflake, GuildHandler> getGuildMap(){

@@ -14,11 +14,11 @@ import weather.WeatherResponses.SingleResponse;
 public class Weather {
     
     public final static String WEATHER_BASE_URL = "https://api.openweathermap.org/";
-    public final static String SINGLE_CALL = "data/2.5/weather?appid=" + RuntimeVariables.WEATHER_API_KEY+ "&units=metric&lang=de";
+    public final static String SINGLE_CALL = "data/2.5/weather?appid=" + RuntimeVariables.getInstance().getWeatherApiKey() + "&units=metric&lang=de";
 
     public static SingleResponse getWeatherResponse(String city){
         city = HTTPRequests.urlEncode(city);
-        if(RuntimeVariables.WEATHER_API_KEY == null){
+        if(RuntimeVariables.getInstance().getWeatherApiKey() == null){
             throw new IllegalMagicException("Weather API Key not available!");
         }
 

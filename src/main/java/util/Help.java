@@ -23,10 +23,10 @@ public class Help {
 			+ "`MegSchreiben/Sprechen TEXT`: Ich plappere dir nach, denn deine Worte sind weise! :blush:\n\n"
 			+ "`MegHelp`: Siehst du gerade vor dir, baka!\n"
 			+ "\n"
-			+ "**VERSION "+RuntimeVariables.VERSION+" "+(RuntimeVariables.IS_DEBUG ? "(EXPERIMENTELL)":"")+"**"
+			+ "**VERSION "+RuntimeVariables.getInstance().getVersion()+" "+(RuntimeVariables.isDebug() ? "(EXPERIMENTELL)":"")+"**"
 			+ "\n"
 			+ "Fragen, Anregungen und Vorschläge können gerne persönlich, mit `MegFeedback Dein Feedback` oder auf GitHub gestellt werden:\n"
-			+ RuntimeVariables.GIT_URL;
+			+ RuntimeVariables.getInstance().getGitUrl();
 	
 	public final static String MUSICHELPTEXT = "\n>>> Du möchtest deine Freunde mit deiner furchtbaren Musik nerven? Ich helfe dir dabei! :musical_note:\n\n"
 			+ "*Du musst für die meisten Befehle selber im VoiceChannel sein!*\n"

@@ -59,9 +59,9 @@ public class Survey {
 		this.guildId = guildId;
 
 		// Calculate and set end time and also save current time
-		Calendar startTime = Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
+		Calendar startTime = Calendar.getInstance(RuntimeVariables.getInstance().getTimezone());
 
-		Calendar calendarTime = Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
+		Calendar calendarTime = Calendar.getInstance(RuntimeVariables.getInstance().getTimezone());
 		calendarTime.add(Calendar.MINUTE, duration);
 		this.endTime = calendarTime;
 

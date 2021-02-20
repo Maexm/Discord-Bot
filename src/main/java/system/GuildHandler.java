@@ -62,8 +62,8 @@ public final class GuildHandler {
 		// TODO: Shorten this hell
 		//this.middlewareBefore.add(new Logger(this.middlewareConfig));
 		this.middlewareBefore.add(new RoleFilter(this.middlewareConfig,
-				msg -> RuntimeVariables.IS_DEBUG
-						&& msg.getContent().toLowerCase().startsWith(RuntimeVariables.MESSAGE_PREFIX.toLowerCase()),
+				msg -> RuntimeVariables.isDebug()
+						&& msg.getContent().toLowerCase().startsWith(RuntimeVariables.getInstance().getCommandPrefix().toLowerCase()),
 				SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
 
 		this.middlewareBefore.add(new HelpSection(this.middlewareConfig));

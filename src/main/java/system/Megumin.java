@@ -55,7 +55,7 @@ public class Megumin extends ResponseType {
 
 	public Megumin(MiddlewareConfig config, TaskManager<RefinedTimerTask> localTasks) {
 		super(config, localTasks);
-		if (!RuntimeVariables.IS_DEBUG && !this.isPrivate() && this.config.psaNote){
+		if (!RuntimeVariables.isDebug() && !this.isPrivate() && this.config.psaNote){
 			try {
 				MessageChannel channel = this.getPsaChannel();
 				Message message = channel
@@ -239,7 +239,7 @@ public class Megumin extends ResponseType {
 	}
 
 	protected void onPostTime() {
-		Calendar currentTime = Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
+		Calendar currentTime = Calendar.getInstance(RuntimeVariables.getInstance().getTimezone());
 		String dayOfWeek = currentTime.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG_STANDALONE, Locale.GERMAN);
 		this.sendAnswer("es ist " + Markdown.toBold(dayOfWeek) + " der "
 				+ Markdown.toBold(TimePrint.DD_MMMM_YYYY_HH_MM_SS(currentTime)));
@@ -264,9 +264,10 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			this.sendAnswer("du musst ein Wort nennen!");
 		} else {
+			Message msg = this.sendAnswer("Jisho wird durchsucht, einen Moment...");
 			String result = Jisho.buildMessage(Jisho.lookUpKeyWord(this.getArgumentSection()),
 					this.getArgumentSection(), 3, 3);
-			this.sendAnswer(result);
+			msg.edit(spec -> spec.setContent(result));
 		}
 	}
 
@@ -458,11 +459,11 @@ public class Megumin extends ResponseType {
 				Markdown.toBold("STATUSINFORMATIONEN:") + "\n" + Markdown.toBold("Name: ") + this.getAppInfo().getName()
 						+ "\n" + Markdown.toBold("Beschreibung: ") + this.getAppInfo().getDescription() + "\n"
 						/* + Markdown.toBold("Ping: ") + this.getResponseTime() + "ms\n" */
-						+ Markdown.toBold("Online seit: ") + TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.START_TIME) + "\n"
+						+ Markdown.toBold("Online seit: ") + TimePrint.DD_MMMM_YYYY_HH_MM_SS(RuntimeVariables.getStartDate()) + "\n"
 						+ Markdown.toBold("Anzahl Server: ") + this.getGlobalProxy().getClient().getGuilds().buffer().next().map(guildList -> guildList.size()).block()+"\n"
 						+ Markdown.toBold("Mein Entwickler: ") + this.getOwner().getUsername() + "\n"
-						+ Markdown.toBold("Version: ") + RuntimeVariables.VERSION + " " + (RuntimeVariables.IS_DEBUG ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
-						+ Markdown.toBold("GitHub: ") + RuntimeVariables.GIT_URL);
+						+ Markdown.toBold("Version: ") + RuntimeVariables.getInstance().getVersion()+ " " + (RuntimeVariables.isDebug() ? Markdown.toBold("EXPERIMENTELL") : "") + "\n"
+						+ Markdown.toBold("GitHub: ") + RuntimeVariables.getInstance().getGitUrl());
 	}
 
 	@Override
@@ -638,7 +639,7 @@ public class Megumin extends ResponseType {
 			final String INTRO = "Ein neues Update ist verfügbar! :chicken: Was ist neu?\n";
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
-			} else if (!RuntimeVariables.IS_DEBUG) {
+			} else if (!RuntimeVariables.isDebug()) {
 				this.globalAnnounce(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 			} else {
 				this.sendMessageToOwner(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
@@ -650,7 +651,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onWeather() {
-		String city = this.getArgumentSection().equals("") ? RuntimeVariables.HOME_TOWN : this.getArgumentSection();
+		String city = this.getArgumentSection().equals("") ? RuntimeVariables.getInstance().getHometown() : this.getArgumentSection();
 
 		Message message = this.sendAnswer("suche nach Wetterdaten, gib mir einen Moment...");
 

@@ -27,7 +27,7 @@ public abstract class ResponseType extends Middleware {
 	@Override
 	protected final boolean handle() {
 		
-		final String PREFIX = RuntimeVariables.MESSAGE_PREFIX.toLowerCase();
+		final String PREFIX = RuntimeVariables.getInstance().getCommandPrefix().toLowerCase();
 
 		// Reset
 		this.argumentSection = "";

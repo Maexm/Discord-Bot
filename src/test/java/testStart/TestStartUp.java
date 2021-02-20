@@ -23,23 +23,23 @@ public class TestStartUp {
          }
          catch(Exception e){    
          }
-         assertFalse("Debug should not be activated without debug value", RuntimeVariables.IS_DEBUG);
+         assertFalse("Debug should not be activated without debug value", RuntimeVariables.isDebug());
 
          try{
              StartUp.main(new String[]{"", "",  "anything but not DEBUG"});
          }
          catch(Exception e){
          }
-         assertFalse("Debug should not be activated with wrong debug value", RuntimeVariables.IS_DEBUG);
+         assertFalse("Debug should not be activated with wrong debug value", RuntimeVariables.isDebug());
     }
 
     @Test
     public void debugWithFlag(){
         try{
-            StartUp.main(new String[]{"", "", "DEBUG"}); 
+            StartUp.main(new String[]{"DEBUG"}); 
          }
          catch(Exception e){    
          }
-         assertTrue("Debug should be activated when debug is set in args", RuntimeVariables.IS_DEBUG);
+         assertTrue("Debug should be activated when debug is set in args", RuntimeVariables.isDebug());
     }
 }

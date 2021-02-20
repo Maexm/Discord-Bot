@@ -35,7 +35,7 @@ public class Time {
     }
 
     public static Calendar getNow() {
-        return Calendar.getInstance(RuntimeVariables.HOME_TIMEZONE);
+        return Calendar.getInstance(RuntimeVariables.getInstance().getTimezone());
     }
 
     public static long revertMsToPretty(String text, String delimiterRegex) throws Exception{

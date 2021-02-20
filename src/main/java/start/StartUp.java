@@ -1,7 +1,12 @@
 package start;
 
 import java.io.Console;
+import java.io.File;
 
+import com.google.gson.Gson;
+
+import config.FileManager;
+import config.MainConfig;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
@@ -22,24 +27,35 @@ public class StartUp {
 	public static void main(String[] args) {
 
 		System.out.println("STARTING MEGUMIN BOT");
+
+		final String configFileName = "mainConfig.json";
+
+		// Read config file
+		String content = FileManager.read(new File(configFileName));
+		Gson gson = new Gson();
+		MainConfig config = gson.fromJson(content, MainConfig.class);
+
+		if(config == null){
+			System.out.println("Failed to read config file " + configFileName);
+		}
+		RuntimeVariables.createInstance(config);
+
+		// Retrieve debug info, if available
+		if (args.length >= 1 && args[0].toUpperCase().equals("DEBUG") || args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
+			RuntimeVariables.isDebug = true;
+		}
+
 		// Retrieve token
 		String TOKEN = "";
-		if (args.length >= 1) {
+		if (config != null && config.botKey != null && config.botKey != ""){
+			TOKEN = config.botKey;
+		}
+		else if (args.length >= 1 && !args[0].toUpperCase().equals("DEBUG")) {
 			TOKEN = args[0];
 		} else {
 			System.out.println("Please enter a token (won't be displayed): ");
 			Console console = System.console();
 			TOKEN = new String(console.readPassword());
-		}
-
-		// Retrieve weather api key
-		if (args.length >= 2) {
-			RuntimeVariables.WEATHER_API_KEY = args[1];
-		}
-
-		// Retrieve debug info, if available
-		if (args.length >= 3 && args[2].toUpperCase().equals("DEBUG")) {
-			RuntimeVariables.IS_DEBUG = true;
 		}
 
 		if (TOKEN == null || TOKEN.equals("")) {
@@ -67,7 +83,7 @@ public class StartUp {
 				discordHandlerWrapper[0] = new GlobalDiscordHandler(ready);
 
 				// Notify owner if debug
-				if(RuntimeVariables.IS_DEBUG){
+				if(RuntimeVariables.isDebug){
 					client.getApplicationInfo()
 					.flatMap(appInfo -> appInfo.getOwner())
 					.flatMap(owner -> owner.getPrivateChannel())
@@ -89,7 +105,7 @@ public class StartUp {
 
 		client.getEventDispatcher().on(MessageCreateEvent.class).log().subscribe(event -> {
 			try{
-				if (RuntimeVariables.IS_DEBUG) {
+				if (RuntimeVariables.isDebug) {
 				System.out.println("Event received!");
 				}
 				if(discordHandlerWrapper[0] != null){
