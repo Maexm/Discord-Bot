@@ -110,4 +110,8 @@ public class GlobalDiscordProxy {
 
         return ret;
     }
+
+    public void saveAllGuilds(){
+        this.parent.saveGuilds();
+    }
 }

@@ -350,4 +350,36 @@ public final class GuildHandler {
 			}
 		}
 	}
+
+	public GuildConfig createGuildConfig(){
+		GuildConfig ret = new GuildConfig();
+		
+		ret.announcementChannelId = this.middlewareConfig.announcementChannelId.asLong();
+		ret.guildId = this.guildId.asLong();
+		ret.homeTown = this.middlewareConfig.homeTown;
+		ret.musicChannelId = this.musicWrapper.getMusicChannelId().asLong();
+		ret.psaNote = this.middlewareConfig.psaNote;
+		ret.specialRoleId = this.middlewareConfig.getSecurityProvider().specialRoleId.asLong();
+		ret.updateNote = this.middlewareConfig.updateNote;
+		
+		// Convert HashMap with Snowflakes into arraylist with VoiceSubscription objects containing longs
+		ArrayList<VoiceSubscription> helperSubscriptions = new ArrayList<>();
+		this.middlewareConfig.voiceSubscriberMap.forEach((voiceId, subscriberIds) -> {
+			VoiceSubscription subscription = new VoiceSubscription();
+			subscription.voiceChannelId = voiceId.asLong();
+
+			// Convert subscriber hashSet to long array
+			subscription.userIds = new long[subscriberIds.size()];
+			int index = 0;
+			for(Snowflake subscriberId : subscriberIds){
+				subscription.userIds[index] = subscriberId.asLong();
+				index++;
+			}
+
+			helperSubscriptions.add(subscription);
+		});
+		ret.voiceSubscriptions = (VoiceSubscription[]) helperSubscriptions.toArray();
+
+		return ret;
+	}
 }

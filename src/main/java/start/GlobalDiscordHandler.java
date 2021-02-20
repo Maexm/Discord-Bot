@@ -1,14 +1,17 @@
 package start;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
+import com.google.gson.Gson;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 
+import config.FileManager;
+import config.GuildConfig;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
@@ -138,5 +141,25 @@ public class GlobalDiscordHandler {
         if(this.guildMap.containsKey(event.getGuildId())){
             this.guildMap.get(event.getGuildId()).onRoleDeleted(event);
         }
+    }
+
+    void saveGuilds(){
+        System.out.println("Saving guild config for "+this.guildMap.size()+" guild(s)");
+        ArrayList<GuildConfig> guildConfigList = new ArrayList<>();
+        this.guildMap.forEach((guildId, guildHandler) -> {
+            try{
+               guildConfigList.add(guildHandler.createGuildConfig());
+            }
+            catch(Exception e){
+                System.out.println("Failed to create guildconfig for guild "+guildHandler.getGuild().getName());
+            }
+        });
+
+        Gson gson = new Gson();
+        final String guildConfigsString = gson.toJson(guildConfigList.toArray());
+        File configFile = new File("guildConfig.json");
+        boolean success = FileManager.write(configFile, guildConfigsString);
+        
+        System.out.println(success ? "Successfully persisted guild data" : "Failed to persist guild data");
     }
 }

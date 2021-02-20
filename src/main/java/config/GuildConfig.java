@@ -18,7 +18,7 @@ public class GuildConfig {
 
     public String homeTown;
 
-    public class VoiceSubscription{
+    public static class VoiceSubscription{
         public long voiceChannelId;
         public long[] userIds;
     }
