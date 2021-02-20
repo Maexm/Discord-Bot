@@ -836,20 +836,21 @@ public class Megumin extends ResponseType {
 			case 420:
 				response = "diese 420 Chicken Nuggets riechen seltsam...";
 				break;
+			case Integer.MAX_VALUE:
+				response = "du hast das Maximum an Chicken Nuggets erreicht (" + this.chicken
+				+ ")! Das ist ein Achievement Wert aber sowas gibt es bei mir nicht!";
+				break;
 			default:
-				if (this.chicken >= 4) {
-					response = "hier sind " + this.chicken + " Portionen Chicken Nuggets!";
-				} else if (this.chicken >= 10) {
-					response = "hier sind " + this.chicken + " Portionen Chicken Nuggets, genug für eine Großfamilie!";
+				if (this.chicken >= 200) {
+					response = this.chicken
+							+ " Hühner wurden gewaltsam umgebra- Hier sind deine Chicken Nuggets, Mahlzeit!";
 				} else if (this.chicken >= 50) {
 					response = "hier ist deine McDonalds Tageslieferung an Chicken Nuggets (" + this.chicken
 							+ " Portionen)";
-				} else if (this.chicken >= 200) {
-					response = this.chicken
-							+ " Hühner wurden gewaltsam umgebra- Hier sind deine Chicken Nuggets, Mahlzeit!";
-				} else if (this.chicken == Integer.MAX_VALUE) {
-					response = "du hast das Maximum an Chicken Nuggets erreicht (" + this.chicken
-							+ ")! Das ist ein Achievement Wert aber sowas gibt es bei mir nicht!";
+				} else if (this.chicken >= 10) {
+					response = "hier sind " + this.chicken + " Portionen Chicken Nuggets, genug für eine Großfamilie!";
+				} else if (this.chicken >= 4) {
+					response = "hier sind " + this.chicken + " Portionen Chicken Nuggets!";
 				}
 		}
 
