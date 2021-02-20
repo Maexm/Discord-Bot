@@ -19,18 +19,12 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
-import exceptions.IllegalMagicException;
 import musicBot.MusicWrapper;
 import spotify.SpotifyResolver;
 import survey.Survey;
-import survey.VoteEndReason;
 import system.GuildHandler;
-import util.Pair;
 
 public class GlobalDiscordHandler {
 
@@ -103,18 +97,22 @@ public class GlobalDiscordHandler {
         this.guildMap.get(event.getCurrent().getGuildId()).onVoiceStateEvent(event);
     }
 
-    private void purgeAllGuilds() {
+    void purgeAllGuilds() {
         this.guildMap.forEach((guildId, handler) ->{
             handler.onPurge();
         });
     }
 
-    private void logout(){
+    void logout(){
         System.out.println("LOGGING OUT");
 		this.getClient().logout().block();
     }
 
-    private GatewayDiscordClient getClient() {
+    ArrayList<Survey> getSurveys(){
+        return this.surveys;
+    }
+
+    GatewayDiscordClient getClient() {
         return this.client;
     }
 
@@ -141,103 +139,4 @@ public class GlobalDiscordHandler {
             this.guildMap.get(event.getGuildId()).onRoleDeleted(event);
         }
     }
-
-    public class GlobalDiscordProxy {
-
-        private final GlobalDiscordHandler parent;
-
-        private GlobalDiscordProxy(GlobalDiscordHandler parent) {
-            this.parent = parent;
-        }
-
-        public void purgeAllGuilds() {
-            parent.purgeAllGuilds();
-        }
-
-        public void logout(){
-            parent.logout();
-        }
-
-        public GatewayDiscordClient getClient() {
-            return this.parent.getClient();
-        }
-
-        public Survey getSurveyForKeyVerbose(String keyword){
-            for (Survey survey : parent.surveys) {
-                if (survey.key.equals(keyword)) {
-                    return survey;
-                }
-            }
-            return null;
-        }
-
-        public Survey getSurveyForKeyGuildScoped(String keyword, Snowflake guildId){
-            Survey survey = this.getSurveyForKeyVerbose(keyword);
-            return survey.guildId.equals(guildId) ? survey : null;
-        }
-
-        public Survey getSurveyForKeyUserScoped(String keyword, Snowflake userId){
-            Survey survey = this.getSurveyForKeyVerbose(keyword);
-            Member member;
-            try{
-                member = parent.getClient().getGuildById(survey.guildId).flatMap(guild -> guild.getMemberById(userId)).block();
-            }
-            catch(Exception e){
-                member = null;
-            }
-            return member != null ? survey : null;
-        }
-
-        public void createSurvey(Survey survey){
-            if(this.getSurveyForKeyVerbose(survey.key) != null){
-                survey.stop(VoteEndReason.BROKEN);
-                throw new IllegalMagicException("Survey key collision detected for key: "+survey.key);
-            }
-            parent.surveys.add(survey);
-        }
-
-        public ArrayList<Survey> getSurveysVerbose(){
-            return parent.surveys;
-        }
-
-        public HashSet<Pair<Guild, VoiceChannel>> getSubscribedGuildChannelPairs(Snowflake userId){
-            HashSet<Pair<Guild, VoiceChannel>> ret = new HashSet<>();
-
-            // Search all guilds
-            parent.getGuildMap().forEach((guildId, guildHandler) -> {
-                // User is in guild
-                if(guildHandler.hasUser(userId)){
-                    // Search each subscribed voice channel
-                    guildHandler.getVoiceSubscriptions().forEach((channelId, userSet) ->{
-                        if(userSet.contains(userId)){
-                            ret.add(new Pair<>(guildHandler.getGuild(), (VoiceChannel) guildHandler.getGuild().getChannelById(channelId).block()));
-                        }
-                    });
-                }
-            });
-
-            return ret;
-        }
-
-        public ArrayList<MessageChannel> getGlobalSystemChannels(){
-            ArrayList<MessageChannel> ret = new ArrayList<>();
-            parent.getGuildMap().forEach((guildId, guildHandler) ->{
-                ret.add(guildHandler.getResponseType().getSystemChannel());
-            });
-
-            return ret;
-        }
-
-        public ArrayList<MessageChannel> getGlobalPsaChannels(){
-            ArrayList<MessageChannel> ret = new ArrayList<>();
-            parent.getGuildMap().forEach((guildId, guildHandler) ->{
-                if(guildHandler.getResponseType().getPsaChannel() != null){
-                    ret.add(guildHandler.getResponseType().getPsaChannel());
-                }
-            });
-
-            return ret;
-        }
-    }
-
 }

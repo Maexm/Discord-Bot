@@ -26,7 +26,7 @@ import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
 import start.RuntimeVariables;
-import start.GlobalDiscordHandler.GlobalDiscordProxy;
+import start.GlobalDiscordProxy;
 
 public final class GuildHandler {
 

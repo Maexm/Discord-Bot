@@ -8,7 +8,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import musicBot.MusicWrapper;
 import security.SecurityProvider;
-import start.GlobalDiscordHandler.GlobalDiscordProxy;
+import start.GlobalDiscordProxy;
 
 public class MiddlewareConfig {
 

@@ -28,7 +28,7 @@ import musicBot.MusicWrapper;
 import reactor.core.publisher.Mono;
 import security.SecurityLevel;
 import start.RuntimeVariables;
-import start.GlobalDiscordHandler.GlobalDiscordProxy;
+import start.GlobalDiscordProxy;
 import survey.Survey;
 
 
