@@ -75,7 +75,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null) {
-			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...");
+			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", track.userRequestMessage.getChannelId());
 		}
 		// Update radioMessage, if one does already exist.
 		else {
@@ -164,7 +164,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 		amount--;// Decrement amount, since this.player.playtrack will already "skip" one track.
 		this.remove(amount);
 		if (this.tracks.size() != 0) {
-			this.player.playTrack(this.tracks.pollFirst());
+			AudioTrack track = this.tracks.pollFirst();
+			this.loadScheduler.playTrack(track, track.getUserData(MusicTrackInfo.class));
 		} else {
 			this.stop();
 		}
@@ -257,7 +258,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		// STARTING NEXT
 		if (this.tracks.size() != 0 && endReason.mayStartNext) {
 			System.out.println("Starting next!");
-			this.player.playTrack(this.tracks.pollFirst());
+			this.next(1);
 		}
 
 		// TRACK HAS BEEN REPALCED
@@ -448,8 +449,12 @@ public class AudioEventHandler extends AudioEventAdapter {
 		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getDisplayName()).block() : null;
 	}
 
-	private Message createRadioMessage(String msg){
-		Snowflake channelId = this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? this.parent.getConfig().getMusicWrapper().getMusicChannelId() : (this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class) != null ? this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class).userRequestMessage.getChannelId() : null);
+	private Message createRadioMessage(String msg, Snowflake channelId){
+		if(channelId == null){
+			channelId = this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? 
+			this.parent.getConfig().getMusicWrapper().getMusicChannelId() : 
+			(this.getCurrentAudioTrack() != null && this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class) != null ? this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class).userRequestMessage.getChannelId() : null);
+		}
 		Message ret = null;
 
 		if(channelId == null){
@@ -465,6 +470,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		
 		return ret;
+	}
+
+	private Message createRadioMessage(String msg){
+		return this.createRadioMessage(msg, null);
 	}
 
 }

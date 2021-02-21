@@ -204,7 +204,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 	 * @param track The track to be played
 	 * @param info MusicInfo, required in order to access the audioEventHandler
 	 */
-	private void playTrack(AudioTrack track, MusicTrackInfo info) {
+	void playTrack(AudioTrack track, MusicTrackInfo info) {
 		if (info.audioEventHandler.isActive()) {
 			long startPos = 0l;
 			startPos = Math.max(0, info.getStartTimeStamp());

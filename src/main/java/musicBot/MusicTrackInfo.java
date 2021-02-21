@@ -77,7 +77,7 @@ public class MusicTrackInfo {
 						break;
 					}
 					// Found timestamp
-					if(splittedPair[0] == "t"){
+					if(splittedPair[0].equals("t")){
 						srcTimeStamp = splittedPair[1];
 					}
 				}
@@ -94,7 +94,7 @@ public class MusicTrackInfo {
 				return Time.revertMsToPretty(srcTimeStamp);
 			}
 			else{
-				return Long.parseLong(srcTimeStamp);
+				return Long.parseLong(srcTimeStamp)*1000;
 			}
 		}
 		catch(Exception e){
@@ -123,26 +123,26 @@ public class MusicTrackInfo {
 
 				// Further determine what type of spotify url we are dealing with
 				// ########## TRACK ##########
-				if(nonUrlPath.startsWith("track:") || urlObj != null && urlObj.getQuery().startsWith("/track/")){
+				if(nonUrlPath.startsWith("track:") || urlObj != null && urlObj.getPath().startsWith("/track/")){
 					// Extract id and pass fetch metadata
 					final String id = urlObj == null ? nonUrlPath.replaceFirst("track:", "") : urlObj.getPath().replace("/track/", "");
 					SpotifyTrackResponse trackResponse = spotifyResolver.getSpotifyObject(id, SpotifyTrackResponse.class, true);
 
 					// Evaluate metadata
 					if(trackResponse != null){
-						String firstArtistName = trackResponse.artists != null && trackResponse.artists.length > 0 ? trackResponse.artists[0].name+" " : "";
-						return "ytsearch"+firstArtistName+trackResponse.name;
+						String firstArtistName = trackResponse.artists != null && trackResponse.artists.length > 0 ? trackResponse.artists[0].name : "";
+						return "ytsearch:"+firstArtistName+" "+trackResponse.name;
 					}
 				}
 				// ########## ALBUM ##########
-				else if(nonUrlPath.startsWith("album:") || urlObj != null && urlObj.getQuery().startsWith("/album/")){
+				else if(nonUrlPath.startsWith("album:") || urlObj != null && urlObj.getPath().startsWith("/album/")){
 					// Same comments as for "track"
 					final String id = urlObj == null ? nonUrlPath.replaceFirst("album:", "") : urlObj.getPath().replace("/album/", "");
 					SpotifyAlbumResponse albumResponse = spotifyResolver.getSpotifyObject(id, SpotifyAlbumResponse.class, true);
 
 					if(albumResponse != null){
 						String firstArtistName = albumResponse.artists != null && albumResponse.artists.length > 0 ? albumResponse.artists[0].name : "";
-						return "ytsearch:"+firstArtistName+albumResponse.name;
+						return "ytsearch:"+firstArtistName+" "+albumResponse.name;
 					}
 				}
 

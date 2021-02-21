@@ -14,7 +14,7 @@ public class SpotifyObjects {
 
     public class SpotifyAlbumResponse extends SpotifyAlbum{
         public int popularity;
-        public SpotifyTrack[] tracks;
+        public SpotifyAlbumTracksWrapper tracks;
     }
 
     public class SpotifyTrackResponse extends SpotifyTrack{
@@ -49,5 +49,9 @@ public class SpotifyObjects {
         public String type;
         public String id;
         public String href;
+    }
+
+    public class SpotifyAlbumTracksWrapper{
+        SpotifyTrack[] items;
     }
 }

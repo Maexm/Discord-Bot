@@ -32,13 +32,14 @@ public class SpotifyResolver {
     }
 
     private void refreshBearerToken(){
-        final String body = "{\"grant_type\":\"client_credentials\"}";
+        final String body = "grant_type=client_credentials";
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest req = HttpRequest.newBuilder()
         .uri(URI.create(this.tokenUrl))
         .POST(BodyPublishers.ofString(body))
         .header("Authorization", "Basic "+this.authorizationString)
+        .header("Content-Type", "application/x-www-form-urlencoded")
         .timeout(Duration.ofSeconds(10l)).build();
 
         HttpResponse<String> response = HTTPRequests.executeHttp(client, req);
