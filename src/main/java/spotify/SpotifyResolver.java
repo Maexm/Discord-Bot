@@ -24,6 +24,7 @@ public class SpotifyResolver {
     private final String tokenUrl = "https://accounts.spotify.com/api/token";
     private final String tracksUrl = "https://api.spotify.com/v1/tracks/";
     private final String albumsUrl = "https://api.spotify.com/v1/albums/";
+    private final String artistUrl = "https://api.spotify.com/v1/artists/";
 
     public SpotifyResolver(final String clientId, final String clientSecret){
         this.clientId = clientId;
@@ -98,6 +99,8 @@ public class SpotifyResolver {
                 return this.tracksUrl;
             case "SpotifyAlbumResponse":
                 return this.albumsUrl;
+            case "SpotifyArtistResponse":
+                return this.artistUrl;
             default:
                 throw new IllegalMagicException("Illegal Spotify Object");
         }

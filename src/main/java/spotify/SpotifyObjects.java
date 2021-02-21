@@ -2,7 +2,8 @@ package spotify;
 
 public class SpotifyObjects {
     
-    public interface ISpotifyObject{
+    public class ISpotifyObject{
+        public int popularity;
     }
 
     public class TokenResponse{
@@ -13,16 +14,18 @@ public class SpotifyObjects {
     }
 
     public class SpotifyAlbumResponse extends SpotifyAlbum{
-        public int popularity;
         public SpotifyAlbumTracksWrapper tracks;
     }
 
     public class SpotifyTrackResponse extends SpotifyTrack{
-        public int popularity;
         public SpotifyAlbum album;
     }
 
-    public class SpotifyTrack implements ISpotifyObject{
+    public class SpotifyArtistResponse extends SpotifyArtist{
+
+    }
+
+    public class SpotifyTrack extends ISpotifyObject{
         public SpotifyArtist[] artists;
         public int disc_number;
         public long duration_ms;
@@ -35,7 +38,7 @@ public class SpotifyObjects {
         public String type;
     }
 
-    public class SpotifyAlbum implements ISpotifyObject{
+    public class SpotifyAlbum extends ISpotifyObject{
         public String album_type;
         public SpotifyArtist[] artists;
         public String name;
@@ -44,7 +47,7 @@ public class SpotifyObjects {
         public int total_tracks;
     }
 
-    public class SpotifyArtist{
+    public class SpotifyArtist extends ISpotifyObject{
         public String name;
         public String type;
         public String id;
