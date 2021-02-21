@@ -890,7 +890,7 @@ public class Megumin extends ResponseType {
 					}catch(Exception e){}
 
 					// Ignore if user in list is already connected to voice in same guild
-					if(listUserVoiceState != null && !listUserVoiceState.getGuildId().equals(eventGuild.getId())){
+					if(listUserVoiceState != null && listUserVoiceState.getGuildId().equals(eventGuild.getId())){
 						continue;
 					}
 
