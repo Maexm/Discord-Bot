@@ -2,24 +2,24 @@ package config;
 
 public class GuildConfig {
     
-    public long guildId;
+    public Long guildId;
     
-    public long musicChannelId;
+    public Long musicChannelId;
 
     public VoiceSubscription[] voiceSubscriptions;
 
-    public long announcementChannelId;
+    public Long announcementChannelId;
 
     public boolean updateNote;
 
     public boolean psaNote;
     
-    public long specialRoleId;
+    public Long specialRoleId;
 
     public String homeTown;
 
     public static class VoiceSubscription{
-        public long voiceChannelId;
-        public long[] userIds;
+        public Long voiceChannelId;
+        public Long[] userIds;
     }
 }

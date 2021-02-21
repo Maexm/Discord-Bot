@@ -17,9 +17,9 @@ import util.HTTPRequests;
 
 public class SpotifyResolver {
     
-    private final String clientId;
-    private final String clientSecret;
-    private final String authorizationString;
+    private String clientId;
+    private String clientSecret;
+    private String authorizationString;
     private String bearerToken = null;
     private final String tokenUrl = "https://accounts.spotify.com/api/token";
     private final String tracksUrl = "https://api.spotify.com/v1/tracks/";
@@ -28,7 +28,7 @@ public class SpotifyResolver {
     public SpotifyResolver(final String clientId, final String clientSecret){
         this.clientId = clientId;
         this.clientSecret = clientSecret;
-        this.authorizationString = Base64.getEncoder().encodeToString((this.clientId+":"+this.clientSecret).getBytes());
+        this.setAuthDetails(clientId, clientSecret);
     }
 
     private void refreshBearerToken(){
@@ -100,5 +100,9 @@ public class SpotifyResolver {
             default:
                 throw new IllegalMagicException("Illegal Spotify Object");
         }
+    }
+
+    public final void setAuthDetails(String clientId, String clientSecret){
+        this.authorizationString = Base64.getEncoder().encodeToString((this.clientId+":"+this.clientSecret).getBytes());
     }
 }

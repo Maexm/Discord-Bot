@@ -29,7 +29,7 @@ public class StartUp {
 		System.out.println("STARTING MEGUMIN BOT");
 
 		StartUp.loadMainConfig();
-		MainConfig config = RuntimeVariables.getInstance().DANGEROUSLY_getConfig();
+		MainConfig config = RuntimeVariables.getInstance() != null ? RuntimeVariables.getInstance().DANGEROUSLY_getConfig() : null;
 
 		// Retrieve debug info, if available
 		if (args.length >= 1 && args[0].toUpperCase().equals("DEBUG") || args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
@@ -207,7 +207,7 @@ public class StartUp {
 	}
 
 	public static boolean loadMainConfig(){
-		final String configFileName = "mainConfig.json";
+		final String configFileName = "botConfig/mainConfig.json";
 
 		// Read config file
 		String content = FileManager.read(new File(configFileName));

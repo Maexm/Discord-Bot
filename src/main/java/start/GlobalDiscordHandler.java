@@ -54,6 +54,7 @@ public class GlobalDiscordHandler {
             GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy, musicWrapper);
             this.guildMap.put(guild.getId(), guildHandler);
         });
+        this.saveGuilds();
         this.privateHandler = new GuildHandler(null, this.globalProxy, null);
 
         this.surveys = new ArrayList<>();
@@ -86,6 +87,7 @@ public class GlobalDiscordHandler {
             MusicWrapper musicWrapper = new MusicWrapper(this.playerManager, this.createSpotifyResolver());
             GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy, musicWrapper);
             this.guildMap.put(guild.getId(), guildHandler);
+            this.saveGuilds();
         }
     }
 
@@ -152,12 +154,13 @@ public class GlobalDiscordHandler {
             }
             catch(Exception e){
                 System.out.println("Failed to create guildconfig for guild "+guildHandler.getGuild().getName());
+                e.printStackTrace();
             }
         });
 
         Gson gson = new Gson();
-        final String guildConfigsString = gson.toJson(guildConfigList.toArray());
-        File configFile = new File("guildConfig.json");
+        final String guildConfigsString = gson.toJson(guildConfigList.toArray(new GuildConfig[guildConfigList.size()]));
+        File configFile = new File("botConfig/guildConfig.json");
         boolean success = FileManager.write(configFile, guildConfigsString);
         
         System.out.println(success ? "Successfully persisted guild data" : "Failed to persist guild data");

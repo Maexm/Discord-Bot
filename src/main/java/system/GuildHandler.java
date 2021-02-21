@@ -55,6 +55,7 @@ public final class GuildHandler {
 		try{
 			this.loadConfig();
 		}catch(Exception e){
+			e.printStackTrace();
 		}
 		
 
@@ -173,6 +174,7 @@ public final class GuildHandler {
 			System.out.println("Failed to purge guild session, continuing...");
 			e.printStackTrace();
 		}
+		this.globalProxy.saveAllGuilds();
 	}
 
 	public void setHelloMessage(Message msg){
@@ -211,12 +213,14 @@ public final class GuildHandler {
 
 	public final void onVoiceChannelDeleted(VoiceChannelDeleteEvent event){
 		this.middlewareConfig.voiceSubscriberMap.remove(event.getChannel().getId());
+		this.globalProxy.saveAllGuilds();
 	}
 
 	public final void onUserRemoved(MemberLeaveEvent event){
 		this.middlewareConfig.voiceSubscriberMap.forEach((channelId, set) -> {
 			set.remove(event.getUser().getId());
 		});
+		this.globalProxy.saveAllGuilds();
 	}
 
 	public final void onTextChannelDeleted(TextChannelDeleteEvent event){
@@ -226,11 +230,13 @@ public final class GuildHandler {
 		if(this.middlewareConfig.musicWrapper.getMusicChannelId() != null && this.middlewareConfig.musicWrapper.getMusicChannelId().equals(event.getChannel().getId())){
 			this.middlewareConfig.musicWrapper.setMusicChannelId(null);
 		}
+		this.globalProxy.saveAllGuilds();
 	}
 
 	public final void onRoleDeleted(RoleDeleteEvent event){
 		if(this.middlewareConfig.getSecurityProvider().specialRoleId != null && this.middlewareConfig.getSecurityProvider().specialRoleId.equals(event.getRoleId())){
 			this.middlewareConfig.getSecurityProvider().specialRoleId = null;
+			this.globalProxy.saveAllGuilds();
 		}
 	}
 
@@ -260,7 +266,7 @@ public final class GuildHandler {
 	}
 
 	public final void loadConfig(){
-		File configFile = new File("guildConfig.json");
+		File configFile = new File("botConfig/guildConfig.json");
 		String rawConfig = FileManager.read(configFile);
 		if(rawConfig == null){
 			System.out.println("Warning: No guild config file found: "+configFile.getAbsolutePath());
@@ -280,7 +286,7 @@ public final class GuildHandler {
 			if(guildConfig != null){
 				// ########## MUSIC TEXTCHANNEL ##########
 				this.musicWrapper.setMusicChannelId(null);
-				if(guildConfig.musicChannelId != 0){
+				if(guildConfig.musicChannelId != null && guildConfig.musicChannelId != 0){
 					Snowflake musicChannelId = Snowflake.of(guildConfig.musicChannelId);
 					if(this.isTextChannel(musicChannelId)){
 						this.musicWrapper.setMusicChannelId(musicChannelId);
@@ -291,7 +297,7 @@ public final class GuildHandler {
 				if(guildConfig.voiceSubscriptions != null){
 					for(VoiceSubscription voiceSubscription : guildConfig.voiceSubscriptions){
 						// Ignore broken voice subscriptions (empty values)
-						if(voiceSubscription.voiceChannelId == 0 || voiceSubscription.userIds == null){
+						if(voiceSubscription.voiceChannelId == null || voiceSubscription.voiceChannelId == 0 || voiceSubscription.userIds == null){
 							continue;
 						}
 						
@@ -303,9 +309,9 @@ public final class GuildHandler {
 								this.getVoiceSubscriptions().put(voiceId, new HashSet<>());
 							}
 							// Check and add subscribers (users)
-							for(long rawUserId : voiceSubscription.userIds){
+							for(Long rawUserId : voiceSubscription.userIds){
 								// Skip empty user id
-								if(rawUserId == 0){
+								if(rawUserId == null || rawUserId == 0){
 									continue;
 								}
 								Snowflake userId = Snowflake.of(rawUserId);
@@ -320,7 +326,7 @@ public final class GuildHandler {
 
 				// ########## ANNOUNCEMENT CHANNEL ID ##########
 				this.middlewareConfig.announcementChannelId = null;
-				if(guildConfig.announcementChannelId != 0){
+				if(guildConfig.announcementChannelId != null && guildConfig.announcementChannelId != 0){
 					Snowflake announcementChannelId = Snowflake.of(guildConfig.announcementChannelId);
 					if(this.isTextChannel(announcementChannelId)){
 						this.middlewareConfig.announcementChannelId = announcementChannelId;
@@ -335,7 +341,7 @@ public final class GuildHandler {
 
 				// ########## SPECIAL ROLE ID ##########
 				this.middlewareConfig.getSecurityProvider().specialRoleId= null;
-				if(guildConfig.specialRoleId != 0){
+				if(guildConfig.specialRoleId != null && guildConfig.specialRoleId != 0){
 					Snowflake specialRoleId = Snowflake.of(guildConfig.specialRoleId);
 					if(this.isRole(specialRoleId)){
 						this.middlewareConfig.getSecurityProvider().specialRoleId = specialRoleId;
@@ -353,13 +359,13 @@ public final class GuildHandler {
 
 	public GuildConfig createGuildConfig(){
 		GuildConfig ret = new GuildConfig();
-		
-		ret.announcementChannelId = this.middlewareConfig.announcementChannelId.asLong();
-		ret.guildId = this.guildId.asLong();
+
+		ret.announcementChannelId = this.middlewareConfig.announcementChannelId != null ? this.middlewareConfig.announcementChannelId.asLong() : null;
+		ret.guildId = this.guildId != null ?  this.guildId.asLong() : null;
 		ret.homeTown = this.middlewareConfig.homeTown;
-		ret.musicChannelId = this.musicWrapper.getMusicChannelId().asLong();
+		ret.musicChannelId = this.musicWrapper.getMusicChannelId() != null ? this.musicWrapper.getMusicChannelId().asLong() : null;
 		ret.psaNote = this.middlewareConfig.psaNote;
-		ret.specialRoleId = this.middlewareConfig.getSecurityProvider().specialRoleId.asLong();
+		ret.specialRoleId = this.middlewareConfig.getSecurityProvider().specialRoleId != null ? this.middlewareConfig.getSecurityProvider().specialRoleId.asLong() : null;
 		ret.updateNote = this.middlewareConfig.updateNote;
 		
 		// Convert HashMap with Snowflakes into arraylist with VoiceSubscription objects containing longs
@@ -369,7 +375,7 @@ public final class GuildHandler {
 			subscription.voiceChannelId = voiceId.asLong();
 
 			// Convert subscriber hashSet to long array
-			subscription.userIds = new long[subscriberIds.size()];
+			subscription.userIds = new Long[subscriberIds.size()];
 			int index = 0;
 			for(Snowflake subscriberId : subscriberIds){
 				subscription.userIds[index] = subscriberId.asLong();
@@ -378,7 +384,7 @@ public final class GuildHandler {
 
 			helperSubscriptions.add(subscription);
 		});
-		ret.voiceSubscriptions = (VoiceSubscription[]) helperSubscriptions.toArray();
+		ret.voiceSubscriptions = helperSubscriptions.toArray(new VoiceSubscription[helperSubscriptions.size()]);
 
 		return ret;
 	}

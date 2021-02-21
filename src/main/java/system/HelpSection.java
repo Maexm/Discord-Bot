@@ -1,6 +1,7 @@
 package system;
 
 import security.SecurityLevel;
+import start.RuntimeVariables;
 import util.Help;
 
 public class HelpSection extends Middleware {
@@ -11,46 +12,66 @@ public class HelpSection extends Middleware {
 
     @Override
     protected boolean handle() {
-        switch(this.getMessage().getContent().toLowerCase().replace("hilfe", "help")){
+        final String prefix = RuntimeVariables.getInstance().getCommandPrefix().toLowerCase();
+        switch(this.getMessage().getContent().toLowerCase().replace("hilfe", "help").replace(prefix, "")){
             // Help section (and ONLY the help section) should be fool proofed
-            case "megh":
-            case "meghelp":
-            case "meghelp!":
-            case "'meghelp!'":
-            case "'meghelp'!":
-            case "'meghelp'":
-            case "'meghelp":
-            case "'meghelp!":
-            case "meghelp'":
-            case "meghelp!'":
-            case "meghelp'!":
-            case "\"meghelp\"!":
-            case "\"meghelp!\"":
-            case "\"meghelp\"":
-            case "\"meghelp":
-            case "\"meghelp!":
-            case "meghelp\"":
-            case "meghelp!\"":
-            case "meghelp\"!":
+            case "h":
+            case "help":
+            case "help!":
+            case "'help!'":
+            case "'help'!":
+            case "'help'":
+            case "'help":
+            case "'help!":
+            case "help'":
+            case "help!'":
+            case "help'!":
+            case "\"help\"!":
+            case "\"help!\"":
+            case "\"help\"":
+            case "\"help":
+            case "\"help!":
+            case "help\"":
+            case "help!\"":
+            case "help\"!":
 
-            case "meg help":
-            case "meg help!":
-            case "'meg help!'":
-            case "'meg help'!":
-            case "'meg help'":
-            case "'meg help":
-            case "'meg help!":
-            case "meg help'":
-            case "meg help!'":
-            case "meg help'!":
-            case "\"meg help\"!":
-            case "\"meg help!\"":
-            case "\"meg help\"":
-            case "\"meg help":
-            case "\"meg help!":
-            case "meg help\"":
-            case "meg help!\"":
-            case "meg help\"!":
+            case " help":
+            case " help!":
+            case "' help!'":
+            case "' help'!":
+            case "' help'":
+            case "' help":
+            case "' help!":
+            case " help'":
+            case " help!'":
+            case " help'!":
+            case "\" help\"!":
+            case "\" help!\"":
+            case "\" help\"":
+            case "\" help":
+            case "\" help!":
+            case " help\"":
+            case " help!\"":
+            case " help\"!":
+
+            case " hilfe":
+            case " hilfe!":
+            case "' hilfe!'":
+            case "' hilfe'!":
+            case "' hilfe'":
+            case "' hilfe":
+            case "' hilfe!":
+            case " hilfe'":
+            case " hilfe!'":
+            case " hilfe'!":
+            case "\" hilfe\"!":
+            case "\" hilfe!\"":
+            case "\" hilfe\"":
+            case "\" hilfe":
+            case "\" hilfe!":
+            case " hilfe\"":
+            case " hilfe!\"":
+            case " hilfe\"!":
                 this.help();
                 break;
             default:

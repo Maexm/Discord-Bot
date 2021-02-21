@@ -18,3 +18,7 @@ buildNumber.properties
 .project
 .factorypath
 .vscode/
+
+
+# Other
+botConfig/

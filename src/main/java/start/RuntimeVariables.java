@@ -21,6 +21,15 @@ public class RuntimeVariables {
 		if(config != null && config.homeTimezone != null && !config.homeTimezone.equals("")){
 			this.homeTimezone = TimeZone.getTimeZone(config.homeTimezone);
 		}
+
+		if(this.config != null){
+			if(this.config.ansPrefix == null){
+				this.config.ansPrefix = "";
+			}
+			if(this.config.ansSuffix == null){
+				this.config.ansSuffix = "";
+			}
+		}
 	}
 
 	public TimeZone getTimezone(){

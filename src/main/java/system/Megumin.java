@@ -938,6 +938,7 @@ public class Megumin extends ResponseType {
 					}
 					else{
 						subscriberSet.add(userId);
+						this.getGlobalProxy().saveAllGuilds();
 						this.sendPrivateAnswer(okayMessage);
 					}
 				}
@@ -946,6 +947,7 @@ public class Megumin extends ResponseType {
 					HashSet<Snowflake> set = new HashSet<>();
 					set.add(userId);
 					this.config.voiceSubscriberMap.put(channel.getId(), set);
+					this.getGlobalProxy().saveAllGuilds();
 					this.sendPrivateAnswer(okayMessage);
 				}
 				this.deleteReceivedMessage();
@@ -984,6 +986,7 @@ public class Megumin extends ResponseType {
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
 					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
 					if(subscriberSet.remove(userId)){
+						this.getGlobalProxy().saveAllGuilds();
 						this.sendPrivateAnswer("Du hast "+channel.getName()+" deabonniert!");
 					}
 					else{
