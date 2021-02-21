@@ -12,32 +12,14 @@ public class RuntimeVariables {
 	static boolean isDebug = false;
 	static boolean firstLogin = true;
 
+	private MainConfig config;
 	private TimeZone homeTimezone = TimeZone.getTimeZone("CET");
-	private String version = "1.1.0.1";
-	private String commandPrefix = "MEG";
-	private String gitUrl = "https://github.com/Maexm/Discord-Bot";
-	private String weatherApiKey = null;
-	private String homeTown = "Aachen";
-	private String ansPrefix = "";
-	private String ansSuffix = " " + ansPrefix;
-	private String spotifyClientId = "";
-	private String spotifyClientSecret = "";
 
 	private RuntimeVariables(MainConfig config){
-		if(config != null){
-			if(config.homeTimezone != null){
-				this.homeTimezone = TimeZone.getTimeZone(config.homeTimezone);
-			}
-			
-			this.version = config.version;
-			this.commandPrefix = config.commandPrefix;
-			this.gitUrl = config.gitUrl;
-			this.weatherApiKey = config.weatherApiKey;
-			this.homeTown = config.homeTown;
-			this.ansSuffix = config.ansSuffix;
-			this.ansPrefix = config.ansPrefix;
-			this.spotifyClientId = config.spotifyClientId;
-			this.spotifyClientSecret = config.spotifyClientSecret;
+		this.config = config;
+
+		if(config != null && config.homeTimezone != null && !config.homeTimezone.equals("")){
+			this.homeTimezone = TimeZone.getTimeZone(config.homeTimezone);
 		}
 	}
 
@@ -46,39 +28,55 @@ public class RuntimeVariables {
 	}
 
 	public String getVersion(){
-		return this.version;
+		return this.config.version;
 	}
 
 	public String getCommandPrefix(){
-		return this.commandPrefix;
+		return this.config.commandPrefix;
 	}
 
 	public String getGitUrl(){
-		return this.gitUrl;
+		return this.config.gitUrl;
 	}
 
 	public String getWeatherApiKey(){
-		return this.weatherApiKey;
+		return this.config.weatherApiKey;
 	}
 
 	public String getHometown(){
-		return this.homeTown;
+		return this.config.homeTown;
 	}
 
 	public String getAnsSuffix(){
-		return this.ansSuffix;
+		return this.config.ansSuffix;
 	}
 
 	public String getAnsPrefix(){
-		return this.ansPrefix;
+		return this.config.ansPrefix;
+	}
+
+	public String getHelpText(){
+		return this.config.helpText;
+	}
+
+	public String getMusicHelpText(){
+		return this.config.musicHelpText;
+	}
+
+	public String getSurveyHelpText(){
+		return this.config.surveyHelpText;
+	}
+
+	public String getAdmHelpText(){
+		return this.config.admHelpText;
 	}
 
 	String getSpotifyClientSecret(){
-		return this.spotifyClientSecret;
+		return this.config.spotifyClientSecret;
 	}
 
 	String getSpotifyClientId(){
-		return this.spotifyClientId;
+		return this.config.spotifyClientId;
 	}
 
 	// ########## STATIC ##########

@@ -24,4 +24,12 @@ public class MainConfig {
 
     public String version;
 
+    public String helpText;
+
+    public String musicHelpText;
+    
+    public String surveyHelpText;
+
+    public String admHelpText;
+
 }
