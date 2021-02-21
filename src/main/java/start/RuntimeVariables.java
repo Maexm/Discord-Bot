@@ -71,12 +71,20 @@ public class RuntimeVariables {
 		return this.config.admHelpText;
 	}
 
-	String getSpotifyClientSecret(){
+	String DANGEROUSLY_getSpotifyClientSecret(){
 		return this.config.spotifyClientSecret;
 	}
 
-	String getSpotifyClientId(){
+	String DANGEROUSLY_getSpotifyClientId(){
 		return this.config.spotifyClientId;
+	}
+
+	String DANGEROUSLY_getBotKey(){
+		return this.config.botKey;
+	}
+
+	MainConfig DANGEROUSLY_getConfig(){
+		return this.config;
 	}
 
 	// ########## STATIC ##########

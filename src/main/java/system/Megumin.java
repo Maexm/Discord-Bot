@@ -43,6 +43,7 @@ import util.Markdown;
 import util.Pair;
 import util.TimePrint;
 import start.RuntimeVariables;
+import start.StartUp;
 import survey.Survey;
 import survey.VoteChange;
 import weather.Weather;
@@ -1064,6 +1065,19 @@ public class Megumin extends ResponseType {
 		catch(NumberFormatException e){
 			this.sendPrivateAnswer("fehlerhafte BenutzerId!");
 		}
+		this.deleteReceivedMessage();
+	}
+
+	@Override
+	protected void onLoadMainConfig() {
+		if(!this.hasPermission(SecurityLevel.DEV)){
+			this.noPermission();
+			return;
+		}
+
+		boolean success = StartUp.loadMainConfig();
+
+		this.sendPrivateAnswer(success ? "MainConfig wurde erfolgreich aktualisiert" : "Beim Aktualisieren der MainConfig ist ein Fehler aufgetreten");
 		this.deleteReceivedMessage();
 	}
 }

@@ -28,17 +28,8 @@ public class StartUp {
 
 		System.out.println("STARTING MEGUMIN BOT");
 
-		final String configFileName = "mainConfig.json";
-
-		// Read config file
-		String content = FileManager.read(new File(configFileName));
-		Gson gson = new Gson();
-		MainConfig config = gson.fromJson(content, MainConfig.class);
-
-		if(config == null){
-			System.out.println("Failed to read config file " + configFileName);
-		}
-		RuntimeVariables.createInstance(config);
+		StartUp.loadMainConfig();
+		MainConfig config = RuntimeVariables.getInstance().DANGEROUSLY_getConfig();
 
 		// Retrieve debug info, if available
 		if (args.length >= 1 && args[0].toUpperCase().equals("DEBUG") || args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
@@ -215,4 +206,20 @@ public class StartUp {
 		client.onDisconnect().block();
 	}
 
+	public static boolean loadMainConfig(){
+		final String configFileName = "mainConfig.json";
+
+		// Read config file
+		String content = FileManager.read(new File(configFileName));
+		Gson gson = new Gson();
+		MainConfig config = gson.fromJson(content, MainConfig.class);
+
+		if(config == null){
+			System.out.println("Failed to read config file " + configFileName);
+			return false;
+		}
+
+		RuntimeVariables.createInstance(config);
+		return true;
+	}
 }

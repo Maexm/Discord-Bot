@@ -315,6 +315,10 @@ public abstract class ResponseType extends Middleware {
 			case "private":
 				this.onPrivate();
 				break;
+			case "loadmainconfig":
+			case "mainconfig":
+				this.onLoadMainConfig();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 				isCommand = false;
@@ -525,5 +529,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onGlobalPSA();
 
 	protected abstract void onPrivate();
+
+	protected abstract void onLoadMainConfig();
 
 }
