@@ -8,12 +8,6 @@ public class MainConfig {
 
     public String weatherApiKey;
 
-    public String botKey;
-
-    public String spotifyClientId;
-
-    public String spotifyClientSecret;
-
     public String homeTown;
 
     public String ansPrefix;

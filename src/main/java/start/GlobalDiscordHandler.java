@@ -37,10 +37,12 @@ public class GlobalDiscordHandler {
     private final GatewayDiscordClient client;
     private final ArrayList<Survey> surveys;
     private final AudioPlayerManager playerManager;
+    private final Secrets secrets;
 
-    public GlobalDiscordHandler(ReadyEvent readyEvent) {
+    public GlobalDiscordHandler(ReadyEvent readyEvent, Secrets secrets) {
         this.globalProxy = new GlobalDiscordProxy(this);
         this.client = readyEvent.getClient();
+        this.secrets = secrets;
 
         this.playerManager = new DefaultAudioPlayerManager();
 		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
@@ -65,7 +67,7 @@ public class GlobalDiscordHandler {
     }
 
     private SpotifyResolver createSpotifyResolver(){
-        return new SpotifyResolver(RuntimeVariables.getInstance().DANGEROUSLY_getSpotifyClientId(), RuntimeVariables.getInstance().DANGEROUSLY_getSpotifyClientSecret());
+        return new SpotifyResolver(this.secrets.spotifyClientId, this.secrets.spotifyClientSecret);
     }
 
     public HashMap<Snowflake, GuildHandler> getGuildMap(){

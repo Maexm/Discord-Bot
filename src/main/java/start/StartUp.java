@@ -29,7 +29,7 @@ public class StartUp {
 		System.out.println("STARTING MEGUMIN BOT");
 
 		StartUp.loadMainConfig();
-		MainConfig config = RuntimeVariables.getInstance() != null ? RuntimeVariables.getInstance().DANGEROUSLY_getConfig() : null;
+		Secrets secrets = StartUp.loadSecrets();
 
 		// Retrieve debug info, if available
 		if (args.length >= 1 && args[0].toUpperCase().equals("DEBUG") || args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
@@ -38,8 +38,8 @@ public class StartUp {
 
 		// Retrieve token
 		String TOKEN = "";
-		if (config != null && config.botKey != null && config.botKey != ""){
-			TOKEN = config.botKey;
+		if (secrets != null && secrets.getBotKey() != null && secrets.getBotKey() != ""){
+			TOKEN = secrets.getBotKey();
 		}
 		else if (args.length >= 1 && !args[0].toUpperCase().equals("DEBUG")) {
 			TOKEN = args[0];
@@ -71,7 +71,7 @@ public class StartUp {
 
 			if(RuntimeVariables.firstLogin){
 				// Create entry point for event handling
-				discordHandlerWrapper[0] = new GlobalDiscordHandler(ready);
+				discordHandlerWrapper[0] = new GlobalDiscordHandler(ready, secrets);
 
 				// Notify owner if debug
 				if(RuntimeVariables.isDebug){
@@ -221,5 +221,21 @@ public class StartUp {
 
 		RuntimeVariables.createInstance(config);
 		return true;
+	}
+
+	private static Secrets loadSecrets(){
+		final String configFileName = "./botConfig/secrets.json";
+
+		// Read config file
+		String content = FileManager.read(new File(configFileName));
+		Gson gson = new Gson();
+		Secrets config = gson.fromJson(content, Secrets.class);
+
+		if(config == null){
+			System.out.println("Failed to read secrets file " + configFileName);
+			return null;
+		}
+
+		return config;
 	}
 }
