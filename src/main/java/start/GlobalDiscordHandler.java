@@ -160,7 +160,7 @@ public class GlobalDiscordHandler {
 
         Gson gson = new Gson();
         final String guildConfigsString = gson.toJson(guildConfigList.toArray(new GuildConfig[guildConfigList.size()]));
-        File configFile = new File("botConfig/guildConfig.json");
+        File configFile = new File("./botConfig/guildConfig.json");
         boolean success = FileManager.write(configFile, guildConfigsString);
         
         System.out.println(success ? "Successfully persisted guild data" : "Failed to persist guild data");

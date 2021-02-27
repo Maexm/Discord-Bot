@@ -207,7 +207,7 @@ public class StartUp {
 	}
 
 	public static boolean loadMainConfig(){
-		final String configFileName = "botConfig/mainConfig.json";
+		final String configFileName = "./botConfig/mainConfig.json";
 
 		// Read config file
 		String content = FileManager.read(new File(configFileName));

@@ -266,7 +266,7 @@ public final class GuildHandler {
 	}
 
 	public final void loadConfig(){
-		File configFile = new File("botConfig/guildConfig.json");
+		File configFile = new File("./botConfig/guildConfig.json");
 		String rawConfig = FileManager.read(configFile);
 		if(rawConfig == null){
 			System.out.println("Warning: No guild config file found: "+configFile.getAbsolutePath());
