@@ -319,6 +319,8 @@ public abstract class ResponseType extends Middleware {
 			case "mainconfig":
 				this.onLoadMainConfig();
 				break;
+			case "log":
+				this.onLog();
 			default:
 				// Nothing, user typed in a command that does not exist
 				isCommand = false;
@@ -531,5 +533,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onPrivate();
 
 	protected abstract void onLoadMainConfig();
+
+	protected abstract void onLog();
 
 }

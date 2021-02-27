@@ -1,5 +1,8 @@
 package system;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -1082,5 +1085,41 @@ public class Megumin extends ResponseType {
 
 		this.sendPrivateAnswer(success ? "MainConfig wurde erfolgreich aktualisiert" : "Beim Aktualisieren der MainConfig ist ein Fehler aufgetreten");
 		this.deleteReceivedMessage();
+	}
+
+	@Override
+	protected void onLog() {
+		if(!this.hasPermission(SecurityLevel.DEV)){
+			this.noPermission();
+			return;
+		}
+
+		try{
+			File logFile = new File("./nohup.out");
+
+			if(!logFile.exists()){
+				this.sendPrivateAnswer("Log Datei konnte nicht gefunden werden!");
+			}
+			else if(!logFile.canRead()){
+				this.sendPrivateAnswer("konnte diese Datei finden, kann diese aber nicht lesen!");
+			}
+			else{
+				try(InputStream fileStream = new FileInputStream(logFile)){
+					this.getMessageAuthorPrivateChannel()
+					.createMessage(spec -> 
+								spec.addFile("nohup.txt", fileStream)
+								.setContent("Hier deine Logdatei!")
+								)
+								.block();
+				}
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			this.sendPrivateAnswer("etwas ist schief gelaufen!");
+		}
+		finally{
+			this.deleteReceivedMessage();
+		}
 	}
 }
