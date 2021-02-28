@@ -12,6 +12,7 @@ import discord4j.core.object.entity.channel.VoiceChannel;
 import exceptions.IllegalMagicException;
 import survey.Survey;
 import survey.VoteEndReason;
+import system.GuildHandler;
 import util.Pair;
 import weather.Weather;
 
@@ -133,5 +134,9 @@ public class GlobalDiscordProxy {
 
     public void reloadAllGuilds(){
         this.parent.reloadGuilds();
+    }
+
+    public GuildHandler getGuildHandler(Snowflake id){
+        return this.parent.getGuildMap().get(id);
     }
 }

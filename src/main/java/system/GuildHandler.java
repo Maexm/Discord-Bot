@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import com.google.gson.Gson;
 
@@ -18,9 +19,12 @@ import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.reaction.ReactionEmoji;
+import discord4j.rest.util.Permission;
 import musicBot.MusicWrapper;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
@@ -195,12 +199,38 @@ public final class GuildHandler {
 	}
 
 	public boolean hasUser(Snowflake userId){
+		return this.getMember(userId) != null;
+	}
+
+	public Member getMember(Snowflake userId){
 		try{
-			return this.guild.getMemberById(userId).block() != null;
+			return this.guild.getMemberById(userId).block();
 		}
 		catch(Exception e){
+			return null;
+		}
+	}
+	/**
+	 * Checks if a user by the give id has the given permission. Also checks if user is present in this guild and returns false, if user is not guild member
+	 * @param userId
+	 * @param permission
+	 * @return
+	 */
+	public boolean hasPermission(Snowflake userId, Permission permission){
+		Member member = this.getMember(userId);
+
+		if(member == null){
 			return false;
 		}
+
+		List<Role> roles = member.getRoles().buffer().blockFirst();
+		for(Role role : roles){
+			if(role.getPermissions().contains(permission)){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public final Guild getGuild(){

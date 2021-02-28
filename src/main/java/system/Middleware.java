@@ -115,6 +115,36 @@ public abstract class Middleware {
 		return this.config.guildId;
 	}
 
+	protected final List<Guild> getGuildByName(String name){
+		List<Guild> guilds = this.getClient().getGuilds().buffer().blockFirst();
+
+		guilds.removeIf(guild -> !guild.getName().equals(name));
+
+		return guilds;
+	}
+
+	protected final List<Guild> parseGuild(final String identifier){
+		List<Guild> ret = new ArrayList<>();
+
+		try{
+			Snowflake id = Snowflake.of(identifier);
+			Guild guildById = this.getGuildByID(id);
+			// Guild not found -> return try guild by name;
+			if(guildById == null){
+				throw new NullPointerException();
+			}
+
+			ret.add(guildById);
+		}
+		catch(Exception e){
+			// guild by id did not work -> try to find guild by name
+			List<Guild> guildsByName = this.getGuildByName(identifier);
+			ret = guildsByName;
+		}
+
+		return ret;
+	}
+
 	/**
 	 * Returns the author of this message as Member instance.
 	 * 
@@ -125,6 +155,10 @@ public abstract class Middleware {
 			return this.getMessage().getEvent().getMember().orElse(null);
 		}
 		return null;
+	}
+
+	protected final User getMessageAuthor(){
+		return this.getMessage().getMessageObject().getAuthor().orElse(null);
 	}
 
 	/**
