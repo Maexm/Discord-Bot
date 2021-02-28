@@ -1,14 +1,19 @@
 package start;
 
 public class Secrets {
-    String botKey;
-    final String spotifyClientId;
-    final String spotifyClientSecret;
+    private String botKey;
+    private String spotifyClientId;
+    private String spotifyClientSecret;
+    private String weatherApiKey;
 
-    Secrets(final String botKey, final String spotifyClientId, final String spotifyClientSecret){
+    public Secrets(){
+    }
+
+    Secrets(final String botKey, final String spotifyClientId, final String spotifyClientSecret, final String weatherApiKey){
         this.botKey = botKey;
         this.spotifyClientId = spotifyClientId;
         this.spotifyClientSecret = spotifyClientSecret;
+        this.weatherApiKey = weatherApiKey;
     }
 
     String getBotKey() {
@@ -23,5 +28,9 @@ public class Secrets {
 
     String getSpotifyClientSecret() {
         return this.spotifyClientSecret;
+    }
+
+    String getWeatherApiKey(){
+        return this.weatherApiKey;
     }
 }

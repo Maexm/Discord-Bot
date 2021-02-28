@@ -48,10 +48,6 @@ public class RuntimeVariables {
 		return this.config.gitUrl;
 	}
 
-	public String getWeatherApiKey(){
-		return this.config.weatherApiKey;
-	}
-
 	public String getHometown(){
 		return this.config.homeTown;
 	}

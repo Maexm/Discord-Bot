@@ -13,6 +13,7 @@ import exceptions.IllegalMagicException;
 import survey.Survey;
 import survey.VoteEndReason;
 import util.Pair;
+import weather.Weather;
 
 public class GlobalDiscordProxy {
 
@@ -113,5 +114,9 @@ public class GlobalDiscordProxy {
 
     public void saveAllGuilds(){
         this.parent.saveGuilds();
+    }
+
+    public Weather getWeatherService(){
+        return this.parent.getWeatherService();
     }
 }

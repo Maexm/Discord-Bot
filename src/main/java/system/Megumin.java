@@ -659,7 +659,7 @@ public class Megumin extends ResponseType {
 
 		Message message = this.sendAnswer("suche nach Wetterdaten, gib mir einen Moment...");
 
-		String resp = Weather.buildMessage(Weather.getWeatherResponse(city));
+		String resp = Weather.buildMessage(this.getGlobalProxy().getWeatherService().getWeatherResponse(city));
 		this.sendAnswer(resp);
 		message.delete().block();
 	}

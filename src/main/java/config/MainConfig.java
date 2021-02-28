@@ -6,8 +6,6 @@ public class MainConfig {
 
     public String gitUrl;
 
-    public String weatherApiKey;
-
     public String homeTown;
 
     public String ansPrefix;

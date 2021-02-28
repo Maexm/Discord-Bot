@@ -28,6 +28,7 @@ import musicBot.MusicWrapper;
 import spotify.SpotifyResolver;
 import survey.Survey;
 import system.GuildHandler;
+import weather.Weather;
 
 public class GlobalDiscordHandler {
 
@@ -38,11 +39,13 @@ public class GlobalDiscordHandler {
     private final ArrayList<Survey> surveys;
     private final AudioPlayerManager playerManager;
     private final Secrets secrets;
+    private final Weather weatherService;
 
     public GlobalDiscordHandler(ReadyEvent readyEvent, Secrets secrets) {
         this.globalProxy = new GlobalDiscordProxy(this);
         this.client = readyEvent.getClient();
         this.secrets = secrets;
+        this.weatherService = new Weather(secrets.getWeatherApiKey());
 
         this.playerManager = new DefaultAudioPlayerManager();
 		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
@@ -67,7 +70,7 @@ public class GlobalDiscordHandler {
     }
 
     private SpotifyResolver createSpotifyResolver(){
-        return new SpotifyResolver(this.secrets.spotifyClientId, this.secrets.spotifyClientSecret);
+        return new SpotifyResolver(this.secrets.getSpotifyClientId(), this.secrets.getSpotifyClientSecret());
     }
 
     public HashMap<Snowflake, GuildHandler> getGuildMap(){
@@ -166,5 +169,9 @@ public class GlobalDiscordHandler {
         boolean success = FileManager.write(configFile, guildConfigsString);
         
         System.out.println(success ? "Successfully persisted guild data" : "Failed to persist guild data");
+    }
+
+    Weather getWeatherService(){
+        return this.weatherService;
     }
 }

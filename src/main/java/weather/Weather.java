@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import exceptions.IllegalMagicException;
 import util.HTTPRequests;
 import util.Markdown;
-import start.RuntimeVariables;
 import util.Format;
 import util.Range;
 import util.Units;
@@ -13,18 +12,25 @@ import weather.WeatherResponses.SingleResponse;
 
 public class Weather {
     
+    private final String apiKey;
     public final static String WEATHER_BASE_URL = "https://api.openweathermap.org/";
-    public final static String getSingleCall(){
-        return "data/2.5/weather?appid=" + RuntimeVariables.getInstance().getWeatherApiKey() + "&units=metric&lang=de";
-    } 
 
-    public static SingleResponse getWeatherResponse(String city){
+    private final String getSingleCall(){
+        return "data/2.5/weather?appid=" + this.apiKey + "&units=metric&lang=de";
+    }
+
+    public Weather(final String apiKey){
+        this.apiKey = apiKey;
+    }
+
+    public SingleResponse getWeatherResponse(String city){
         city = HTTPRequests.urlEncode(city);
-        if(RuntimeVariables.getInstance().getWeatherApiKey() == null){
-            throw new IllegalMagicException("Weather API Key not available!");
+
+        if(this.apiKey == null || this.apiKey.equals("")){
+            throw new IllegalMagicException("Weather API key not set!");
         }
 
-        String url = Weather.WEATHER_BASE_URL+Weather.getSingleCall()+"&q="+city;
+        String url = Weather.WEATHER_BASE_URL+this.getSingleCall()+"&q="+city;
 
         String response = HTTPRequests.getSimple(url);
 			if(response == null) {
