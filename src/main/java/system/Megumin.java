@@ -44,6 +44,7 @@ import util.HTTPRequests;
 import util.Help;
 import util.Markdown;
 import util.Pair;
+import util.Time;
 import util.TimePrint;
 import start.RuntimeVariables;
 import start.StartUp;
@@ -758,18 +759,30 @@ public class Megumin extends ResponseType {
 		}
 
 		int skipSeconds = 0;
-		try {
-			skipSeconds = Integer.parseInt(this.getArgumentSection());
-			if(skipSeconds == 0){
-				this.sendAnswer("nichts passiert...");
-				return;
+		if(this.argumentSection.contains(":")){
+			try{
+				long ms = Time.revertMsToPretty(this.getArgumentSection());
+				long pos = this.getMusicWrapper().getMusicBotHandler().setPosition(ms);
+				this.sendAnswer("neue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
 			}
-			long pos = this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
-			this.sendAnswer("springe "+skipSeconds+" "+(Math.abs(skipSeconds) > 1 ? "Sekunden" : "Sekunde")+"!\nNeue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
-			this.deleteReceivedMessage();
-		} catch (NumberFormatException e) {
-			this.sendAnswer(
-					"ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");
+			catch(Exception e){
+				this.sendAnswer("ungültiger Timestamp. Timestamps haben das Format mm:ss oder hh:mm:ss");
+			}
+		}
+		else{
+			try {
+				skipSeconds = Integer.parseInt(this.getArgumentSection());
+				if(skipSeconds == 0){
+					this.sendAnswer("nichts passiert...");
+					return;
+				}
+				long pos = this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
+				this.sendAnswer("springe "+skipSeconds+" "+(Math.abs(skipSeconds) > 1 ? "Sekunden" : "Sekunde")+"!\nNeue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
+				this.deleteReceivedMessage();
+			} catch (NumberFormatException e) {
+				this.sendAnswer(
+						"ungültige Eingabe. Gib in Sekunden an, wie viel ich skippen soll. Negative Zahlen gehen auch!");
+			}
 		}
 	}
 

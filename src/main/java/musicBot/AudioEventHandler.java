@@ -190,10 +190,15 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 * Does nothing, if track is a stream
 	 * @param pos
 	 */
-	public void setPosition(long pos){
+	public long setPosition(long pos){
 		if(!this.currentIsStream()){
+			pos = Math.max(0l, pos);
+			pos = Math.min(this.getCurrentAudioTrack().getDuration(), pos);
 			this.getCurrentAudioTrack().setPosition(pos);
+			return pos;
 		}
+		return this.getCurrentAudioTrack().getPosition();
+
 	}
 	/**
 	 * Moves forward or backwards in the currently playing track. Starts from zero or moves to the end of the track, if new position is out of range.
@@ -206,12 +211,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 			return 0l;
 		}
 		long newTrackPos = this.getCurrentAudioTrack().getPosition() + amount;
-		newTrackPos = Math.max(0l, newTrackPos);
-		newTrackPos = Math.min(this.getCurrentAudioTrack().getDuration(), newTrackPos);
 
-		this.setPosition(newTrackPos);
-
-		return newTrackPos;
+		return this.setPosition(newTrackPos);
 	}
 
 	public boolean currentIsStream(){

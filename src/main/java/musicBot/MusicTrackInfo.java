@@ -132,7 +132,7 @@ public class MusicTrackInfo {
 					// Evaluate metadata
 					if(trackResponse != null){
 						String firstArtistName = trackResponse.artists != null && trackResponse.artists.length > 0 ? trackResponse.artists[0].name+" " : "";
-						return "ytsearch:"+firstArtistName+(trackResponse.album != null ? trackResponse.album.name+" " : "")+" "+trackResponse.name;
+						return "ytsearch:"+firstArtistName+trackResponse.name;
 					}
 				}
 				// ########## ALBUM ##########
@@ -147,7 +147,7 @@ public class MusicTrackInfo {
 					}
 				}
 				// ########## ARTIST ##########
-				else if(nonUrlPath.startsWith("artist:") || urlObj != null && urlObj.getPath().startsWith("/artist/")){
+				else if(/*nonUrlPath.startsWith("artist:") || */urlObj != null && urlObj.getPath().startsWith("/artist/")){
 					// Same comments as for "track"
 					final String id = urlObj == null ? nonUrlPath.replaceFirst("artist:", "") : urlObj.getPath().replace("/artist/", "");
 					SpotifyArtistResponse artistResponse = spotifyResolver.getSpotifyObject(id, SpotifyArtistResponse.class, true);
