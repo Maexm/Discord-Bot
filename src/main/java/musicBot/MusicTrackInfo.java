@@ -153,7 +153,7 @@ public class MusicTrackInfo {
 					SpotifyArtistResponse artistResponse = spotifyResolver.getSpotifyObject(id, SpotifyArtistResponse.class, true);
 
 					if(artistResponse != null){
-						return "ytsearch:"+artistResponse.name;
+						return "ytsearch:"+artistResponse.name+" album";
 					}
 				}
 

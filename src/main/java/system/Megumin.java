@@ -272,7 +272,7 @@ public class Megumin extends ResponseType {
 			Message msg = this.sendAnswer("Jisho wird durchsucht, einen Moment...");
 			String result = Jisho.buildMessage(Jisho.lookUpKeyWord(this.getArgumentSection()),
 					this.getArgumentSection(), 3, 3);
-			msg.edit(spec -> spec.setContent(result));
+			msg.edit(spec -> spec.setContent(result)).block();
 		}
 	}
 
@@ -758,20 +758,35 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
-		int skipSeconds = 0;
 		if(this.argumentSection.contains(":")){
 			try{
 				long ms = Time.revertMsToPretty(this.getArgumentSection());
 				long pos = this.getMusicWrapper().getMusicBotHandler().setPosition(ms);
 				this.sendAnswer("neue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
+				this.deleteReceivedMessage();
 			}
 			catch(Exception e){
 				this.sendAnswer("ungültiger Timestamp. Timestamps haben das Format mm:ss oder hh:mm:ss");
+				return;
+			}
+		}
+		else if(this.argumentSection.endsWith("%")){
+			String percentage = this.argumentSection.substring(0, this.getArgumentSection().length()-1);
+			try{
+				int perc = Integer.parseInt(percentage);
+				double dec = perc/100.0;
+				long pos = this.getMusicWrapper().getMusicBotHandler().setPosition((long) (dec * this.getMusicWrapper().getMusicBotHandler().getCurrentAudioTrack().getDuration()));
+				this.sendAnswer("springe auf "+Markdown.toBold(this.getArgumentSection())+", neue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
+				this.deleteReceivedMessage();
+			}
+			catch(NumberFormatException e){
+				this.sendAnswer("ungültige Prozentangabe!");
+				return;
 			}
 		}
 		else{
 			try {
-				skipSeconds = Integer.parseInt(this.getArgumentSection());
+				int skipSeconds = Integer.parseInt(this.getArgumentSection());
 				if(skipSeconds == 0){
 					this.sendAnswer("nichts passiert...");
 					return;
