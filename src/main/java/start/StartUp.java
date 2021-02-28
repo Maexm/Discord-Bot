@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 
 import config.FileManager;
 import config.MainConfig;
+import config.SecretsConfig;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
@@ -39,7 +40,7 @@ public class StartUp {
 		// Retrieve token
 		String TOKEN = "";
 		if (secrets != null && secrets.getBotKey() != null && secrets.getBotKey() != ""){
-			TOKEN = secrets.getBotKey();
+			TOKEN = secrets.getLastBotKey();
 		}
 		else if (args.length >= 1 && !args[0].toUpperCase().equals("DEBUG")) {
 			TOKEN = args[0];
@@ -229,13 +230,13 @@ public class StartUp {
 		// Read config file
 		String content = FileManager.read(new File(configFileName));
 		Gson gson = new Gson();
-		Secrets config = gson.fromJson(content, Secrets.class);
+		SecretsConfig config = gson.fromJson(content, SecretsConfig.class);
 
 		if(config == null){
 			System.out.println("Failed to read secrets file " + configFileName);
 			return null;
 		}
 
-		return config;
+		return new Secrets(config);
 	}
 }
