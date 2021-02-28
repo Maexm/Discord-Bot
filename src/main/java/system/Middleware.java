@@ -306,7 +306,17 @@ public abstract class Middleware {
 		return this.getGuild().getSystemChannel().onErrorResume(err -> null).block();
 	}
 
-	public final MessageChannel getPsaChannel(){
+	public final MessageChannel getPsaChannel(boolean force){
+		if(!force && !this.getConfig().psaNote){
+			return null;
+		}
+		return this.config.announcementChannelId != null ? this.getChannelByID(this.config.announcementChannelId) : this.getSystemChannel();
+	}
+
+	public final MessageChannel getUpdateChannel(boolean force){
+		if(!force && !this.getConfig().updateNote){
+			return null;
+		}
 		return this.config.announcementChannelId != null ? this.getChannelByID(this.config.announcementChannelId) : this.getSystemChannel();
 	}
 
@@ -493,8 +503,9 @@ public abstract class Middleware {
 			.block();
 	}
 
-	public final void globalAnnounce(final String content){
-		for(MessageChannel channel : this.getGlobalProxy().getGlobalPsaChannels()){
+	public final void globalAnnounce(final String content, final boolean update){
+		List<MessageChannel> channels = update ? this.getGlobalProxy().getGlobalUpdateChannels(false) : this.getGlobalProxy().getGlobalPsaChannels(false);
+		for(MessageChannel channel : channels){
 			try{
 				channel.createMessage(content).block();
 			}

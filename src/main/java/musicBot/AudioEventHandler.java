@@ -357,7 +357,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 					ytSearch = "Die Musik wurde auf YouTube unter dem Begriff "
 						+ Markdown
 								.toBold(trackInfo.getQuery().replaceFirst("ytsearch:", ""))
-						+ " gefunden, war aber vorher ein Spotify-Link: "+Markdown.noLinkPreview(trackInfo.getOriginalQuery());
+						+ " gefunden, wurde aber als Spotify-Link eingereicht: "+Markdown.noLinkPreview(trackInfo.getOriginalQuery())+"\n\n";
 					break;
 				default:
 			}

@@ -60,9 +60,9 @@ public class Megumin extends ResponseType {
 
 	public Megumin(MiddlewareConfig config, TaskManager<RefinedTimerTask> localTasks) {
 		super(config, localTasks);
-		if (!RuntimeVariables.isDebug() && !this.isPrivate() && this.config.psaNote){
+		if (!RuntimeVariables.isDebug() && !this.isPrivate()){
 			try {
-				MessageChannel channel = this.getPsaChannel();
+				MessageChannel channel = this.getPsaChannel(false);
 				Message message = channel
 						.createMessage(
 								"Ich bin Online und einsatzbereit! Schreib " + Markdown.toCodeBlock("MegHelp") + "!")
@@ -590,7 +590,7 @@ public class Megumin extends ResponseType {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
 			} else {
-				this.globalAnnounce(this.getArgumentSection());
+				this.globalAnnounce(this.getArgumentSection(), false);
 			}
 		} else {
 			this.noPermission();
@@ -645,7 +645,7 @@ public class Megumin extends ResponseType {
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
 			} else if (!RuntimeVariables.isDebug()) {
-				this.globalAnnounce(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
+				this.globalAnnounce(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()), true);
 			} else {
 				this.sendMessageToOwner(INTRO + Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 			}
@@ -1149,5 +1149,21 @@ public class Megumin extends ResponseType {
 		finally{
 			this.deleteReceivedMessage();
 		}
+	}
+
+	@Override
+	protected void onReload() {
+		if(!this.hasPermission(SecurityLevel.DEV)){
+			this.noPermission();
+			return;
+		}
+
+		StartUp.loadMainConfig();
+		this.getGlobalProxy().reloadAllGuilds();
+
+		this.sendPrivateAnswer("Erfolgreich neu geladen!");
+
+		this.deleteReceivedMessage();
+
 	}
 }

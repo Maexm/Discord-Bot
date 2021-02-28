@@ -101,11 +101,22 @@ public class GlobalDiscordProxy {
         return ret;
     }
 
-    public ArrayList<MessageChannel> getGlobalPsaChannels(){
+    public ArrayList<MessageChannel> getGlobalPsaChannels(boolean force){
         ArrayList<MessageChannel> ret = new ArrayList<>();
         this.parent.getGuildMap().forEach((guildId, guildHandler) ->{
-            if(guildHandler.getResponseType().getPsaChannel() != null){
-                ret.add(guildHandler.getResponseType().getPsaChannel());
+            if(guildHandler.getResponseType().getPsaChannel(force) != null){
+                ret.add(guildHandler.getResponseType().getPsaChannel(force));
+            }
+        });
+
+        return ret;
+    }
+
+    public ArrayList<MessageChannel> getGlobalUpdateChannels(boolean force){
+        ArrayList<MessageChannel> ret = new ArrayList<>();
+        this.parent.getGuildMap().forEach((guildId, guildHandler) ->{
+            if(guildHandler.getResponseType().getUpdateChannel(force) != null){
+                ret.add(guildHandler.getResponseType().getUpdateChannel(force));
             }
         });
 
@@ -118,5 +129,9 @@ public class GlobalDiscordProxy {
 
     public Weather getWeatherService(){
         return this.parent.getWeatherService();
+    }
+
+    public void reloadAllGuilds(){
+        this.parent.reloadGuilds();
     }
 }

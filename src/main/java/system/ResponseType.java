@@ -319,6 +319,9 @@ public abstract class ResponseType extends Middleware {
 			case "mainconfig":
 				this.onLoadMainConfig();
 				break;
+			case "reload":
+				this.onReload();
+				break;
 			case "log":
 				this.onLog();
 			default:
@@ -535,5 +538,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onLoadMainConfig();
 
 	protected abstract void onLog();
+
+	protected abstract void onReload();
 
 }

@@ -171,6 +171,21 @@ public class GlobalDiscordHandler {
         System.out.println(success ? "Successfully persisted guild data" : "Failed to persist guild data");
     }
 
+    void reloadGuilds(){
+        System.out.println("Reloading "+this.guildMap.size()+" guild(s)");
+        this.guildMap.forEach((guildId, guildHandler) -> {
+            try{
+               guildHandler.loadConfig();
+            }
+            catch(Exception e){
+                System.out.println("Failed to load guild "+guildHandler.getGuild().getName());
+                e.printStackTrace();
+            }
+        });
+
+        this.saveGuilds();
+    }
+
     Weather getWeatherService(){
         return this.weatherService;
     }

@@ -245,24 +245,40 @@ public final class GuildHandler {
 	}
 
 	public final boolean isVoiceChannel(Snowflake id){
-		return this.getGuild().getChannelById(id)
-		.onErrorResume(err -> null)
-		.map(channel -> channel != null && channel.getType().equals(Type.GUILD_VOICE))
-		.block();
+		try{
+			return this.getGuild().getChannelById(id)
+			.onErrorResume(err -> null)
+			.map(channel -> channel != null && channel.getType().equals(Type.GUILD_VOICE))
+			.block();
+		}
+		catch(Exception e){
+			return false;
+		}
+		
 	}
 
 	public final boolean isTextChannel(Snowflake id){
-		return this.getGuild().getChannelById(id)
-		.onErrorResume(err -> null)
-		.map(channel -> channel != null && channel.getType().equals(Type.GUILD_TEXT))
-		.block();
+		try{
+			return this.getGuild().getChannelById(id)
+			.onErrorResume(err -> null)
+			.map(channel -> channel != null && channel.getType().equals(Type.GUILD_TEXT))
+			.block();
+		}
+		catch(Exception e){
+			return false;
+		}
 	}
 
 	public final boolean isRole(Snowflake id){
-		return this.getGuild().getRoleById(id)
-		.onErrorResume(err -> null)
-		.map(role -> role != null)
-		.block();
+		try{
+			return this.getGuild().getRoleById(id)
+			.onErrorResume(err -> null)
+			.map(role -> role != null)
+			.block();
+		}
+		catch(Exception e){
+			return false;
+		}
 	}
 
 	public final void loadConfig(){
