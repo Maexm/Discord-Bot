@@ -6,6 +6,7 @@ import java.net.URL;
 
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import exceptions.IllegalMagicException;
 import spotify.SpotifyResolver;
 import spotify.SpotifyObjects.SpotifyAlbumResponse;
 import spotify.SpotifyObjects.SpotifyArtistResponse;
@@ -14,10 +15,10 @@ import util.Time;
 
 public class MusicTrackInfo {
 
-	private final String trackQuery;
+	private String trackQuery;
 	private final String originalQuery;
 	private final User submittedByUser;
-	private final String[] protocols = {"https://www.", "https://"}; // ignore http, there is no reason for why you should use that
+	private final String[] protocols = {"https://", "https://www."}; // ignore http, there is no reason for why you should use that
 	private final String[] MUSIC_URL_HOSTS = {"youtube.com", "youtu.be", "soundcloud.com", "music.youtube.com"};
 	public final AudioEventHandler audioEventHandler;
 	public final Message userRequestMessage;
@@ -35,7 +36,16 @@ public class MusicTrackInfo {
 
 		// URL tracks can have a timestamp
 		if(this.trackType == TrackType.URL){
-			this.startTimeStamp = this.extractTimeStamp(this.trackQuery);	
+			this.startTimeStamp = this.extractTimeStamp(this.trackQuery);
+			if(this.startTimeStamp != 0l){
+				try {
+					URL tempUrl = new URL(this.trackQuery);
+					// Remove ref
+					this.trackQuery = this.trackQuery.replace("#"+tempUrl.getRef(), "");
+				} catch (MalformedURLException e) {
+					throw new IllegalMagicException("");
+				}
+			}
 		}
 		else{
 			this.startTimeStamp = 0l;
@@ -178,10 +188,14 @@ public class MusicTrackInfo {
 				return url;
 			}
 		}
-		return url + this.protocols[0];
+		return this.protocols[0] + url;
 	}
 	
-	private boolean isValidHost(final String host) {
+	private boolean isValidHost(String host) {
+
+		if(host.startsWith("www.")){
+			host = host.replaceFirst("www\\.", "");
+		}
 		
 		String[] hostSplitted = host.split("\\.");
 		// Pay special attention to bandcamp links, since they can have the form "artist.bandcamp.com/", check if second and third component is "bandcamp" and "com/"
