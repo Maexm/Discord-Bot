@@ -375,6 +375,13 @@ public abstract class Middleware {
 		return this.config;
 	}
 
+	protected GuildHandler getHandler(){
+		if(this.isPrivate()){
+			return null;
+		}
+		return this.getGlobalProxy().getGuildHandler(this.getGuildId());
+	}
+
 	// ########## INTERACTIVE METHODS ##########
 
 	/**

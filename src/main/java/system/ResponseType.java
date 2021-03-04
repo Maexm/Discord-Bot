@@ -324,6 +324,11 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "log":
 				this.onLog();
+				break;
+			case "helpconfig":
+			case "config":
+				this.onConfig();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 				isCommand = false;
@@ -540,5 +545,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onLog();
 
 	protected abstract void onReload();
+
+	protected abstract void onConfig();
 
 }

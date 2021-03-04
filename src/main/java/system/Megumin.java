@@ -3,9 +3,11 @@ package system;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -24,6 +26,7 @@ import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Color;
+import discord4j.rest.util.Permission;
 import exceptions.IllegalMagicException;
 import exceptions.NoPermissionException;
 import exceptions.SurveyCreateIllegalDurationException;
@@ -1164,6 +1167,60 @@ public class Megumin extends ResponseType {
 		this.sendPrivateAnswer("Erfolgreich neu geladen!");
 
 		this.deleteReceivedMessage();
+
+	}
+
+	@Override
+	protected void onConfig() {
+		Guild targetGuild = this.getGuild();
+		Snowflake authorId = this.getMessageAuthor().getId();
+		final String delimiter = " ";
+		LinkedList<String> args = new LinkedList<>(Arrays.asList(this.getArgumentSection().split(delimiter)));
+		final Permission requiredPermission = Permission.ADMINISTRATOR;
+
+		// ########## Determine target guild & check user permissions ##########
+
+		List<Guild> parsedGuilds = this.parseGuild(args.getFirst());
+
+		// Filter out guilds, where user is not member or not admin
+		parsedGuilds.removeIf(guild ->{
+			GuildHandler handler = this.getGlobalProxy().getGuildHandler(guild.getId());
+
+			// Got no handler for id -> something is broken -> ignore
+			if(handler == null){
+				return true;
+			} 
+			return !handler.hasPermission(authorId, requiredPermission);
+		});
+
+		// First argument not a valid guild or user not admin in parsed guilds
+		if(parsedGuilds.size() == 0){
+			// Quit if no further target guild available or user has no permission on given target guild
+			if(targetGuild == null /* aka private chat*/ || !this.getHandler().hasPermission(authorId, requiredPermission)){
+				this.sendAnswer("du musst als erstes Argument den betreffenden Server angeben, oder diesen Befehl auf einem Server ausführen!\nVielleicht existiert der genannte Server aber auch nicht, oder du bist kein Serveradmin!");
+				return;
+			}
+			else{
+				args.addFirst(targetGuild.getId().asString()); // User did not provide a server in args but used command in guild and is guild adm
+			}
+		}
+		// Else use first arg as target guild - Parsed guilds have been filterd by permission
+		else{
+			targetGuild = parsedGuilds.get(0); // User provided valid guild in args
+		}
+
+		// ########## Determine answer ##########
+		String answer = "";
+		switch(args.size()){
+			// Current config
+			case 1:
+				answer = "Für den Server "+Markdown.toBold(targetGuild.getName())+" mit der ID "+Markdown.toBold(targetGuild.getId().asString())+" gelten folgende Einstellungen:\n\n";
+				break;
+			// Apply config (case 3 if config requires args)
+			case 2:
+			case 3:
+				
+		}
 
 	}
 }
