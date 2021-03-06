@@ -219,11 +219,18 @@ public final class GuildHandler {
 	public boolean hasPermission(Snowflake userId, Permission permission){
 		Member member = this.getMember(userId);
 
+		if(this.guild != null && this.guild.getOwnerId().equals(userId)){
+			return true;
+		}
+
 		if(member == null){
 			return false;
 		}
 
 		List<Role> roles = member.getRoles().buffer().blockFirst();
+		if(roles == null){
+			return false;
+		}
 		for(Role role : roles){
 			if(role.getPermissions().contains(permission)){
 				return true;

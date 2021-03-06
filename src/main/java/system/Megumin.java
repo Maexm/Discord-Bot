@@ -19,6 +19,7 @@ import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
@@ -659,7 +660,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onWeather() {
-		String city = this.getArgumentSection().equals("") ? RuntimeVariables.getInstance().getHometown() : this.getArgumentSection();
+		String city = this.getArgumentSection().equals("") ? this.getLocalHomeTown() : this.getArgumentSection();
 
 		Message message = this.sendAnswer("suche nach Wetterdaten, gib mir einen Moment...");
 
@@ -1174,7 +1175,7 @@ public class Megumin extends ResponseType {
 	protected void onConfig() {
 		Guild targetGuild = this.getGuild();
 		Snowflake authorId = this.getMessageAuthor().getId();
-		final String delimiter = " ";
+		final String delimiter = ";";
 		LinkedList<String> args = new LinkedList<>(Arrays.asList(this.getArgumentSection().split(delimiter)));
 		final Permission requiredPermission = Permission.ADMINISTRATOR;
 
@@ -1201,6 +1202,9 @@ public class Megumin extends ResponseType {
 				return;
 			}
 			else{
+				if(args.size() == 1 && args.getFirst().equals("")){
+					args.clear();
+				}
 				args.addFirst(targetGuild.getId().asString()); // User did not provide a server in args but used command in guild and is guild adm
 			}
 		}
@@ -1209,18 +1213,109 @@ public class Megumin extends ResponseType {
 			targetGuild = parsedGuilds.get(0); // User provided valid guild in args
 		}
 
-		// ########## Determine answer ##########
-		String answer = "";
+		// ########## Build answer ##########
+		String answer = "Botkonfiguration für den Server " +Markdown.toBold(targetGuild.getName())+" mit der ID "+Markdown.toBold(targetGuild.getId().asString())+"\n\n"+Markdown.toSafeMultilineBlockQuotes("");
+		String configArg = "";
+		ResponseType target = this.getResponseType(targetGuild.getId());
 		switch(args.size()){
 			// Current config
 			case 1:
-				answer = "Für den Server "+Markdown.toBold(targetGuild.getName())+" mit der ID "+Markdown.toBold(targetGuild.getId().asString())+" gelten folgende Einstellungen:\n\n";
+				answer += "Es gelten folgende Einstellungen:\n\n"
+				       + "Hier werden Infos zur Musiksession geposted: " + Markdown.toBold(target.getMusicWrapper().getMusicChannelId() != null ? target.getChannelById(target.getMusicWrapper().getMusicChannelId()).getName() : "Kanal wird automatisch ermittelt")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";musik;channelId oder Name")+"\n\n"
+					   + "Rolle mit mehr Berechtigungen (aktuell Lautstärke ändern): "+ Markdown.toBold(target.getConfig().getSecurityProvider().specialRoleId != null ? target.getRoleById(target.getConfig().getSecurityProvider().specialRoleId).getName() : "Keiner außer Admins haben Extraberechtigungen")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";spezial;rollenId oder Name")+"\n\n"
+					   + "Systembenachrichtigungen zum Bot (keine Update Infos): "+Markdown.toBold(target.getConfig().psaNote ? "Ja, dein Server bleibt immer informiert!" : "Nein, dein Server lebt hinterm Mond!")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";psa")+"\n\n"
+					   + "Benachrichtigungen bei neuen Updates: "+ Markdown.toBold(target.getConfig().updateNote ? "Ja, dein Server wird bei neuen Updates informiert!" : "Nein, deine Servermitglieder erfahren nicht, wenn es neue Funktionen zum Ausprobieren gibt!")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";update")+"\n\n"
+					   + "Heimatstadt: "+Markdown.toBold(target.getConfig().homeTown != null && !target.getConfig().homeTown.equals("") ? target.getConfig().homeTown : "Nichts angegeben, verwende Standard: "+RuntimeVariables.getInstance().getHometown())+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";stadt;Deine Stadt")+"\n\n";
 				break;
 			// Apply config (case 3 if config requires args)
-			case 2:
 			case 3:
-				
+				configArg = args.get(2);
+			case 2:
+				switch(args.get(1).toLowerCase()){
+					case "music":
+					case "musik":
+						if(configArg.equals("")){
+							answer += "Infos zu Musik Sessions werden automatisch in passende Kanäle versendet!";
+							target.getMusicWrapper().setMusicChannelId(null);
+							break;
+						}
+						List<MessageChannel> channels = target.parseMsgChannel(configArg);
+						if(channels.size() == 0){
+							this.sendPrivateAnswer("Diesen Textkanal gibt es nicht!");
+							this.deleteReceivedMessage();
+							return;
+						}
+						else{
+							answer += "Informationen zu Musiksessions werden jetzt im Kanal "+Markdown.toBold(channels.get(0).getRestChannel().getData().map(data -> data.name().get()).block())+ " angezeigt!";
+							target.getMusicWrapper().setMusicChannelId(channels.get(0).getId());
+						}
+						break;
+					case "mod":
+					case "moderator":
+					case "spezial":
+					case "special":
+						if(configArg.equals("")){
+							answer += "Es gibt keine Rolle mit speziellen Berechtigungen mehr!";
+							target.getConfig().getSecurityProvider().specialRoleId = null;
+							break;
+						}
+						List<Role> roles = target.parseRole(configArg);
+						if(roles.size() == 0){
+							this.sendPrivateAnswer("Diese Rolle gibt es nicht!");
+							this.deleteReceivedMessage();
+							return;
+						}
+						else{
+							answer += "Die Rolle "+Markdown.toBold(roles.get(0).getName()+" hat jetzt zusätzliche Zugriffsrechte für den Bot (Musikbot Lautstärke ändern)!");
+							target.getConfig().getSecurityProvider().specialRoleId = roles.get(0).getId();
+						}
+					break;
+					case "update":
+						if(configArg.toLowerCase().equals("true")){
+							target.getConfig().updateNote = true;
+						}
+						else if(configArg.toLowerCase().equals("false")){
+							target.getConfig().updateNote = false;
+						}
+						else{
+							target.getConfig().updateNote = !target.getConfig().updateNote;
+						}
+						answer += !target.getConfig().updateNote ? "Der Server erhält keine Infos bzgl. Updates mehr (betrifft nicht Systemnachrichten)" : "Der Server erhält Infos zu frischen Updates, falls es auf dem Server einen Systemkanal gibt (betrifft nicht Systemnachrichten)";
+						break;
+					case "psa":
+					case "info":
+						if(configArg.toLowerCase().equals("true")){
+							target.getConfig().psaNote = true;
+						}
+						else if(configArg.toLowerCase().equals("false")){
+							target.getConfig().psaNote = false;
+						}
+						else{
+							target.getConfig().psaNote = !target.getConfig().psaNote;
+						}
+						answer += !target.getConfig().psaNote ? "Der Server erhält keine Systembenachrichtigungen mehr und du verpasst wichtige Meldungen (betrifft nicht Update Meldungen)" : "Der Server erhält Systembenachrichtigungen und du bleibst bei allen Angelegenheiten stets informiert, falls es auf dem Server einen Systemkanal gibt (betrifft nicht Update Meldungen)";
+						break;
+					case "home":
+					case "town":
+					case "city":
+					case "stadt":
+						target.getConfig().homeTown = configArg;
+						answer += configArg.equals("") ? "Verwende Standard "+Markdown.toBold(RuntimeVariables.getInstance().getHometown()) : "Die Heimatstadt des Servers ist nun "+Markdown.toBold(configArg);
+						break;
+					default:
+					this.sendPrivateAnswer("Ungültiger Parameter. Argumente müssen mit Semikolon getrennt werden. Versuchs mit "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";option;argumente"));
+					this.deleteReceivedMessage();
+					return;
+				}
+				break;
+			default:
+				this.sendPrivateAnswer("Ungültige Anzahl an Argumenten. Das Befehlsschema lautet: MegConfig ServerName/Id;option;Argument(opt.)");
+				this.deleteReceivedMessage();
+				return;
 		}
 
+		this.sendPrivateAnswer(answer);
+		this.deleteReceivedMessage();
+		this.getGlobalProxy().saveAllGuilds();
 	}
 }

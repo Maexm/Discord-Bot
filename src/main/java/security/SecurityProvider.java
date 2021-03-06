@@ -55,10 +55,14 @@ public class SecurityProvider {
 		SecurityLevel ret = SecurityLevel.FORBIDDEN;
 		//	Me. The developer me
 		if(user.getId().equals(this.appOwnerId)){
-			ret = SecurityProvider.getHighest(ret, SecurityLevel.DEV);
+			return SecurityLevel.DEV;
+		}
+
+		if(this.client.getGuildById(this.guildId).map(guild -> guild.getOwnerId()).block().equals(user.getId())){
+			ret = SecurityProvider.getHighest(ret, SecurityLevel.GUILD_ADM);
 		}
 		
-		// Return immediately, if guildId us null
+		// Return immediately, if guildId is null
 		if(this.guildId == null){
 			return SecurityProvider.getHighest(ret, SecurityLevel.DEFAULT);
 		}
@@ -68,13 +72,15 @@ public class SecurityProvider {
 			Member userAsMember = user.asMember(this.guildId).block();
 			List<Role> roles = userAsMember.getRoles().collectList().block();
 			ret = SecurityProvider.getHighest(ret, SecurityLevel.DEFAULT);
-			
-			for(Role role : roles){
-				if(role.getPermissions().contains(Permission.ADMINISTRATOR)){
-					ret = SecurityProvider.getHighest(ret, SecurityLevel.GUILD_ADM);
-				}
-				else if(this.specialRoleId != null && role.getId().equals(this.specialRoleId)){
-					ret = SecurityProvider.getHighest(ret, SecurityLevel.GUILD_SPECIAL);
+
+			if(roles != null){
+				for(Role role : roles){
+					if(role.getPermissions().contains(Permission.ADMINISTRATOR)){
+						ret = SecurityProvider.getHighest(ret, SecurityLevel.GUILD_ADM);
+					}
+					else if(this.specialRoleId != null && role.getId().equals(this.specialRoleId)){
+						ret = SecurityProvider.getHighest(ret, SecurityLevel.GUILD_SPECIAL);
+					}
 				}
 			}
 		}

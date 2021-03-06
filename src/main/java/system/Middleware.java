@@ -10,10 +10,12 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.ApplicationInfo;
+import discord4j.core.object.entity.Entity;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.GuildEmoji;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.GuildChannel;
@@ -21,6 +23,7 @@ import discord4j.core.object.entity.channel.GuildMessageChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.presence.Presence;
 import discord4j.rest.http.client.ClientException;
 import discord4j.voice.AudioProvider;
@@ -118,6 +121,10 @@ public abstract class Middleware {
 	protected final List<Guild> getGuildByName(String name){
 		List<Guild> guilds = this.getClient().getGuilds().buffer().blockFirst();
 
+		if(guilds == null){
+			return new ArrayList<>();
+		}
+
 		guilds.removeIf(guild -> !guild.getName().equals(name));
 
 		return guilds;
@@ -144,6 +151,111 @@ public abstract class Middleware {
 
 		return ret;
 	}
+
+	protected final List<GuildChannel> getChannelByName(String name){
+		List<GuildChannel> channels = new ArrayList<>();
+		if(this.isPrivate()){
+			return channels;
+		}
+
+		channels = this.getGuild().getChannels().buffer().blockFirst();
+
+		if(channels == null){
+			return new ArrayList<>();
+		}
+
+		channels.removeIf(channel -> !channel.getName().equals(name));
+
+		return channels;
+	}
+
+	protected final List<GuildChannel> parseChannel(final String identifier){
+		List<GuildChannel> ret = new ArrayList<>();
+		if(this.isPrivate()){
+			return ret;
+		}
+
+		try{
+			Snowflake id = Snowflake.of(identifier);
+			GuildChannel channelById = this.getChannelById(id);
+			// Channel not found -> return try guild by name;
+			if(channelById == null){
+				throw new NullPointerException();
+			}
+
+			ret.add(channelById);
+		}
+		catch(Exception e){
+			// channel by id did not work -> try to find channel by name
+			List<GuildChannel> channelsByName = this.getChannelByName(identifier);
+			ret = channelsByName;
+		}
+
+		return ret;
+	}
+
+	protected final List<MessageChannel> parseMsgChannel(final String identifier){
+		List<MessageChannel> ret = new ArrayList<>();
+		List<GuildChannel> channels = this.parseChannel(identifier);
+
+		channels.forEach(channel -> {
+			if(channel.getType().equals(Type.GUILD_TEXT)){
+				ret.add((MessageChannel) channel);
+			}
+		});
+
+		return ret;
+	}
+
+	protected final Role getRoleById(Snowflake id){
+		try{
+			return this.getGuild().getRoleById(id).block();
+		}
+		catch(Exception e){
+			return null;
+		}
+	}
+
+	protected final List<Role> getRoleByName(final String name){
+		List<Role> roles = new ArrayList<>();
+		if(this.isPrivate()){
+			return roles;
+		}
+
+		roles = this.getGuild().getRoles().buffer().blockFirst();
+
+		if(roles == null){
+			return new ArrayList<>();
+		}
+
+		roles.removeIf(role -> !role.getName().equals(name));
+
+		return roles;
+	}
+
+	protected final List<Role> parseRole(final String identifier){
+		List<Role> ret = new ArrayList<>();
+		if(this.isPrivate()){
+			return ret;
+		}
+
+		try{
+			Snowflake id = Snowflake.of(identifier);
+			Role roleById = this.getRoleById(id);
+			if(roleById == null){
+				throw new NullPointerException();
+			}
+
+			ret.add(roleById);
+		}
+		catch(Exception e){
+			List<Role> rolesByName = this.getRoleByName(identifier);
+			ret = rolesByName;
+		}
+
+		return ret;
+	}
+
 
 	/**
 	 * Returns the author of this message as Member instance.
@@ -311,14 +423,19 @@ public abstract class Middleware {
 		return this.getClient().getGuildById(guildID).block();
 	}
 
-	protected final GuildMessageChannel getChannelByID(Snowflake channelID) {
+	protected final GuildMessageChannel getMsgChannelById(Snowflake channelId) {
+		GuildChannel temp = this.getChannelById(channelId);
+		return temp.getType().equals(Type.GUILD_TEXT) ? (GuildMessageChannel) temp : null;
+    }
+
+	protected final GuildChannel getChannelById(Snowflake channelId){
 		try{
-			return (GuildMessageChannel) this.getGuild().getChannelById(channelID).block();
+			return this.getGuild().getChannelById(channelId).block();
 		}
 		catch(Exception e){
 			return null;
 		}
-    }
+	}
 
     protected final Member getMember(Snowflake userId, Snowflake guildId){
         return this.getGuildByID(guildId).getMemberById(userId).block();
@@ -344,14 +461,14 @@ public abstract class Middleware {
 		if(!force && !this.getConfig().psaNote){
 			return null;
 		}
-		return this.config.announcementChannelId != null ? this.getChannelByID(this.config.announcementChannelId) : this.getSystemChannel();
+		return this.config.announcementChannelId != null ? this.getMsgChannelById(this.config.announcementChannelId) : this.getSystemChannel();
 	}
 
 	public final MessageChannel getUpdateChannel(boolean force){
 		if(!force && !this.getConfig().updateNote){
 			return null;
 		}
-		return this.config.announcementChannelId != null ? this.getChannelByID(this.config.announcementChannelId) : this.getSystemChannel();
+		return this.config.announcementChannelId != null ? this.getMsgChannelById(this.config.announcementChannelId) : this.getSystemChannel();
 	}
 
 	public final List<GuildChannel> getVoiceChannels(){
@@ -380,6 +497,19 @@ public abstract class Middleware {
 			return null;
 		}
 		return this.getGlobalProxy().getGuildHandler(this.getGuildId());
+	}
+
+	protected GuildHandler getHandler(Snowflake guildId){
+		return this.getGlobalProxy().getGuildHandler(guildId);
+	}
+
+	protected ResponseType getResponseType(Snowflake guildId){
+		try{
+			return this.getHandler(guildId).getResponseType();
+		}
+		catch(NullPointerException e){
+			return null;
+		}
 	}
 
 	// ########## INTERACTIVE METHODS ##########
@@ -440,7 +570,7 @@ public abstract class Middleware {
 	 * @return
 	 */
 	public final Message sendInChannel(String message, Snowflake channelID) {
-		MessageChannel channel = this.getChannelByID(channelID);
+		MessageChannel channel = this.getMsgChannelById(channelID);
 		return channel.createMessage(RuntimeVariables.getInstance().getAnsPrefix()+message + RuntimeVariables.getInstance().getAnsSuffix()).block();
 	}
 
@@ -503,7 +633,7 @@ public abstract class Middleware {
 	 */
 	protected final int deleteAllMessages(Snowflake channelID) {
 		int ret = 0;
-		MessageChannel megChannel = this.getChannelByID(channelID);
+		MessageChannel megChannel = this.getMsgChannelById(channelID);
 		Message lastMessage = megChannel.getLastMessage().block();
 		List<Message> messages = megChannel.getMessagesBefore(lastMessage.getId()).collectList().block();
 
@@ -527,7 +657,7 @@ public abstract class Middleware {
 	protected final int deleteMessages(Snowflake channelID, int amount) {
 		int ret = 0;
 		if (amount > 0) {
-			MessageChannel channel = this.getChannelByID(channelID);
+			MessageChannel channel = this.getMsgChannelById(channelID);
 			for (int i = 0; i < amount; i++) {
 				Message lastMessage = channel.getLastMessage().block();
 				this.deleteMessage(lastMessage);
@@ -555,6 +685,10 @@ public abstract class Middleware {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	protected final String getLocalHomeTown(){
+		return this.getConfig().homeTown != null && !this.getConfig().homeTown.equals("") ? this.getConfig().homeTown : RuntimeVariables.getInstance().getHometown();
 	}
 
 	// TECHNICAL METHODS

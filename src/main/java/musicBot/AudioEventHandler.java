@@ -75,7 +75,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null) {
-			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", track.userRequestMessage.getChannelId());
+			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? this.parent.getConfig().getMusicWrapper().getMusicChannelId() : track.userRequestMessage.getChannelId());
 		}
 		// Update radioMessage, if one does already exist.
 		else {
@@ -401,7 +401,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (this.tracks.size() == 0) {
 			queueInfo = "Die Warteschlange ist " + Markdown.toBold("leer") + "!";
 		} else if (this.tracks.size() == 1) {
-			queueInfo = " Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
+			queueInfo = "Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
 		} else {
 			queueInfo = "Es befinden sich " + Markdown.toBold(Integer.toString(this.tracks.size()))
 					+ " Lieder in der Warteschlange!";
