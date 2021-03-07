@@ -1,6 +1,8 @@
 # Changelog
 
 ## 1.2.0.0 (7th of March 2021)
+:gear:
+
 - MegConfig
 - MegJump accepts percentage & timestamps
 - Spotify support
