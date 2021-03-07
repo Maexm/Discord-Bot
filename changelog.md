@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0.0 (7th of March 2021)
+- MegConfig
+- MegJump accepts percentage & timestamps
+- Spotify support
+- Music Bot initial timestamp support
+- Voice Subscriptions spam protection
+- Save subscriptions & other config in files. Edit config in files
+- MegReload and MegLog
+- Contact user through bot
+- Fixed MegDel
+
 ## 1.1.0.0 (17th of January 2021)
 
 :chicken:
