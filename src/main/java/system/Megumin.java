@@ -478,29 +478,30 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onDeleteMessages() {
-		if (this.hasPermission(SecurityLevel.ADM)) {
-			if (this.getArgumentSection().equals("")) {
-				this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
-			} else if (this.isPrivate()) {
-				this.notInPrivate();
-			} else {
-				this.deleteReceivedMessage();
-				try {
-					int amount = Integer.parseInt(this.getArgumentSection());
-
-					// Calculate response
-					final int deleted = this.deleteMessages(this.getMessageChannel().getId(), amount);
-					if (deleted == 1) {
-						this.sendAnswer("eine Nachricht gelöscht!");
-					} else {
-						this.sendAnswer(deleted + " Nachrichten gelöscht!");
-					}
-				} catch (NumberFormatException e) {
-					this.sendAnswer("konnte deine Zahl nicht auslesen!");
-				}
-			}
-		} else {
+		if(!this.hasPermission(SecurityLevel.GUILD_ADM)){
 			this.noPermission();
+			return;
+		}
+
+		if(this.getArgumentSection().equals("")){
+			this.sendAnswer("du musst mir sagen, wie viele Nachrichten ich löschen soll!");
+			return;
+		}
+
+		try {
+			int amount = Integer.parseInt(this.getArgumentSection());
+			boolean reduced = false;
+			int maxAllowed = 20;
+
+			if(amount > maxAllowed){
+				reduced = true;
+				amount = maxAllowed;
+			}
+
+			final int deleted = this.deleteMessages(this.getMessageChannel().getId(), amount);
+			this.sendAnswer(deleted == 1 ? Markdown.toBold("eine")+" Nachricht gelöscht!" : (Markdown.toBold(""+deleted) + " Nachrichten gelöscht!" + (reduced ? " Aus performance Gründen kannst du nicht mehr als "+maxAllowed+" Nachrichten löschen!" : "")));
+		} catch (NumberFormatException e) {
+			this.sendAnswer("konnte deine Zahl nicht auslesen!");
 		}
 	}
 
@@ -738,7 +739,7 @@ public class Megumin extends ResponseType {
 			return;
 		}
 		this.sendMessageToOwner("Wir haben Feedback von " + Markdown.toBold(this.getMessage().getAuthorName())
-				+ " erhalten! BenutzerId: "+ Markdown.toCodeBlock(this.getMessage().getUser().getId().toString()));
+				+ " erhalten! BenutzerId: "+ Markdown.toCodeBlock(this.getMessage().getUser().getId().asString()));
 		this.sendMessageToOwner(Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 		this.sendPrivateAnswer("Vielen Dank! Ich habe dein Feedback an " + this.getOwner().getUsername()
 				+ " weitergeleitet! "
@@ -1093,6 +1094,8 @@ public class Megumin extends ResponseType {
 			.flatMap(user -> user.getPrivateChannel())
 			.flatMap(channel -> channel.createMessage("Eine Nachricht vom Botowner ("+this.getOwner().getUsername()+"):\n\n"
 			+ Markdown.toUnsafeMultilineBlockQuotes(content))).block();
+
+			this.sendPrivateAnswer("Deine Nachricht ist bei "+Markdown.toBold(this.getClient().getUserById(userSnowflake).map(user -> user.getUsername()).block())+" angekommen!");
 		}
 		catch(ClientException e){
 			switch(e.getStatus().code()){

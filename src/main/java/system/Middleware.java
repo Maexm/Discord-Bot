@@ -657,10 +657,16 @@ public abstract class Middleware {
 		int ret = 0;
 		if (amount > 0) {
 			MessageChannel channel = this.getMsgChannelById(channelID);
-			for (int i = 0; i < amount; i++) {
-				Message lastMessage = channel.getLastMessage().block();
-				this.deleteMessage(lastMessage);
-				ret++;
+			Message lastMessage = channel.getLastMessage().block();
+			List<Message> messages = channel.getMessagesBefore(lastMessage.getId()).buffer().blockFirst();
+			lastMessage.delete().block();
+			for (int i = 0; i < amount && i < messages.size(); i++) {
+				try{
+					this.deleteMessage(messages.get(i));
+					ret++;
+				}
+				catch(Exception e){
+				}
 			}
 		}
 		return ret;

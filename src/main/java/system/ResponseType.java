@@ -165,6 +165,7 @@ public abstract class ResponseType extends Middleware {
 			case "warteschlangeall":
 			case "schlangeall":
 			case "musicschlangeall":
+			case "q":
 
 				this.onMusicQueue();
 				break;
@@ -348,7 +349,7 @@ public abstract class ResponseType extends Middleware {
 			System.out.println("########## Purging session for guild: "+this.getGuild().getName()+" ###########");
 		}
 		catch(Exception e){
-			System.out.println("Guild name unabailable!");
+			System.out.println("Guild name unavailable!");
 		}
 		
 		// ########## CLEAN MUSIC SESSION ##########
