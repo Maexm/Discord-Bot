@@ -245,7 +245,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onSurveyHelp() {
-		this.sendPrivateAnswer(Help.SURVEYHELPTEXT);
+		this.sendPrivateAnswer(Help.SURVEYHELPTEXT());
 	}
 
 	protected void onPostTime() {
@@ -435,7 +435,7 @@ public class Megumin extends ResponseType {
 
 	@Override
 	protected void onMusicHelp() {
-		this.sendPrivateAnswer(Help.MUSICHELPTEXT);
+		this.sendPrivateAnswer(Help.MUSICHELPTEXT());
 	}
 
 	@Override
@@ -499,7 +499,7 @@ public class Megumin extends ResponseType {
 			}
 
 			final int deleted = this.deleteMessages(this.getMessageChannel().getId(), amount);
-			this.sendAnswer(deleted == 1 ? Markdown.toBold("eine")+" Nachricht gelöscht!" : (Markdown.toBold(""+deleted) + " Nachrichten gelöscht!" + (reduced ? " Aus performance Gründen kannst du nicht mehr als "+maxAllowed+" Nachrichten löschen!" : "")));
+			this.sendAnswer(deleted == 1 ? Markdown.toBold("eine")+" Nachricht gelöscht!" : (Markdown.toBold(""+deleted) + " Nachrichten gelöscht!" + (reduced ? " Aus Sicherheits Gründen kannst du nicht mehr als "+maxAllowed+" gleichzeitig Nachrichten löschen!" : "")));
 		} catch (NumberFormatException e) {
 			this.sendAnswer("konnte deine Zahl nicht auslesen!");
 		}

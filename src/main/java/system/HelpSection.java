@@ -81,9 +81,9 @@ public class HelpSection extends Middleware {
     }
 
     private void help(){
-        this.sendPrivateAnswer(Help.HELPTEXT);
+        this.sendPrivateAnswer(Help.HELPTEXT());
 		if (this.hasPermission(SecurityLevel.ADM)) {
-			this.sendPrivateAnswer(Help.ADMHELP);
+			this.sendPrivateAnswer(Help.ADMHELP());
 		}
     }
     

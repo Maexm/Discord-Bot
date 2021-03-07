@@ -59,7 +59,7 @@ public class SecurityProvider {
 		}
 
 		if(this.client.getGuildById(this.guildId).map(guild -> guild.getOwnerId()).block().equals(user.getId())){
-			ret = SecurityProvider.getHighest(ret, SecurityLevel.GUILD_ADM);
+			return SecurityLevel.GUILD_ADM;
 		}
 		
 		// Return immediately, if guildId is null
