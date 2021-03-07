@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -915,9 +916,15 @@ public class Megumin extends ResponseType {
 
 			// Notify users if voice channel is in subscriber hashmap
 			if(this.config.voiceSubscriberMap.containsKey(voiceChannel.getId())){
-				
-				// Notify every subscribed user
-				for(Snowflake userId : this.config.voiceSubscriberMap.get(voiceChannel.getId())){
+				// ########## SPAM PROTECTION ##########
+				Calendar notBefore = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+				if(this.config.voiceSubscriberMap.get(voiceChannel.getId()).key != null && this.config.voiceSubscriberMap.get(voiceChannel.getId()).key.compareTo(notBefore) > 0){
+					return;
+				}
+				notBefore.add(Calendar.MINUTE, 10); // Create new anti spam time stamp
+				this.config.voiceSubscriberMap.get(voiceChannel.getId()).key = notBefore;
+				// ########## NOTIFY SUBSCRIBED USERS ##########
+				for(Snowflake userId : this.config.voiceSubscriberMap.get(voiceChannel.getId()).value){
 					// Get user voice state for this perticular user
 					VoiceState listUserVoiceState = null;
 					try{
@@ -967,7 +974,7 @@ public class Megumin extends ResponseType {
 				final String okayMessage = "Du hast "+channel.getName()+" abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen wieder zu deabonnieren!";
 				// Found channel in HashMap
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
-					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
+					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId()).value;
 					if(subscriberSet.contains(userId)){
 						this.sendPrivateAnswer("Du hast diesen Kanal schon abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegUnfollow "+channel.getId().asString())+", um diesen zu deabonnieren!");
 					}
@@ -981,7 +988,7 @@ public class Megumin extends ResponseType {
 				else{
 					HashSet<Snowflake> set = new HashSet<>();
 					set.add(userId);
-					this.config.voiceSubscriberMap.put(channel.getId(), set);
+					this.config.voiceSubscriberMap.put(channel.getId(), new Pair<>(null, set));
 					this.getGlobalProxy().saveAllGuilds();
 					this.sendPrivateAnswer(okayMessage);
 				}
@@ -1019,7 +1026,7 @@ public class Megumin extends ResponseType {
 				final String errorMessage = "Du hast diesen Kanal nicht abonniert! Schreib auf diesem Server "+Markdown.toCodeBlock("MegFollow "+channel.getId().asString())+", um diesen zu abonnieren!";
 				// Found channel in HashMap
 				if(this.config.voiceSubscriberMap.containsKey(channel.getId())){
-					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId());
+					final HashSet<Snowflake> subscriberSet = this.config.voiceSubscriberMap.get(channel.getId()).value;
 					if(subscriberSet.remove(userId)){
 						this.getGlobalProxy().saveAllGuilds();
 						this.sendPrivateAnswer("Du hast "+channel.getName()+" deabonniert!");

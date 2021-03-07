@@ -1,5 +1,6 @@
 package system;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.function.Predicate;
@@ -9,6 +10,7 @@ import discord4j.core.object.entity.Message;
 import musicBot.MusicWrapper;
 import security.SecurityProvider;
 import start.GlobalDiscordProxy;
+import util.Pair;
 
 public class MiddlewareConfig {
 
@@ -16,7 +18,7 @@ public class MiddlewareConfig {
 	public final Snowflake guildId;
 	final MusicWrapper musicWrapper;
 	final GlobalDiscordProxy globalProxy;
-	public final HashMap<Snowflake, HashSet<Snowflake>> voiceSubscriberMap;
+	public final HashMap<Snowflake, Pair<Calendar, HashSet<Snowflake>>> voiceSubscriberMap;
 	public Snowflake announcementChannelId = null;
 	public boolean updateNote = true;
 	public boolean psaNote = true;
@@ -25,11 +27,11 @@ public class MiddlewareConfig {
 
 	Message helloMessage = null;
     
-    public MiddlewareConfig(final Snowflake guildId, MusicWrapper musicWrapper, GlobalDiscordProxy globalProxy, final Message helloMessage, HashMap<Snowflake, HashSet<Snowflake>> voiceSubscriberMap){
+    public MiddlewareConfig(final Snowflake guildId, MusicWrapper musicWrapper, GlobalDiscordProxy globalProxy, final Message helloMessage, HashMap<Snowflake, Pair<Calendar, HashSet<Snowflake>>> voiceSubscriberMap){
         this(guildId, musicWrapper, globalProxy, helloMessage, voiceSubscriberMap, msg -> true);
     }
 
-    public MiddlewareConfig(final Snowflake guildId, MusicWrapper musicWrapper, GlobalDiscordProxy globalProxy, Message helloMessage, HashMap<Snowflake, HashSet<Snowflake>> voiceSubscriberMap, final Predicate<Message> mayAccept) {
+    public MiddlewareConfig(final Snowflake guildId, MusicWrapper musicWrapper, GlobalDiscordProxy globalProxy, Message helloMessage, HashMap<Snowflake, Pair<Calendar, HashSet<Snowflake>>> voiceSubscriberMap, final Predicate<Message> mayAccept) {
 		this.guildId = guildId;
 		this.mayAccept = mayAccept;
 		this.musicWrapper = musicWrapper;

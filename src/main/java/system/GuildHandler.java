@@ -2,6 +2,7 @@ package system;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
 import start.RuntimeVariables;
+import util.Pair;
 import start.GlobalDiscordProxy;
 
 public final class GuildHandler {
@@ -194,7 +196,7 @@ public final class GuildHandler {
 		}
 	}
 
-	public HashMap<Snowflake, HashSet<Snowflake>> getVoiceSubscriptions(){
+	public HashMap<Snowflake, Pair<Calendar, HashSet<Snowflake>>> getVoiceSubscriptions(){
 		return this.middlewareConfig.voiceSubscriberMap;
 	}
 
@@ -254,8 +256,8 @@ public final class GuildHandler {
 	}
 
 	public final void onUserRemoved(MemberLeaveEvent event){
-		this.middlewareConfig.voiceSubscriberMap.forEach((channelId, set) -> {
-			set.remove(event.getUser().getId());
+		this.middlewareConfig.voiceSubscriberMap.forEach((channelId, pair) -> {
+			pair.value.remove(event.getUser().getId());
 		});
 		this.globalProxy.saveAllGuilds();
 	}
@@ -359,7 +361,7 @@ public final class GuildHandler {
 						if(this.isVoiceChannel(voiceId)){
 							//  Put voiceId into map, if not already present in map
 							if(!this.getVoiceSubscriptions().containsKey(voiceId)){
-								this.getVoiceSubscriptions().put(voiceId, new HashSet<>());
+								this.getVoiceSubscriptions().put(voiceId, new Pair<>(null, new HashSet<>()));
 							}
 							// Check and add subscribers (users)
 							for(Long rawUserId : voiceSubscription.userIds){
@@ -370,7 +372,7 @@ public final class GuildHandler {
 								Snowflake userId = Snowflake.of(rawUserId);
 								// Add user if userId is present in this guild
 								if(this.hasUser(userId)){
-									this.getVoiceSubscriptions().get(voiceId).add(userId);
+									this.getVoiceSubscriptions().get(voiceId).value.add(userId);
 								}
 							}
 						}
@@ -428,9 +430,9 @@ public final class GuildHandler {
 			subscription.voiceChannelId = voiceId.asLong();
 
 			// Convert subscriber hashSet to long array
-			subscription.userIds = new Long[subscriberIds.size()];
+			subscription.userIds = new Long[subscriberIds.value.size()];
 			int index = 0;
-			for(Snowflake subscriberId : subscriberIds){
+			for(Snowflake subscriberId : subscriberIds.value){
 				subscription.userIds[index] = subscriberId.asLong();
 				index++;
 			}

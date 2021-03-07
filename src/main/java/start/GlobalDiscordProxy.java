@@ -83,7 +83,7 @@ public class GlobalDiscordProxy {
             if(guildHandler.hasUser(userId)){
                 // Search each subscribed voice channel
                 guildHandler.getVoiceSubscriptions().forEach((channelId, userSet) ->{
-                    if(userSet.contains(userId)){
+                    if(userSet.value.contains(userId)){
                         ret.add(new Pair<>(guildHandler.getGuild(), (VoiceChannel) guildHandler.getGuild().getChannelById(channelId).block()));
                     }
                 });
