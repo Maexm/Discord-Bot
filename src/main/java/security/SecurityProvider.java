@@ -52,19 +52,19 @@ public class SecurityProvider {
 	 * @return The user's SecurityLevel, based on values from SecurityLevel.
 	 */
 	public SecurityLevel getPermissionLevel(User user) {
-		SecurityLevel ret = SecurityLevel.FORBIDDEN;
+		SecurityLevel ret = SecurityLevel.DEFAULT;
 		//	Me. The developer me
 		if(user.getId().equals(this.appOwnerId)){
 			return SecurityLevel.DEV;
 		}
 
-		if(this.client.getGuildById(this.guildId).map(guild -> guild.getOwnerId()).block().equals(user.getId())){
-			return SecurityLevel.GUILD_ADM;
-		}
-		
 		// Return immediately, if guildId is null
 		if(this.guildId == null){
 			return SecurityProvider.getHighest(ret, SecurityLevel.DEFAULT);
+		}
+
+		if(this.client.getGuildById(this.guildId).map(guild -> guild.getOwnerId()).block().equals(user.getId())){
+			return SecurityLevel.GUILD_ADM;
 		}
 		
 		// Else check their roles

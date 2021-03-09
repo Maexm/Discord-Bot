@@ -1092,7 +1092,7 @@ public class Megumin extends ResponseType {
 			Snowflake userSnowflake = Snowflake.of(id);
 			this.getClient().getUserById(userSnowflake)
 			.flatMap(user -> user.getPrivateChannel())
-			.flatMap(channel -> channel.createMessage("Eine Nachricht vom Botowner ("+this.getOwner().getUsername()+"):\n\n"
+			.flatMap(channel -> channel.createMessage("Nachricht vom Botowner:\n\n"
 			+ Markdown.toUnsafeMultilineBlockQuotes(content))).block();
 
 			this.sendPrivateAnswer("Deine Nachricht ist bei "+Markdown.toBold(this.getClient().getUserById(userSnowflake).map(user -> user.getUsername()).block())+" angekommen!");

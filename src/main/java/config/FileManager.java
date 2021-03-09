@@ -16,7 +16,7 @@ public class FileManager {
     public static String read(File file) {
         try {
             System.out.println("Reading from file: "+file.getAbsolutePath());
-            return FileUtils.readFileToString(file, Charset.defaultCharset());
+            return FileUtils.readFileToString(file, Charset.forName("UTF-8"));
         } catch (IOException e) {
             return null;
         }
@@ -31,7 +31,7 @@ public class FileManager {
     public static boolean write(File file, String content){
         try {
             System.out.println("Saved content to file: "+file.getAbsolutePath());
-            FileUtils.writeStringToFile(file, content, Charset.defaultCharset());
+            FileUtils.writeStringToFile(file, content, Charset.forName("UTF-8"));
             System.out.println("Content saved successfully!");
             return true;
         } catch (IOException e) {
