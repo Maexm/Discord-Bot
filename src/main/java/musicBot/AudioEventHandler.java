@@ -40,6 +40,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private Timer refreshTimer;
 	private TimerTask refreshTask;
 	private boolean active = false;
+	private boolean creatingMsg = false;
 	/**
 	 * Required for voice channel disconnect
 	 */
@@ -282,15 +283,15 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTimer.cancel();
 		this.refreshTimer = null;
 
-		//Message oldMessage = this.radioMessage;
+		Message oldMessage = this.radioMessage;
+		this.radioMessage = null;
+		this.creatingMsg = false;
 		try{
 			this.parent.leaveVoiceChannel();
-			this.radioMessage.delete().subscribe();
+			oldMessage.delete().subscribe();
 		}catch(Exception e){
 			System.out.println("Could not delete radio message while ending music session");
-		}
-		
-		this.radioMessage = null;
+		}		
 	}
 
 	@Override
@@ -311,7 +312,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 			@Override
 			public void run() {
-				timerParent.updateInfoMsg();
+				try{
+					timerParent.updateInfoMsg();
+				}
+				catch(Exception e){
+					//e.printStackTrace();
+				}
+				
 			}
 
 		};
@@ -362,7 +369,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				default:
 			}
 
-			userName = this.radioMessage.getGuild()
+			userName = trackInfo.userRequestMessage.getGuild()
 			.flatMap(guild -> trackInfo.getSubmittedByUser().asMember(guild.getId()))
 			.map(member -> member.getDisplayName()).block();
 		}
@@ -413,16 +420,14 @@ public class AudioEventHandler extends AudioEventAdapter {
 	}
 
 	private void updateInfoMsg() {
-		if (this.radioMessage != null) {
-			// System.out.println("updating message");
 			try {
 				this.radioMessage = this.radioMessage.edit(spec -> {
 					spec.setContent(this.buildInfoText(this.player.getPlayingTrack()));
 				}).block();
 			}
-			catch(ClientException clientException){
-				if(clientException.getStatus().code() == 404){
-					System.out.println("Could not find radio message, creating new one!");
+			catch(ClientException | NullPointerException clientException){
+				if(clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName()) && !this.creatingMsg){
+					System.out.println("Could not find radio message ("+clientException.getClass().getName()+"), creating new one!");
 					this.radioMessage = this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
 				}
 			} 
@@ -430,7 +435,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 				System.out.println("Failed to update radio message!");
 				System.out.println(e);
 			}
-		}
 	}
 
 	public LinkedList<AudioTrack> getDeepListCopy(){
@@ -463,8 +467,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		try{
+			this.creatingMsg = true;
 			ret = parent.sendInChannel(msg, channelId);
 			this.radioMessage = ret;
+			this.creatingMsg = false;
 		}
 		catch(Exception e){
 			System.out.println("Failed to create a new radio message!");

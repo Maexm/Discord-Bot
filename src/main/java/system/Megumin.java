@@ -794,11 +794,12 @@ public class Megumin extends ResponseType {
 			try {
 				int skipSeconds = Integer.parseInt(this.getArgumentSection());
 				if(skipSeconds == 0){
-					this.sendAnswer("nichts passiert...");
+					this.getMusicWrapper().getMusicBotHandler().setPosition(0l);
+					this.sendAnswer("alles auf Anfang! :repeat:");
 					return;
 				}
 				long pos = this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
-				this.sendAnswer("springe "+skipSeconds+" "+(Math.abs(skipSeconds) > 1 ? "Sekunden" : "Sekunde")+"!\nNeue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
+				this.sendAnswer("springe "+Markdown.toBold(skipSeconds+" "+(Math.abs(skipSeconds) > 1 ? "Sekunden" : "Sekunde"))+"! Neue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
 				this.deleteReceivedMessage();
 			} catch (NumberFormatException e) {
 				this.sendAnswer(

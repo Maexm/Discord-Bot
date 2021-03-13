@@ -105,7 +105,15 @@ public class MusicTrackInfo {
 				return Time.revertMsToPretty(srcTimeStamp);
 			}
 			else{
-				return Long.parseLong(srcTimeStamp)*1000;
+				while(!srcTimeStamp.equals("")){
+					try{
+						return Long.parseLong(srcTimeStamp)*1000;
+					}catch(NumberFormatException e){
+						srcTimeStamp = srcTimeStamp.substring(0, srcTimeStamp.length()-1); // Timestamp might have units (e.g. 20s for 20 seconds) -> Shorten timestamp until something works :D
+					}
+				}
+				// srcTimeStamp could not be parsed as long, even after removing characters
+				throw new NumberFormatException();
 			}
 		}
 		catch(Exception e){
