@@ -796,6 +796,7 @@ public class Megumin extends ResponseType {
 				if(skipSeconds == 0){
 					this.getMusicWrapper().getMusicBotHandler().setPosition(0l);
 					this.sendAnswer("alles auf Anfang! :repeat:");
+					this.deleteReceivedMessage();
 					return;
 				}
 				long pos = this.getMusicWrapper().getMusicBotHandler().jump(skipSeconds * 1000);
