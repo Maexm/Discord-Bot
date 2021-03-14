@@ -40,7 +40,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private Timer refreshTimer;
 	private TimerTask refreshTask;
 	private boolean active = false;
-	private boolean creatingMsg = false;
+	private boolean lockMsgUpdate = false;
 	/**
 	 * Required for voice channel disconnect
 	 */
@@ -282,10 +282,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTimer.purge();
 		this.refreshTimer.cancel();
 		this.refreshTimer = null;
+		this.lockMsgUpdate = false;
 
 		Message oldMessage = this.radioMessage;
 		this.radioMessage = null;
-		this.creatingMsg = false;
 		try{
 			this.parent.leaveVoiceChannel();
 			oldMessage.delete().subscribe();
@@ -426,7 +426,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 				}).block();
 			}
 			catch(ClientException | NullPointerException clientException){
-				if(clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName()) && !this.creatingMsg){
+				if(clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName()) && !this.lockMsgUpdate && this.active){
+					this.lockMsgUpdate = true;
 					System.out.println("Could not find radio message ("+clientException.getClass().getName()+"), creating new one!");
 					this.radioMessage = this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
 				}
@@ -467,10 +468,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		try{
-			this.creatingMsg = true;
+			this.lockMsgUpdate = true;
 			ret = parent.sendInChannel(msg, channelId);
 			this.radioMessage = ret;
-			this.creatingMsg = false;
+			this.lockMsgUpdate = false;
 		}
 		catch(Exception e){
 			System.out.println("Failed to create a new radio message!");
