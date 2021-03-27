@@ -3,6 +3,8 @@ package start;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import com.google.gson.Gson;
+
 import config.MainConfig;
 
 public class RuntimeVariables {
@@ -74,6 +76,14 @@ public class RuntimeVariables {
 
 	public String getAdmHelpText(){
 		return this.config.admHelpText;
+	}
+
+	public MainConfig getConfig(){
+		Gson gson = new Gson();
+		String json = gson.toJson(this.config);
+
+		MainConfig ret = gson.fromJson(json, MainConfig.class);
+		return ret;
 	}
 
 	// ########## STATIC ##########

@@ -2,6 +2,7 @@ package start;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 import com.google.gson.Gson;
@@ -25,9 +26,12 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import musicBot.MusicWrapper;
+import schedule.RefinedTimerTask;
+import schedule.TaskManager;
 import spotify.SpotifyResolver;
 import survey.Survey;
 import system.GuildHandler;
+import util.Time;
 import weather.Weather;
 
 public class GlobalDiscordHandler {
@@ -40,12 +44,15 @@ public class GlobalDiscordHandler {
     private final AudioPlayerManager playerManager;
     private final Secrets secrets;
     private final Weather weatherService;
+    private final TaskManager<RefinedTimerTask> globalTasks;
 
     public GlobalDiscordHandler(ReadyEvent readyEvent, Secrets secrets) {
         this.globalProxy = new GlobalDiscordProxy(this);
         this.client = readyEvent.getClient();
         this.secrets = secrets;
         this.weatherService = new Weather(secrets.getWeatherApiKey());
+        this.globalTasks = new TaskManager<>();
+        
 
         this.playerManager = new DefaultAudioPlayerManager();
 		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
@@ -67,6 +74,48 @@ public class GlobalDiscordHandler {
         this.client.updatePresence(Presence
 					.online(Activity.playing(RuntimeVariables.getStatus())))
 					.block();
+
+        // ########## TASKS ##########
+		// // TODO: Move to a dedicated file
+		this.globalTasks.addTask(new RefinedTimerTask(null, Long.valueOf(Time.DAY),
+				Time.getNext(0, 0, 0).getTime(), this.globalTasks) {
+
+			@Override
+			public void runTask() {
+				try{
+                client.updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).block();
+                   Calendar now = Time.getNow();
+                   switch(now.get(Calendar.MONTH)){
+                       case 3:
+                       switch(now.get(Calendar.DAY_OF_MONTH)){
+                        case 30:
+                        case 31:
+                            client.getApplicationInfo()
+                            .flatMap(info -> info.getOwner())
+                            .flatMap(owner -> owner.getPrivateChannel())
+                            .flatMap(channel -> channel.createMessage(RuntimeVariables.getInstance().getConfig().data[0]))
+                            .block();
+                            break;
+                    }
+                    break;
+                       case 4:
+                        switch(now.get(Calendar.DAY_OF_MONTH)){
+                            case 1:
+                                String url = RuntimeVariables.getInstance().getConfig().data[1];
+                                if(url != null && !url.equals("")){
+                                    client.updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), url))).block();
+                                }
+                                break;
+                        }
+                        break;
+                   }
+                }
+                catch(Exception e){
+                    System.out.println("Failed to update presence!");
+                }
+			}
+
+		});
     }
 
     private SpotifyResolver createSpotifyResolver(){
@@ -114,6 +163,7 @@ public class GlobalDiscordHandler {
     }
 
     void logout(){
+        this.globalTasks.stopAll();
         System.out.println("LOGGING OUT");
 		this.getClient().logout().block();
     }

@@ -91,45 +91,6 @@ public final class GuildHandler {
 		// this.audioProvider, this.surveys, this.playerEventHandler));
 		//this.middlewareBefore.add(new MusicRecommendation(this.middlewareConfig));
 		this.responseSet = new Megumin(this.middlewareConfig, this.localTasks);
-
-		// ########## TASKS ##########
-		// // TODO: Move to a dedicated file
-		// this.localTasks.addTask(new RefinedTimerTask(null, Long.valueOf(Time.DAY),
-		// 		Time.getNext(3, 0, 0).getTime(), this.localTasks) {
-
-		// 	@Override
-		// 	public void runTask() {
-		// 		System.out.println("Executing CleanUp task!");
-		// 		try {
-		// 			MessageChannel channelRef = (MessageChannel) globalProxy.getClient().getGuildById(guildId)
-		// 					.flatMap(guild -> guild.getChannelById(ChannelID.MEGUMIN)).block();
-		// 			Message lastMessage = channelRef.getLastMessage().block();
-		// 			List<Message> messages = channelRef.getMessagesBefore(lastMessage.getId()).collectList().block();
-		// 			messages.add(0, lastMessage);
-
-		// 			final String cleanUpFinish = "Täglicher CleanUp beendet! :sparkles:";
-
-		// 			Message infoMessage = channelRef.createMessage("Täglicher CleanUp wird ausgeführt! :wastebasket:").block();
-
-		// 			for (Message message : messages) {
-		// 				final String content = message.getContent();
-		// 				switch (content) {
-		// 					case cleanUpFinish:
-		// 					case AudioEventHandler.MUSIC_STOPPED:
-		// 						message.delete().block();
-		// 						break;
-		// 				}
-		// 			}
-
-		// 			infoMessage.edit(edit -> edit.setContent(cleanUpFinish)).block();
-		// 			System.out.println("CleanUp task finished!");
-		// 		} catch (Exception e) {
-		// 			System.out.println("CleanUp task failed!");
-		// 			e.printStackTrace();
-		// 		}
-		// 	}
-
-		// });
 	}
 
 	/**

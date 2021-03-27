@@ -24,4 +24,6 @@ public class MainConfig {
 
     public String admHelpText;
 
+    public String[] data;
+
 }
