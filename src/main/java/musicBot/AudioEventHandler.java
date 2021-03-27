@@ -426,7 +426,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				}).block();
 			}
 			catch(ClientException | NullPointerException clientException){
-				if(clientException.getClass().getName().equals(ClientException.class.getName()) && (((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName())) && !this.lockMsgUpdate && this.active){
+				if((clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName())) && !this.lockMsgUpdate && this.active){
 					this.lockMsgUpdate = true;
 					System.out.println("Could not find radio message ("+clientException.getClass().getName()+"), creating new one!");
 					this.radioMessage = this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
@@ -468,6 +468,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		try{
+			System.out.println("Creating radio msg...");
 			this.lockMsgUpdate = true;
 			ret = parent.sendInChannel(msg, channelId);
 			this.radioMessage = ret;
