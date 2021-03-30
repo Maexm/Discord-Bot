@@ -166,6 +166,7 @@ public class GlobalDiscordHandler {
         this.globalTasks.stopAll();
         System.out.println("LOGGING OUT");
 		this.getClient().logout().block();
+        System.exit(0);
     }
 
     ArrayList<Survey> getSurveys(){
