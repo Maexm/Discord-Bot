@@ -85,7 +85,7 @@ public class GlobalDiscordHandler {
 				try{
                 client.updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).block();
                    Calendar now = Time.getNow();
-                   switch(now.get(Calendar.MONTH)){
+                   switch(now.get(Calendar.MONTH) + 1){
                        case 3:
                        switch(now.get(Calendar.DAY_OF_MONTH)){
                         case 30:
