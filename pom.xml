@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>Maxim</groupId>
   <artifactId>meguminBot</artifactId>
-  <version>1.2.1.1</version>
+  <version>1.2.1.2</version>
 
   <properties>
     <maven.compiler.source>11</maven.compiler.source>
@@ -56,7 +56,7 @@
     <dependency>
       <groupId>com.sedmelluq</groupId>
       <artifactId>lavaplayer</artifactId>
-      <version>1.3.73</version>
+      <version>1.3.75</version>
     </dependency>
 
     <dependency>
@@ -90,11 +90,11 @@
   </dependencies>
 
   <repositories>
-    <repository>
-      <id>central</id>
-      <name>bintray</name>
-      <url>https://jcenter.bintray.com</url>
-    </repository>
-  </repositories>
+  <repository>
+    <id>dv8tion</id>
+    <name>m2-dv8tion</name>
+    <url>https://m2.dv8tion.net/releases</url>
+  </repository>
+</repositories>
 
 </project>
