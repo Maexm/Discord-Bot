@@ -8,11 +8,12 @@ public class Logger extends Middleware {
 
     @Override
     protected boolean handle() {
+        String timeStamp = this.isTextCommand() ? this.getMessage().getMessage().get().getTimestamp().toString() : "NO TIMESTAMP";
         System.out.println("Received message '"
         + this.getMessage().getContent()+ "' by '"
         + this.getMessage().getAuthorName()+ "' with Snowflake"
         + this.getMessage().getUser().getId() + " at "
-        + this.getMessage().getMessageObject().getTimestamp());
+        + timeStamp);
         return true;
     }
     

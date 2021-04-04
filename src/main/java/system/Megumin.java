@@ -263,6 +263,7 @@ public class Megumin extends ResponseType {
 			//this.getGuild().getadmin
 
 			this.sendAnswer("Keine Testfunktion angegeben!");
+			this.sendAnswer("TEST");
 
 		} catch (NoPermissionException e) {
 			this.noPermission();
@@ -299,7 +300,7 @@ public class Megumin extends ResponseType {
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
 							this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(),
-							this.getMessage().getMessageObject(), infoMsg, scheduleType, this.getMusicWrapper().getSpotifyResolver());
+							this.getMessage(), infoMsg, scheduleType, this.getMusicWrapper().getSpotifyResolver());
 					
 					this.getMusicWrapper().getMusicBotHandler().schedule(musicTrack, this);
 				} catch (Exception e) {
@@ -1329,5 +1330,11 @@ public class Megumin extends ResponseType {
 		this.sendPrivateAnswer(answer);
 		this.deleteReceivedMessage();
 		this.getGlobalProxy().saveAllGuilds();
+	}
+
+	@Override
+	protected void onWrongInteraction() {
+		this.sendAnswer("dieser Befehl existiert noch nicht! Wenn du diese Nachricht siehst heißt das, dass mein Besitzer "+Markdown.toBold(this.getOwner().getUsername())+" Mist gebaut hat :smile:");
+		System.out.println("Received an unimplemented command '"+this.getMessage().getContent()+"'");
 	}
 }

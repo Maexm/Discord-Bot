@@ -337,6 +337,9 @@ public abstract class ResponseType extends Middleware {
 			if(isCommand){
 				System.out.println("Command used: "+this.commandSection+" in guild "+this.getGuildSecureName());
 			}
+			else if(this.isTextCommand()){
+				this.onWrongInteraction();
+			}
 		}
 		// Reset
 		this.commandSection = "";
@@ -548,5 +551,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onReload();
 
 	protected abstract void onConfig();
+
+	protected abstract void onWrongInteraction();
 
 }

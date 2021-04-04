@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.ApplicationInfo;
 import discord4j.core.object.entity.Guild;
@@ -38,14 +37,14 @@ public abstract class Middleware {
 
 	protected DecompiledMessage msg;
 	protected final MiddlewareConfig config;
-	protected final Predicate<Message> mayAccept;
+	protected final Predicate<DecompiledMessage> mayAccept;
 	protected final boolean quietError;
 
 	public Middleware(MiddlewareConfig config, boolean quietError) {
 		this(config, quietError, config.UNSAFE_mayAccept());
 	}
 
-	public Middleware(MiddlewareConfig config, boolean quietError, Predicate<Message> mayAccept){
+	public Middleware(MiddlewareConfig config, boolean quietError, Predicate<DecompiledMessage> mayAccept){
 		this.config = config;
 		this.mayAccept = mayAccept;
 		this.quietError = quietError;
@@ -60,7 +59,7 @@ public abstract class Middleware {
 	 */
 	public final boolean acceptEvent(final DecompiledMessage message) {
 		this.msg = message;
-		if(!this.mayAccept.test(message.getMessageObject())){
+		if(!this.mayAccept.test(message)){
 			return true; // Skip if this Middleware may not handle event
 		}
 		boolean ret = true;
@@ -262,14 +261,11 @@ public abstract class Middleware {
 	 * @return The author of the message
 	 */
 	protected final Member getMessageAuthorMember() {
-		if (!this.isPrivate()) {
-			return this.getMessage().getEvent().getMember().orElse(null);
-		}
-		return null;
+		return this.getMessage().getMember().orElse(null);
 	}
 
 	protected final User getMessageAuthor(){
-		return this.getMessage().getMessageObject().getAuthor().orElse(null);
+		return this.getMessage().getUser();
 	}
 
 	/**
@@ -278,16 +274,7 @@ public abstract class Middleware {
 	 * @return Channel associated to the received message as MessageChannel
 	 */
 	protected final MessageChannel getMessageChannel() {
-		return this.getMessage().getMessageObject().getChannel().block();
-	}
-
-	/**
-	 * Returns the corresponding MessageCreateEvent
-	 * 
-	 * @return the event
-	 */
-	protected final MessageCreateEvent getMessageEvent() {
-		return this.getMessage().getEvent();
+		return this.getMessage().getChannel();
 	}
 
 	/**
@@ -511,6 +498,10 @@ public abstract class Middleware {
 		}
 	}
 
+	protected boolean isTextCommand(){
+		return this.getMessage().getMessage().isPresent();
+	}
+
 	// ########## INTERACTIVE METHODS ##########
 
 	/**
@@ -537,9 +528,9 @@ public abstract class Middleware {
 	 * Deletes the message that was received, if possible
 	 */
 	protected final void deleteReceivedMessage() {
-		if(!this.isPrivate()){
+		if(!this.isPrivate() && this.isTextCommand()){
 			try{
-				this.getMessage().getMessageObject().delete().block();
+				this.getMessage().getMessage().get().delete().block();
 			}
 			catch(ClientException e){
 				if(e.getStatus().code()/100 != 4){
@@ -557,7 +548,14 @@ public abstract class Middleware {
 	 * @return The instance of the message that was sent
 	 */
 	protected final Message sendAnswer(String message) {
-		return this.sendInSameChannel(this.getMessage().getUser().getMention() + ", " + message);
+		String response = this.getMessage().getUser().getMention() + ", " + message;
+		if(this.isTextCommand()){
+			return this.sendInSameChannel(response);
+		}
+		else{
+			this.getMessage().getInteraction().get().getInteractionResponse().createFollowupMessage(response).block(); // This only works because interactions are acknowledged before. You would have to respond to event instead, if this wasnt the case.
+			return null;
+		}
 	}
 
 	/**

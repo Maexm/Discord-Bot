@@ -14,7 +14,7 @@ import util.Pair;
 
 public class MiddlewareConfig {
 
-	private final Predicate<Message> mayAccept;
+	private final Predicate<DecompiledMessage> mayAccept;
 	public final Snowflake guildId;
 	final MusicWrapper musicWrapper;
 	final GlobalDiscordProxy globalProxy;
@@ -31,7 +31,7 @@ public class MiddlewareConfig {
         this(guildId, musicWrapper, globalProxy, helloMessage, voiceSubscriberMap, msg -> true);
     }
 
-    public MiddlewareConfig(final Snowflake guildId, MusicWrapper musicWrapper, GlobalDiscordProxy globalProxy, Message helloMessage, HashMap<Snowflake, Pair<Calendar, HashSet<Snowflake>>> voiceSubscriberMap, final Predicate<Message> mayAccept) {
+    public MiddlewareConfig(final Snowflake guildId, MusicWrapper musicWrapper, GlobalDiscordProxy globalProxy, Message helloMessage, HashMap<Snowflake, Pair<Calendar, HashSet<Snowflake>>> voiceSubscriberMap, final Predicate<DecompiledMessage> mayAccept) {
 		this.guildId = guildId;
 		this.mayAccept = mayAccept;
 		this.musicWrapper = musicWrapper;
@@ -41,7 +41,7 @@ public class MiddlewareConfig {
 		this.securityProvider = new SecurityProvider(null, this);
 	}
 
-	public Predicate<Message> UNSAFE_mayAccept(){
+	public Predicate<DecompiledMessage> UNSAFE_mayAccept(){
 		return this.mayAccept;
 	}
 

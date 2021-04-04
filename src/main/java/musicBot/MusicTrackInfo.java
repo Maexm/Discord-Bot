@@ -11,6 +11,7 @@ import spotify.SpotifyResolver;
 import spotify.SpotifyObjects.SpotifyAlbumResponse;
 import spotify.SpotifyObjects.SpotifyArtistResponse;
 import spotify.SpotifyObjects.SpotifyTrackResponse;
+import system.DecompiledMessage;
 import util.Time;
 
 public class MusicTrackInfo {
@@ -21,7 +22,7 @@ public class MusicTrackInfo {
 	private final String[] protocols = {"https://", "https://www."}; // ignore http, there is no reason for why you should use that
 	private final String[] MUSIC_URL_HOSTS = {"youtube.com", "youtu.be", "soundcloud.com", "music.youtube.com"};
 	public final AudioEventHandler audioEventHandler;
-	public final Message userRequestMessage;
+	public final DecompiledMessage userRequestMessage;
 	public final Message botInfoMessage;
 
 	private final ScheduleType scheduleType;
@@ -29,7 +30,7 @@ public class MusicTrackInfo {
 	private TrackType trackType;
 
 	public MusicTrackInfo(final String url, final User submittedByUser, final AudioEventHandler audioEventHandler,
-			final Message userRequestMessage, final Message botInfoMessage, final ScheduleType scheduleType, final SpotifyResolver spotifyResolver) {
+			final DecompiledMessage userRequestMessage, final Message botInfoMessage, final ScheduleType scheduleType, final SpotifyResolver spotifyResolver) {
 
 		this.originalQuery = url;
 		this.trackQuery = this.evalUrl(url, spotifyResolver); // Determine search term for track loader & determine track type

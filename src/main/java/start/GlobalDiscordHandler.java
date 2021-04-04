@@ -15,6 +15,7 @@ import config.FileManager;
 import config.GuildConfig;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.InteractionCreateEvent;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
@@ -30,6 +31,7 @@ import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import spotify.SpotifyResolver;
 import survey.Survey;
+import system.DecompiledMessage;
 import system.GuildHandler;
 import util.Time;
 import weather.Weather;
@@ -127,11 +129,30 @@ public class GlobalDiscordHandler {
     }
 
     public void acceptEvent(MessageCreateEvent event) {
+        DecompiledMessage msg = new DecompiledMessage(event);
+        if(msg.isBroken()){
+            return;
+        }
+
         if(event.getGuildId().isPresent()){
-            this.guildMap.get(event.getGuildId().get()).onMessageReceived(event);
+            this.guildMap.get(event.getGuildId().get()).onMessageReceived(msg);
         }
         else{
-            this.privateHandler.onMessageReceived(event);
+            this.privateHandler.onMessageReceived(msg);
+        }
+    }
+
+    public void acceptEvent(InteractionCreateEvent event){
+        DecompiledMessage msg = new DecompiledMessage(event, RuntimeVariables.getInstance().getCommandPrefix());
+        if(msg.isBroken()){
+            return;
+        }
+
+        if(event.getInteraction().getGuildId().isPresent()){
+            this.guildMap.get(event.getInteraction().getGuildId().get()).onMessageReceived(msg);
+        }
+        else{
+            this.privateHandler.onMessageReceived(msg);
         }
     }
 

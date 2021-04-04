@@ -17,7 +17,6 @@ import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
 import discord4j.core.event.domain.guild.MemberLeaveEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
@@ -99,14 +98,10 @@ public final class GuildHandler {
 	 * @param msgEvent The message event
 	 * @param client   This client
 	 */
-	public void onMessageReceived(MessageCreateEvent msgEvent) {
-		if (!msgEvent.getMessage().getAuthor().get().getId().equals(this.globalProxy.getClient().getSelfId())) {
+	public void onMessageReceived(DecompiledMessage msg) {
+		if (msg.getUser() != null && !msg.getUser().getId().equals(this.globalProxy.getClient().getSelfId())) {
 
 			boolean shouldContinue = true;
-			DecompiledMessage msg = new DecompiledMessage(msgEvent);
-			if(msg.isBroken()){
-				return;
-			}
 
 			// ########## MIDDLEWARE BEFORE ##########
 			for (Middleware middleware : this.middlewareBefore) {

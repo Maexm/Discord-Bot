@@ -15,6 +15,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.rest.http.client.ClientException;
+import system.DecompiledMessage;
 import system.ResponseType;
 import util.Emoji;
 import util.Markdown;
@@ -76,7 +77,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null) {
-			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? this.parent.getConfig().getMusicWrapper().getMusicChannelId() : track.userRequestMessage.getChannelId());
+			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? this.parent.getConfig().getMusicWrapper().getMusicChannelId() : track.userRequestMessage.getChannel().getId());
 		}
 		// Update radioMessage, if one does already exist.
 		else {
@@ -234,10 +235,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
-				Message failedTrackMsg = failedTrack.userRequestMessage;
+				DecompiledMessage failedTrackMsg = failedTrack.userRequestMessage;
 				failedTrackMsg.getChannel()
-				.flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
-				+"Beachte, bei "+Markdown.toBold("YouTube-Videos")+" können Videos mit Alterbeschränkung leider nicht abgespielt werden!"))
+				.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
+				+"Beachte, bei "+Markdown.toBold("YouTube-Videos")+" können Videos mit Alterbeschränkung leider nicht abgespielt werden!")
 				.subscribe();
 			} else if (this.radioMessage != null) {
 				this.radioMessage.getChannel()
@@ -248,8 +249,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 		else if(endReason == AudioTrackEndReason.CLEANUP){
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
-				Message failedTrackMsg = failedTrack.userRequestMessage;
-					failedTrackMsg.getChannel().flatMap(channel -> channel.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
+				DecompiledMessage failedTrackMsg = failedTrack.userRequestMessage;
+					failedTrackMsg.getChannel()
+					.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!")
 					.subscribe();
 			} else if (this.radioMessage != null) {
 					this.radioMessage.getChannel().flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
@@ -369,8 +371,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				default:
 			}
 
-			userName = trackInfo.userRequestMessage.getGuild()
-			.flatMap(guild -> trackInfo.getSubmittedByUser().asMember(guild.getId()))
+			userName = trackInfo.getSubmittedByUser().asMember( trackInfo.userRequestMessage.getGuild().getId())
 			.map(member -> member.getDisplayName()).block();
 		}
 
@@ -459,7 +460,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if(channelId == null){
 			channelId = this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? 
 			this.parent.getConfig().getMusicWrapper().getMusicChannelId() : 
-			(this.getCurrentAudioTrack() != null && this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class) != null ? this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class).userRequestMessage.getChannelId() : null);
+			(this.getCurrentAudioTrack() != null && this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class) != null ? this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class).userRequestMessage.getChannel().getId() : null);
 		}
 		Message ret = null;
 
