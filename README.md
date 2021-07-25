@@ -35,11 +35,9 @@ Eventuell werden SLF4J Fehler angezeigt. Diese können ignoriert werden.
 
 Das Verhalten vom Bot, der auf mehreren Servern Mitglied ist, wurde **NICHT** getestet.
 
-# Wie orientiere ich mich in dem Spaghetticode?
+# (DEPRECATED) Wie orientiere ich mich in dem Spaghetticode?
 
 Offensichtlich beginnt der Bot bei **StartUp**. Von dort aus werden messageReceivedEvents an **BotHeart** weitergegeben und von dort aus an eine Instanz von **ResponseType**, wo der Befehl dann schließlich verarbeitet wird.
-
-# AB HIER DEPRECATED
 
 ## ResponseType
 Eine abstrakte Klasse, welche messageReceivedEvents akzeptiert und gültige Befehle an die entsprechenden (abstrakten) Methoden weiterleitet. Zudem sind hier einige hilfreiche Methoden implementiert, welche z.B. eine Nachricht versenden, dem Autor der erhaltenen Nachricht privat antworten und Sonstiges.
@@ -51,8 +49,6 @@ Megumin extended **ResponseType** und implementiert alle abstrakten Methoden, we
 ## BotHeart
 Beinhaltet wichtige Objekte wie z.B. eine Musikplaylist, Umfrageliste und die aktuelle **ResponseType** Instanz (in der Regel **Megumin**).
 Die Idee dahinter ist, dass die **ResponseType** Instanz während der Laufzeit geändert werden kann. Je nach verwendeter Instanz wird dann anders auf Befehle reagiert.
-
-# BIS HIER DEPRECATED
 
 ## AudioEventHandler
 Nimmt Musiktracks auf und übergibt diese an den **TrackLoader**. Zudem wird hier auf MusikEvents reagiert und entsprechende Nachrichten werden verfasst.
