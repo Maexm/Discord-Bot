@@ -4,6 +4,8 @@ Auf der [Master-Branch](https://github.com/Maexm/Discord-Bot/tree/master) befind
 
 Auf der [Dev-Branch](https://github.com/Maexm/Discord-Bot/tree/dev) werden **neue Funktionen** entwickelt bzw. getestet. Eigene Anpassungen bitte auf dieser Branch erstellen!
 
+**DEPRECATED: Dev Branch ist aktuell hinterher**
+
 # Wie verwende ich diesen Bot?
 
 ## Voraussetzungen
@@ -29,12 +31,9 @@ Die Version in der pom.xml muss ggf. an die Java Version angepasst werden:
 2. b) In einer IDE als Mavenprojekt öffnen und von dort ausführen.
 
 Nach dem Start erhält der User einen Bot-Token prompt. Hier einfach den Token für den eigenen Bot eingeben.
-Der Bot ist auf *Unser Server* ausgerichtet und funktioniert vermutlich bei anderen Clients nicht.
 
 Eventuell werden SLF4J Fehler angezeigt. Diese können ignoriert werden.
-
-Das Verhalten vom Bot, der auf mehreren Servern Mitglied ist, wurde **NICHT** getestet.
-
+Der Bot ist generisch gestaltet und mit mehreren Servern kompatibel.
 # (DEPRECATED) Wie orientiere ich mich in dem Spaghetticode?
 
 Offensichtlich beginnt der Bot bei **StartUp**. Von dort aus werden messageReceivedEvents an **BotHeart** weitergegeben und von dort aus an eine Instanz von **ResponseType**, wo der Befehl dann schließlich verarbeitet wird.
