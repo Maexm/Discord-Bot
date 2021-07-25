@@ -2,6 +2,7 @@ package musicBot;
 
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -50,6 +51,11 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 * Change between two different states for loading text (e.g. switch between / and \)
 	 */
 	private boolean loadFlag = true;
+	private boolean isLoop = false;
+	/**
+	 * Copy of current track. Only present, if playback is looping (setting a finished track to pos 0 and replaying it wont work -> clone is required)
+	 */
+	private Optional<AudioTrack> trackCopy = Optional.empty();
 
 	public AudioEventHandler(final AudioPlayer player, final AudioPlayerManager playerManager,
 			final TrackLoader loadScheduler, final LinkedList<AudioTrack> tracks,
@@ -238,6 +244,26 @@ public class AudioEventHandler extends AudioEventAdapter {
 		return ret;
 	}
 
+	public boolean isLoop(){
+		return this.isLoop;
+	}
+
+	public void setLoop(boolean isLoop){
+		this.isLoop = isLoop;
+		if(isLoop){
+			this.trackCopy = Optional.of(this.getCurrentAudioTrack().makeClone());
+			this.trackCopy.get().setPosition(0);
+		}
+		else{
+			this.trackCopy = Optional.empty();
+		}
+	}
+
+	public boolean toggleLoop(){
+		this.setLoop(!this.isLoop());
+		return this.isLoop();
+	}
+
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		System.out.println("Track finished with reason: '" + endReason + "'");
@@ -273,7 +299,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		// STARTING NEXT
-		if (this.tracks.size() != 0 && endReason.mayStartNext) {
+		if(this.isLoop() && endReason.mayStartNext && this.trackCopy.isPresent()){
+			this.loadScheduler.playTrack(this.trackCopy.get().makeClone(), track.getUserData(MusicTrackInfo.class));
+		}
+		else if (this.tracks.size() != 0 && endReason.mayStartNext) {
 			System.out.println("Starting next!");
 			this.next(1);
 		}
@@ -293,6 +322,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		System.out.println("Music ended!");
 		//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 		this.active = false;
+		this.setLoop(false);
 		this.refreshTask.cancel();
 		this.refreshTimer.purge();
 		this.refreshTimer.cancel();
@@ -361,6 +391,10 @@ public class AudioEventHandler extends AudioEventAdapter {
 			return AudioEventHandler.MUSIC_LOADING;
 		}
 
+		if(this.isLoop()){
+			status += "\nDauerschleife :repeat_one:";
+		}
+
 		// Volume
 		String volume = "Lautstärke: " + Markdown.toBold(this.getVolume() + "% ") + Emoji.getVol(this.getVolume());
 
@@ -420,7 +454,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	public String getQueueInfoString(){
 		String queueInfo = "";
-		String totalLengthInfo = "Gesamtlänge: "+Markdown.toBold(TimePrint.msToPretty(this.getTotalDuration(true)));
+		String totalLengthInfo = "Restdauer: "+Markdown.toBold(TimePrint.msToPretty(this.getTotalDuration(true)));
 		if (this.tracks.size() == 0) {
 			queueInfo = "Die Warteschlange ist " + Markdown.toBold("leer") + "!";
 		} else if (this.tracks.size() == 1) {

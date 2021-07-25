@@ -406,6 +406,7 @@ public class Megumin extends ResponseType {
 					this.sendAnswer("überspringe Musik...");
 					this.deleteReceivedMessage();
 				}
+				this.getMusicWrapper().getMusicBotHandler().setLoop(false);
 				this.getMusicWrapper().getMusicBotHandler().next(count);// Count = 1, unless a different number was
 																		// parsed
 			}
@@ -1358,5 +1359,14 @@ public class Megumin extends ResponseType {
 	protected void onWrongInteraction() {
 		this.sendAnswer("dieser Befehl existiert noch nicht! Wenn du diese Nachricht siehst heißt das, dass mein Besitzer "+Markdown.toBold(this.getOwner().getUsername())+" Mist gebaut hat :smile:");
 		System.out.println("Received an unimplemented command '"+this.getMessage().getContent()+"'");
+	}
+
+	@Override
+	protected void onLoopMusic() {
+		if(this.handleMusicCheck(true, true)){
+			boolean isLoop = this.getMusicWrapper().getMusicBotHandler().toggleLoop();
+
+			this.sendAnswer(isLoop ? "Loop "+Markdown.toBold("aktiviert")+" :repeat_one:" : "Loop "+Markdown.toBold("deaktiviert"));
+		}
 	}
 }
