@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TimeZone;
 
@@ -16,6 +17,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
+import discord4j.core.event.domain.interaction.InteractionCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
@@ -275,10 +277,15 @@ public class Megumin extends ResponseType {
 		if (this.getArgumentSection().equals("")) {
 			this.sendAnswer("du musst ein Wort nennen!");
 		} else {
-			Message msg = this.sendAnswer("Jisho wird durchsucht, einen Moment...");
+			Optional<Message> msg = this.sendAnswer("Jisho wird durchsucht, einen Moment...");
 			String result = Jisho.buildMessage(Jisho.lookUpKeyWord(this.getArgumentSection()),
 					this.getArgumentSection(), 3, 3);
-			msg.edit(spec -> spec.setContent(result)).block();
+			if(msg.isEmpty()){
+				this.sendAnswer(result);
+			}
+			else{
+				msg.get().edit(spec -> spec.setContent(result)).block();
+			}
 		}
 	}
 
@@ -296,11 +303,21 @@ public class Megumin extends ResponseType {
 					this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
 				}
 				// MUSIC PLAYBACK
-				Message infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet...");
+				Optional<Message> infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet...");
+				Optional<InteractionCreateEvent> interaction = this.getMessage().getInteraction();
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
 							this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(),
-							this.getMessage(), infoMsg, scheduleType, this.getMusicWrapper().getSpotifyResolver());
+							this.getMessage(),
+							(String msg) -> {
+								if(infoMsg.isPresent()){
+									return infoMsg.get().edit(spec -> spec.setContent(msg)).then();
+								}
+								else{
+									return interaction.get().getInteractionResponse().createFollowupMessage(msg).then();
+								}
+							},
+							scheduleType, this.getMusicWrapper().getSpotifyResolver());
 					
 					this.getMusicWrapper().getMusicBotHandler().schedule(musicTrack, this);
 				} catch (Exception e) {
@@ -308,7 +325,9 @@ public class Megumin extends ResponseType {
 					if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 						this.leaveVoiceChannel();
 					}
-					infoMsg.delete().block();
+					if(infoMsg.isPresent()){
+						infoMsg.get().delete().block();
+					}
 					e.printStackTrace();
 				}
 				this.deleteReceivedMessage();
@@ -665,11 +684,13 @@ public class Megumin extends ResponseType {
 	protected void onWeather() {
 		String city = this.getArgumentSection().equals("") ? this.getLocalHomeTown() : this.getArgumentSection();
 
-		Message message = this.sendAnswer("suche nach Wetterdaten, gib mir einen Moment...");
+		Optional<Message> message = this.sendAnswer("suche nach Wetterdaten, gib mir einen Moment...");
 
 		String resp = Weather.buildMessage(this.getGlobalProxy().getWeatherService().getWeatherResponse(city));
 		this.sendAnswer(resp);
-		message.delete().block();
+		if(message.isPresent()){
+			message.get().delete().block();
+		}
 	}
 
 	@Override
@@ -702,8 +723,7 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
-		final Message loadingMessage = this
-				.sendAnswer("einen Moment bitte, ich versuche auf Wikipedia etwas geeignetes zu finden...");
+		final Optional<Message> loadingMessage = this.sendAnswer("einen Moment bitte, ich versuche auf Wikipedia etwas geeignetes zu finden...");
 
 		WikiPage page = Wikipedia.getWikiPage(this.argumentSection);
 
@@ -730,7 +750,9 @@ public class Megumin extends ResponseType {
 			}).block();
 		}
 
-		loadingMessage.delete("Deleting info concerning async tasks").block();
+		if(loadingMessage.isPresent()){
+			loadingMessage.get().delete("Deleting info concerning async tasks").block();
+		}
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package system;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import discord4j.common.util.Snowflake;
@@ -547,14 +548,14 @@ public abstract class Middleware {
 	 * @param message The message to be applied after mention
 	 * @return The instance of the message that was sent
 	 */
-	protected final Message sendAnswer(String message) {
+	protected final Optional<Message> sendAnswer(String message) {
 		String response = this.getMessage().getUser().getMention() + ", " + message;
 		if(this.isTextCommand()){
-			return this.sendInSameChannel(response);
+			return Optional.of(this.sendInSameChannel(response));
 		}
 		else{
 			this.getMessage().getInteraction().get().getInteractionResponse().createFollowupMessage(response).block(); // This only works because interactions are acknowledged before. You would have to respond to event instead, if this wasnt the case.
-			return null;
+			return Optional.empty();
 		}
 	}
 

@@ -3,10 +3,11 @@ package musicBot;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.function.Function;
 
-import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import exceptions.IllegalMagicException;
+import reactor.core.publisher.Mono;
 import spotify.SpotifyResolver;
 import spotify.SpotifyObjects.SpotifyAlbumResponse;
 import spotify.SpotifyObjects.SpotifyArtistResponse;
@@ -23,14 +24,14 @@ public class MusicTrackInfo {
 	private final String[] MUSIC_URL_HOSTS = {"youtube.com", "youtu.be", "soundcloud.com", "music.youtube.com"};
 	public final AudioEventHandler audioEventHandler;
 	public final DecompiledMessage userRequestMessage;
-	public final Message botInfoMessage;
+	public final Function<String, Mono<Void>> editMsg;
 
 	private final ScheduleType scheduleType;
 	private final long startTimeStamp;
 	private TrackType trackType;
 
 	public MusicTrackInfo(final String url, final User submittedByUser, final AudioEventHandler audioEventHandler,
-			final DecompiledMessage userRequestMessage, final Message botInfoMessage, final ScheduleType scheduleType, final SpotifyResolver spotifyResolver) {
+			final DecompiledMessage userRequestMessage, final Function<String, Mono<Void>> editMsg, final ScheduleType scheduleType, final SpotifyResolver spotifyResolver) {
 
 		this.originalQuery = url;
 		this.trackQuery = this.evalUrl(url, spotifyResolver); // Determine search term for track loader & determine track type
@@ -55,7 +56,7 @@ public class MusicTrackInfo {
 		this.submittedByUser = submittedByUser;
 		this.audioEventHandler = audioEventHandler;
 		this.userRequestMessage = userRequestMessage;
-		this.botInfoMessage = botInfoMessage;
+		this.editMsg = editMsg;
 		this.scheduleType = scheduleType;
 	}
 
@@ -68,7 +69,7 @@ public class MusicTrackInfo {
 		this.scheduleType = copySrc.scheduleType;
 		this.startTimeStamp = copySrc.startTimeStamp;
 		this.trackType = copySrc.trackType;
-		this.botInfoMessage = copySrc.botInfoMessage;
+		this.editMsg = copySrc.editMsg;
 	}
 
 	private long extractTimeStamp(final String url) {

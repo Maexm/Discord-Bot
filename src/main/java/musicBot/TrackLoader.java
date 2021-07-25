@@ -9,7 +9,6 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import discord4j.core.object.entity.Message;
 import exceptions.IllegalMagicException;
 import util.Markdown;
 
@@ -58,9 +57,8 @@ public class TrackLoader implements AudioLoadResultHandler {
 
 		// Send info to user
 		MusicTrackInfo failedTrack = this.loadingQueue.pollFirst();
-		Message failedTrackMsg = failedTrack.botInfoMessage;
 		try{
-			failedTrackMsg.edit(spec -> spec.setContent(failedTrack.getSubmittedByUser().getMention()+" , konnte unter dem Begriff nichts finden!")).subscribe();
+			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte unter dem Begriff nichts finden!").subscribe();
 		}catch(Exception e){e.printStackTrace();}
 		// Load next or stop if nothing is playing
 		if (!this.loadingQueue.isEmpty()) {
@@ -75,9 +73,8 @@ public class TrackLoader implements AudioLoadResultHandler {
 		System.out.println("Load failed! " + exception);
 		// Send info to user
 		MusicTrackInfo failedTrack = this.loadingQueue.pollFirst();
-		Message failedTrackMsg = failedTrack.botInfoMessage;
 		try{
-			failedTrackMsg.edit(spec -> spec.setContent(failedTrack.getSubmittedByUser().getMention()+" , konnte deinen Track leider nicht laden!")).subscribe();
+			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte deinen Track leider nicht laden!").subscribe();
 		}catch(Exception e){e.printStackTrace();}
 		// Load next or stop if nothing is playing
 		if (!this.loadingQueue.isEmpty()) {
@@ -97,18 +94,18 @@ public class TrackLoader implements AudioLoadResultHandler {
 
 	private void digestTrack(AudioTrack track, MusicTrackInfo info) {
 		// Update user info, if possible
-		if(info != null && info.botInfoMessage != null){
+		if(info != null){
 			String userMention = info.getSubmittedByUser().getMention();
 			try{
 				switch(info.getTrackType()){
 					case URL:
-						info.botInfoMessage.edit(spec -> spec.setContent(userMention+", dein Track wurde hinzugefügt!")).subscribe();
+						info.editMsg.apply(userMention+", dein Track wurde hinzugefügt!").subscribe();
 						break;
 					case SPOTIFY:
-						info.botInfoMessage.edit(spec -> spec.setContent(userMention+", für deinen Spotify-Link wurde ein Track gefunden und hinzugefügt!")).subscribe();
+						info.editMsg.apply(userMention+", für deinen Spotify-Link wurde ein Track gefunden und hinzugefügt!").subscribe();
 						break;
 					case YOUTUBE_SEARCH:
-						info.botInfoMessage.edit(spec -> spec.setContent(userMention+", ein Suchergebnis aus YouTube wurde hinzugefügt!")).subscribe();
+						info.editMsg.apply(userMention+", ein Suchergebnis aus YouTube wurde hinzugefügt!").subscribe();
 						break;
 				}
 			}
@@ -149,11 +146,11 @@ public class TrackLoader implements AudioLoadResultHandler {
 		}
 
 		// Update user info, if possible
-		if(info != null && info.botInfoMessage != null){
+		if(info != null){
 			String userMention = info.getSubmittedByUser().getMention();
 			int trackAmount = playlist.getTracks().size();
 			try{
-				info.botInfoMessage.edit(spec -> spec.setContent(userMention+", "+Markdown.toBold(trackAmount+" ")+ (trackAmount > 1 ? "Tracks wurden hinzugefügt!" : "Track wurde hinzugefügt!"))).subscribe();
+				info.editMsg.apply(userMention+", "+Markdown.toBold(trackAmount+" ")+ (trackAmount > 1 ? "Tracks wurden hinzugefügt!" : "Track wurde hinzugefügt!")).subscribe();
 			}
 			catch(Exception e){e.printStackTrace();}
 		}

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import discord4j.core.event.domain.InteractionCreateEvent;
+import discord4j.core.event.domain.interaction.InteractionCreateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.command.ApplicationCommandInteraction;
 import discord4j.core.object.command.Interaction;
@@ -45,9 +45,9 @@ public class DecompiledMessage {
 
     public DecompiledMessage(InteractionCreateEvent event, String prefix){
         try{
-            ApplicationCommandInteraction command = event.getInteraction().getCommandInteraction();
+            ApplicationCommandInteraction command = event.getInteraction().getCommandInteraction().orElse(null);
             Interaction interaction = event.getInteraction();
-            String content = prefix + command.getName();
+            String content = prefix + command.getName().orElse("");
             List<String> optionVals = new ArrayList<>();
 
             command.getOptions().forEach(option -> {

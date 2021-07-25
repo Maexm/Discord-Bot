@@ -15,7 +15,7 @@ import config.FileManager;
 import config.GuildConfig;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.InteractionCreateEvent;
+import discord4j.core.event.domain.interaction.InteractionCreateEvent;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
