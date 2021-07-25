@@ -303,7 +303,7 @@ public class Megumin extends ResponseType {
 					this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
 				}
 				// MUSIC PLAYBACK
-				Optional<Message> infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet...");
+				Optional<Message> infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet :mag:");
 				Optional<InteractionCreateEvent> interaction = this.getMessage().getInteraction();
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
@@ -321,7 +321,7 @@ public class Megumin extends ResponseType {
 					
 					this.getMusicWrapper().getMusicBotHandler().schedule(musicTrack, this);
 				} catch (Exception e) {
-					this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/Bandcamp- oder Spotify-Link!");
+					this.sendAnswer("das ist kein gültiger YouTube-/SoundCloud-/Bandcamp- oder Spotify-Link! :x:");
 					if (!this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 						this.leaveVoiceChannel();
 					}

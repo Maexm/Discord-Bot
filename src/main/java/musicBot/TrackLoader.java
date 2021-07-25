@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 
 import exceptions.IllegalMagicException;
 import util.Markdown;
@@ -94,18 +95,19 @@ public class TrackLoader implements AudioLoadResultHandler {
 
 	private void digestTrack(AudioTrack track, MusicTrackInfo info) {
 		// Update user info, if possible
+		AudioTrackInfo trackInfo = track.getInfo();
 		if(info != null){
 			String userMention = info.getSubmittedByUser().getMention();
 			try{
 				switch(info.getTrackType()){
 					case URL:
-						info.editMsg.apply(userMention+", dein Track wurde hinzugefügt!").subscribe();
+						info.editMsg.apply(userMention+", "+Markdown.toBold(trackInfo.title)+" von "+Markdown.toBold(trackInfo.author)+" wurde hinzugefügt! :white_check_mark:").subscribe();
 						break;
 					case SPOTIFY:
-						info.editMsg.apply(userMention+", für deinen Spotify-Link wurde ein Track gefunden und hinzugefügt!").subscribe();
+						info.editMsg.apply(userMention+", für deinen Spotify-Link wurde "+ Markdown.toBold(trackInfo.title)+" von "+Markdown.toBold(trackInfo.author) +" gefunden und hinzugefügt! :white_check_mark:").subscribe();
 						break;
 					case YOUTUBE_SEARCH:
-						info.editMsg.apply(userMention+", ein Suchergebnis aus YouTube wurde hinzugefügt!").subscribe();
+						info.editMsg.apply(userMention+", ich habe "+Markdown.toBold(trackInfo.title)+" von "+Markdown.toBold(trackInfo.author)+" gefunden und hinzugefügt! :white_check_mark:").subscribe();
 						break;
 				}
 			}

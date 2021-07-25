@@ -225,6 +225,19 @@ public class AudioEventHandler extends AudioEventAdapter {
 		Collections.shuffle(this.tracks);
 	}
 
+	public long getTotalDuration(boolean includeCurrent){
+		long ret = 0l;
+		
+		for(AudioTrack track : this.tracks){
+			ret += track.getDuration() - track.getPosition();
+		}
+		if(includeCurrent){
+			AudioTrack currentTrack = this.getCurrentAudioTrack();
+			ret += currentTrack.getDuration() - currentTrack.getPosition();
+		}
+		return ret;
+	}
+
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		System.out.println("Track finished with reason: '" + endReason + "'");
@@ -338,7 +351,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 	}
 
-	private String buildInfoText(AudioTrack track) {
+	private String buildInfoText() {
+		AudioTrack track = this.getCurrentAudioTrack();
 		// Status
 		String status = "";
 		if (this.isPaused()) {
@@ -357,16 +371,16 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (track != null && trackInfo != null) {
 			switch(trackInfo.getTrackType()){
 				case YOUTUBE_SEARCH:
-					ytSearch = "Die Musik wurde auf YouTube unter dem Begriff "
+					ytSearch = "YT-Suche: "
 					+ Markdown
 							.toBold(trackInfo.getQuery().replaceFirst("ytsearch:", ""))
-					+ " gefunden.\n";
+					+ "\n";
 					break;
 				case SPOTIFY:
-					ytSearch = "Die Musik wurde auf YouTube unter dem Begriff "
+					ytSearch = "YT-Suche: "
 						+ Markdown
 								.toBold(trackInfo.getQuery().replaceFirst("ytsearch:", ""))
-						+ " gefunden, wurde aber als Spotify-Link eingereicht: "+Markdown.noLinkPreview(trackInfo.getOriginalQuery())+"\n\n";
+						+ "\nSpotify: "+Markdown.noLinkPreview(trackInfo.getOriginalQuery())+"\n";
 					break;
 				default:
 			}
@@ -399,23 +413,24 @@ public class AudioEventHandler extends AudioEventAdapter {
 		return 	AudioEventHandler.MUSIC_INFO_PREFIX + " "
 				+ Markdown.toBold(track.getInfo().title) + " von " + Markdown.toBold(track.getInfo().author) + "\n\n"
 				+ status + "\n" + volume + "\n" + this.getQueueInfoString() + "\n" + "\n" + progressBar + "\n"
-				+ "Der Track wurde hinzugefügt von: " + Markdown.toBold(userName) + "\n" + ytSearch + "Link: "
+				+ "Hinzugefügt von: " + Markdown.toBold(userName) + "\n" + ytSearch + "Link: "
 				+ track.getInfo().uri
 				+ (AudioEventHandler.MUSIC_WARN.length() > 0 ? "\n\n"+AudioEventHandler.MUSIC_WARN : "");
 	}
 
 	public String getQueueInfoString(){
 		String queueInfo = "";
+		String totalLengthInfo = "Gesamtlänge: "+Markdown.toBold(TimePrint.msToPretty(this.getTotalDuration(true)));
 		if (this.tracks.size() == 0) {
 			queueInfo = "Die Warteschlange ist " + Markdown.toBold("leer") + "!";
 		} else if (this.tracks.size() == 1) {
-			queueInfo = "Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!";
+			queueInfo = "Es befindet sich " + Markdown.toBold("ein") + " Lied in der Warteschlange!\n"+totalLengthInfo+"\n";
 		} else {
 			queueInfo = "Es befinden sich " + Markdown.toBold(Integer.toString(this.tracks.size()))
-					+ " Lieder in der Warteschlange!";
+					+ " Lieder in der Warteschlange!\n"+totalLengthInfo+"\n";
 		}
 		if(this.tracks.size() > 0){
-			queueInfo += " Schreib "+Markdown.toCodeBlock("MegClear")+", um die Warteschlange zu löschen!";
+			queueInfo += "Schreib "+Markdown.toCodeBlock("MegClear")+", um die Warteschlange zu löschen!";
 		}
 		return queueInfo;
 	}
@@ -423,14 +438,14 @@ public class AudioEventHandler extends AudioEventAdapter {
 	private void updateInfoMsg() {
 			try {
 				this.radioMessage = this.radioMessage.edit(spec -> {
-					spec.setContent(this.buildInfoText(this.player.getPlayingTrack()));
+					spec.setContent(this.buildInfoText());
 				}).block();
 			}
 			catch(ClientException | NullPointerException clientException){
 				if((clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName())) && !this.lockMsgUpdate && this.active){
 					this.lockMsgUpdate = true;
 					System.out.println("Could not find radio message ("+clientException.getClass().getName()+"), creating new one!");
-					this.radioMessage = this.createRadioMessage(this.buildInfoText(this.player.getPlayingTrack()));
+					this.radioMessage = this.createRadioMessage(this.buildInfoText());
 				}
 			} 
 			catch (Exception e) {
