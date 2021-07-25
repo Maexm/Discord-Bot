@@ -345,7 +345,7 @@ public abstract class ResponseType extends Middleware {
 			if(isCommand){
 				System.out.println("Command used: "+this.commandSection+" in guild "+this.getGuildSecureName());
 			}
-			else if(this.isTextCommand()){
+			else if(!this.isTextCommand()){
 				this.onWrongInteraction();
 			}
 		}
