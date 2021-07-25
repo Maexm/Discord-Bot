@@ -344,8 +344,8 @@ public class Megumin extends ResponseType {
 				this.getMusicWrapper().getMusicBotHandler().pause();
 				this.sendAnswer("Musik wurde pausiert! :pause_button:");
 				this.deleteReceivedMessage();
-			} else {
-				this.sendAnswer("Musik ist bereits pausiert! Schreib 'MegPlay', um die Wiedergabe fortzuführen!");
+			} else if(this.getArgumentSection().equals("")){
+				this.onResumeMusic();
 			}
 		}
 	}
