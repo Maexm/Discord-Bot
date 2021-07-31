@@ -67,11 +67,10 @@ public class StartUp {
 			System.out.println("LOGGED IN AS: '" + ready.getSelf().getUsername() + "'");
 			System.out.println("Currently member of " + ready.getGuilds().size() + " guilds");
 
-			client.updatePresence(Presence
+			if(RuntimeVariables.firstLogin){
+				client.updatePresence(Presence
 					.doNotDisturb(Activity.playing("Starten")))
 					.block();
-
-			if(RuntimeVariables.firstLogin){
 				// Create entry point for event handling
 				discordHandlerWrapper[0] = new GlobalDiscordHandler(ready, secrets);
 
