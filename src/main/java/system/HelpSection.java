@@ -72,6 +72,8 @@ public class HelpSection extends Middleware {
             case " hilfe\"":
             case " hilfe!\"":
             case " hilfe\"!":
+
+            case "help ":
                 this.help();
                 break;
             default:

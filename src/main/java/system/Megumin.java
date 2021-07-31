@@ -1372,4 +1372,32 @@ public class Megumin extends ResponseType {
 			this.sendAnswer(isLoop ? "Loop "+Markdown.toBold("aktiviert")+" :repeat_one:" : "Loop "+Markdown.toBold("deaktiviert"));
 		}
 	}
+
+	@Override
+	protected void onHelp() {
+		String interactionAns = "";
+		switch(this.getArgumentSection()){
+			case "musik":
+				this.onMusicHelp();
+				interactionAns = "eine Liste an Musikbefehlen wurde dir zugesendet!";
+				break;
+			case "umfrage":
+				this.onSurveyHelp();
+				interactionAns = "eine Anleitung für Umfragen wurde dir privat zugesendet!";
+				break;
+			case "config":
+				this.onConfig();
+				interactionAns = "du hast privat eine Liste an Konfigurationen erhalten, sofern du Rechte dazu hast";
+				break;
+			case "":
+				interactionAns = "eine Befehlsliste wurde dir privat zugesendet!";
+				break;
+			default:
+				interactionAns = "dafür gibt es keine Befehlsliste!";
+		}
+
+		if(!this.isTextCommand()){
+			this.sendAnswer(interactionAns);
+		}
+	}
 }

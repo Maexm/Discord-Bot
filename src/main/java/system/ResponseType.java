@@ -338,6 +338,10 @@ public abstract class ResponseType extends Middleware {
 			case "lop":
 				this.onLoopMusic();
 				break;
+			case "hilfe":
+			case "help":
+				this.onHelp();
+				break;
 			default:
 				// Nothing, user typed in a command that does not exist
 				isCommand = false;
@@ -563,5 +567,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onWrongInteraction();
 
 	protected abstract void onLoopMusic();
+
+	protected abstract void onHelp();
 
 }
