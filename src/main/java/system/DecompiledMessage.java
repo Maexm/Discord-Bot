@@ -7,6 +7,7 @@ import java.util.Optional;
 import discord4j.core.event.domain.interaction.InteractionCreateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.command.ApplicationCommandInteraction;
+import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.Interaction;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
@@ -51,9 +52,7 @@ public class DecompiledMessage {
             List<String> optionVals = new ArrayList<>();
 
             command.getOptions().forEach(option -> {
-                if(option.getValue().isPresent()){
-                    optionVals.add(option.getValue().get().asString());
-                }
+                optionVals.add(DecompiledMessage.stringifyOptions(option, ";"));
             });
 
             if(!optionVals.isEmpty()){
@@ -79,6 +78,23 @@ public class DecompiledMessage {
             System.out.println("Something went wrong, while accepting event!");
             e.printStackTrace();
             this.broken = true;
+        }
+    }
+
+    public final static String stringifyOptions(ApplicationCommandInteractionOption option, String delimiter){
+        if(option.getValue().isPresent()){
+            return option.getValue().get().getRaw();
+        }
+        else if(!option.getOptions().isEmpty()){
+            String nextDelimiter = delimiter.equals(";") ? "-" : ";";
+            List<String> optionVals = new ArrayList<>();
+            option.getOptions().forEach(opt -> {
+                optionVals.add(DecompiledMessage.stringifyOptions(opt, nextDelimiter));
+            });
+            return !optionVals.isEmpty() ? String.join(delimiter, optionVals) : "";
+        }
+        else{
+            return "";
         }
     }
 

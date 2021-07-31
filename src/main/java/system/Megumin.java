@@ -128,7 +128,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onSurvey() {
 		String[] arguments = this.getArgumentSection().replace(" -", "-").replace("- ", "-").replace("; ", ";")
-				.replace(" ;", ";").split("-");
+				.replace(" ;", ";").split(";");
 
 		boolean isMulti = this.getCommandSection().equals("multiumfrage");
 		switch (arguments.length) {
@@ -204,13 +204,16 @@ public class Megumin extends ResponseType {
 					return;
 				}
 
-				final String[] options = arguments[1].split(";");
+				final String[] options = arguments[1].split("-");
 				final String description = arguments[0];
 				final String duration = arguments[2];
 
 				try {
 					new Survey(description, options, Integer.parseInt(duration), this.getMessageChannel(),
 							this.getMessage().getUser(), this.getSurveyListVerbose(), isMulti, this.getGuildId());
+					if(!this.isTextCommand()){
+						this.sendAnswer("Umfrage erstellt!");
+					}
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
 					this.sendAnswer("das letzte Argument (Anzahl Minuten bis Ende) ist falsch!");
