@@ -1023,11 +1023,14 @@ public class Megumin extends ResponseType {
 					this.sendPrivateAnswer(okayMessage);
 				}
 				this.deleteReceivedMessage();
+				if(!this.isTextCommand()){
+					this.sendAnswer("eine Nachricht wurde dir privat geschickt");
+				}
 				return;
 			}
 		}
 
-		this.sendAnswer("konnte diesen Kanal nicht finden!");
+		this.sendAnswer("konnte diesen Kanal nicht finden, oder du hast keinen Voice Kanal ausgewählt!");
 	}
 
 	@Override
@@ -1070,17 +1073,22 @@ public class Megumin extends ResponseType {
 				else{
 					this.sendAnswer(errorMessage);
 				}
+				if(!this.isTextCommand()){
+					this.sendAnswer("eine Nachricht wurde dir privat geschickt");
+				}
 				return;
 			}
 		}
 
-		this.sendAnswer("konnte diesen Kanal nicht finden!");
+		this.sendAnswer("konnte diesen Kanal nicht finden, oder du hast keinen Voice Kanal ausgewählt!");
 	}
 
 	@Override
 	protected void onGetVoiceSubscriptions() {
 		HashSet<Pair<Guild, VoiceChannel>> set = this.getGlobalProxy().getSubscribedGuildChannelPairs(this.getMessage().getUser().getId());
-
+		if(!this.isTextCommand()){
+			this.sendAnswer("eine Antwort wurde dir privat gesendet!");
+		}
 		if(set.isEmpty()){
 			this.sendPrivateAnswer("Du hast noch keinen VoiceChannel abonniert. Schreib auf einem entsprechendem Server "+Markdown.toCodeBlock("MegFollow ChannelName/Snowflake")+", um Benachrichtigungen für einen VoiceChannel zu erhalten!");
 			return;

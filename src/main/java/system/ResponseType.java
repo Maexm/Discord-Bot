@@ -138,6 +138,7 @@ public abstract class ResponseType extends Middleware {
 				break;
 			case "vol":
 			case "musicvol":
+			case "lautstärke":
 				this.onMusicVol();
 				break;
 			// case "musicidee":
