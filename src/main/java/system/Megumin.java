@@ -671,7 +671,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onUpdatePSA() {
 		if (this.hasPermission(SecurityLevel.DEV)) {
-			final String INTRO = "Ein neues Update ist verfügbar! :gear: Was ist neu?\n";
+			final String INTRO = "Ein neues Update ist verfügbar! :partying_face: Was ist neu?\n";
 			if (this.getArgumentSection().equals("")) {
 				this.sendAnswer("keine Nachricht angegeben!");
 			} else if (!RuntimeVariables.isDebug()) {

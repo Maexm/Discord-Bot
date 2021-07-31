@@ -1,4 +1,8 @@
 # Changelog
+## 1.3.0.0 (31th of July 2021)
+- MegLoop
+- Minor bug fixes
+- Slash command support
 
 ## 1.2.0.0 (7th of March 2021)
 :gear:
