@@ -59,7 +59,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 		// Send info to user
 		MusicTrackInfo failedTrack = this.loadingQueue.pollFirst();
 		try{
-			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte unter dem Begriff nichts finden!").subscribe();
+			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte unter dem Begriff nichts finden! :x:").subscribe();
 		}catch(Exception e){e.printStackTrace();}
 		// Load next or stop if nothing is playing
 		if (!this.loadingQueue.isEmpty()) {
@@ -75,7 +75,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 		// Send info to user
 		MusicTrackInfo failedTrack = this.loadingQueue.pollFirst();
 		try{
-			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte deinen Track leider nicht laden!").subscribe();
+			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte deinen Track leider nicht laden! :x:").subscribe();
 		}catch(Exception e){e.printStackTrace();}
 		// Load next or stop if nothing is playing
 		if (!this.loadingQueue.isEmpty()) {
@@ -152,7 +152,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 			String userMention = info.getSubmittedByUser().getMention();
 			int trackAmount = playlist.getTracks().size();
 			try{
-				info.editMsg.apply(userMention+", "+Markdown.toBold(trackAmount+" ")+ (trackAmount > 1 ? "Tracks wurden hinzugefügt!" : "Track wurde hinzugefügt!")).subscribe();
+				info.editMsg.apply(userMention+", "+Markdown.toBold(trackAmount+" ")+ (trackAmount > 1 ? "Tracks wurden hinzugefügt! :white_check_mark:" : "Track wurde hinzugefügt! :white_check_mark:")).subscribe();
 			}
 			catch(Exception e){e.printStackTrace();}
 		}
