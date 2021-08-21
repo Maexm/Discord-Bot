@@ -15,6 +15,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.rest.http.client.ClientException;
 import system.DecompiledMessage;
 import system.ResponseType;
@@ -36,7 +37,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 * instance is shared with a TrackLoader.
 	 */
 	private final LinkedList<MusicTrackInfo> loadingQueue;
-	private Message radioMessage;
+	private Optional<Message> radioMessage;
 	private final AudioPlayerManager playerManager;
 	private final TrackLoader loadScheduler;
 	private Timer refreshTimer;
@@ -66,6 +67,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.playerManager = playerManager;
 		this.loadScheduler = loadScheduler;
 		this.refreshTimer = null;
+		this.radioMessage = Optional.empty();
 	}
 
 	// TODO: Shorten this file
@@ -80,10 +82,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 			System.out.println("Loading track");
 			// Track will load IMMEDIATELY
 			this.playerManager.loadItemOrdered(track, track.getQuery(), this.loadScheduler);
-		}
-		// Create a new radioMessage, if one does not already exist.
-		if (this.radioMessage == null) {
-			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", this.parent.getConfig().getMusicWrapper().getMusicChannelId().isPresent() ? this.parent.getConfig().getMusicWrapper().getMusicChannelId().get() : track.userRequestMessage.getChannel().getId());
 		}
 		// Update radioMessage, if one does already exist.
 		else {
@@ -264,6 +262,21 @@ public class AudioEventHandler extends AudioEventAdapter {
 		return this.isLoop();
 	}
 
+	public Optional<MessageChannel> getRadioMessageChannel(){
+		if(this.radioMessage.isPresent()){
+			return Optional.of(this.radioMessage.get().getChannel().block());
+		}
+		return Optional.empty();
+	}
+
+	public void tryDeleteRadioMessage(){
+		if(this.radioMessage.isPresent()){
+			try{
+				this.radioMessage.get().delete().block();
+			}catch(Exception e){}
+		}
+	}
+
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		System.out.println("Track finished with reason: '" + endReason + "'");
@@ -279,8 +292,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 				.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
 				+"Beachte, bei "+Markdown.toBold("YouTube-Videos")+" können Videos mit Alterbeschränkung leider nicht abgespielt werden!")
 				.subscribe();
-			} else if (this.radioMessage != null) {
-				this.radioMessage.getChannel()
+			} else if (this.radioMessage.isPresent()) {
+				this.radioMessage.get().getChannel()
 				.flatMap(channel -> channel.createMessage("Während der Wiedergabe eines Tracks ist ein Fehler aufgetreten!"))
 				.subscribe();
 			}
@@ -292,8 +305,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 					failedTrackMsg.getChannel()
 					.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!")
 					.subscribe();
-			} else if (this.radioMessage != null) {
-					this.radioMessage.getChannel().flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
+			} else if (this.radioMessage.isPresent()) {
+					this.radioMessage.get().getChannel().flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
 					.subscribe();
 			}
 		}
@@ -329,8 +342,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTimer = null;
 		this.lockMsgUpdate = false;
 
-		Message oldMessage = this.radioMessage;
-		this.radioMessage = null;
+		Message oldMessage = this.radioMessage.orElse(null);
+		this.radioMessage = Optional.empty();
 		try{
 			this.parent.leaveVoiceChannel();
 			oldMessage.delete().subscribe();
@@ -374,7 +387,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 			this.refreshTimer.purge(); // Remove old canceled tasks
 		}
 		this.refreshTimer.schedule(this.refreshTask, 0, 1000);
-		if (this.radioMessage != null) {
+		if (this.radioMessage.isPresent()) {
 			this.updateInfoMsg();
 		} else {
 			System.out.println("A music info message does not exist for some reason!");
@@ -471,9 +484,14 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	private void updateInfoMsg() {
 			try {
-				this.radioMessage = this.radioMessage.edit(spec -> {
-					spec.setContent(this.buildInfoText());
-				}).block();
+				if(this.radioMessage.isEmpty()){
+					throw new NullPointerException();
+				}
+				else{
+					this.radioMessage = Optional.of(this.radioMessage.get().edit(spec -> {
+						spec.setContent(this.buildInfoText());
+					}).block());
+				}
 			}
 			catch(ClientException | NullPointerException clientException){
 				if((clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName())) && !this.lockMsgUpdate && this.active){
@@ -505,13 +523,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 		return trackInfo != null ? trackInfo.getSubmittedByUser().asMember(guildId).map(mem -> mem.getDisplayName()).block() : null;
 	}
 
-	private Message createRadioMessage(String msg, Snowflake channelId){
+	private Optional<Message> createRadioMessage(String msg, Snowflake channelId){
 		if(channelId == null){
 			channelId = this.parent.getConfig().getMusicWrapper().getMusicChannelId().isPresent() ? 
 			this.parent.getConfig().getMusicWrapper().getMusicChannelId().get() : 
 			(this.getCurrentAudioTrack() != null && this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class) != null ? this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class).userRequestMessage.getChannel().getId() : null);
 		}
-		Message ret = null;
+		Optional<Message> ret = Optional.empty();
 
 		if(channelId == null){
 			return ret;
@@ -520,7 +538,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		try{
 			System.out.println("Creating radio msg...");
 			this.lockMsgUpdate = true;
-			ret = parent.sendInChannel(msg, channelId);
+			ret = Optional.of(parent.sendInChannel(msg, channelId));
 			this.radioMessage = ret;
 			this.lockMsgUpdate = false;
 		}
@@ -536,7 +554,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		return ret;
 	}
 
-	private Message createRadioMessage(String msg){
+	private Optional<Message> createRadioMessage(String msg){
 		return this.createRadioMessage(msg, null);
 	}
 

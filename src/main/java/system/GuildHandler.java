@@ -37,6 +37,7 @@ public final class GuildHandler {
 
 	private ResponseType responseSet;
 	private final ArrayList<Middleware> middlewareBefore;
+	private final ArrayList<Middleware> middlewareAfter;
 	private final Snowflake guildId;
 	private final TaskManager<RefinedTimerTask> localTasks;
 	private final MiddlewareConfig middlewareConfig;
@@ -48,6 +49,7 @@ public final class GuildHandler {
 
 		// Initialize objects with defaults
 		this.middlewareBefore = new ArrayList<Middleware>();
+		this.middlewareAfter = new ArrayList<Middleware>();
 		this.localTasks = new TaskManager<>(true);
 		this.guildId = guildId;
 		this.globalProxy = globalProxy;
@@ -67,12 +69,6 @@ public final class GuildHandler {
 		// ########## RESPONSE SETS ##########
 		// TODO: Shorten this hell
 		//this.middlewareBefore.add(new Logger(this.middlewareConfig));
-		this.middlewareBefore.add(new RoleFilter(this.middlewareConfig,
-				msg -> RuntimeVariables.isDebug()
-						&& msg.getContent().toLowerCase().startsWith(RuntimeVariables.getInstance().getCommandPrefix().toLowerCase()),
-				SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
-
-		this.middlewareBefore.add(new HelpSection(this.middlewareConfig));
 		this.middlewareBefore.add(
 				new AutoReact(this.middlewareConfig, msg -> {
 					final String[] expressions = { "explosion", "kaboom", "bakuhatsu", "bakuretsu", "ばくれつ", "爆裂", "ばくはつ",
@@ -86,10 +82,16 @@ public final class GuildHandler {
 					;
 					return false; // React if evalStr contains something from array, skip otherwise
 				}, new ReactionEmoji[] { ReactionEmoji.unicode("\u2764")/* , ReactionEmoji.unicode("\u1F386") */ }));
+		this.middlewareBefore.add(new RoleFilter(this.middlewareConfig,
+				msg -> RuntimeVariables.isDebug()
+						&& msg.getContent().toLowerCase().startsWith(RuntimeVariables.getInstance().getCommandPrefix().toLowerCase()),
+				SecurityLevel.DEV, "meine Dienste sind im Preview Modus nicht verfügbar!"));
+		this.middlewareBefore.add(new HelpSection(this.middlewareConfig));
 		// this.middlewareBefore.add(new VoiceGuard(this.guildId, client,
 		// this.audioProvider, this.surveys, this.playerEventHandler));
 		//this.middlewareBefore.add(new MusicRecommendation(this.middlewareConfig));
 		this.responseSet = new Megumin(this.middlewareConfig, this.localTasks);
+		this.middlewareAfter.add(new MusicInfoPusher(this.middlewareConfig));
 	}
 
 	/**
@@ -123,6 +125,20 @@ public final class GuildHandler {
 			if (!shouldContinue) {
 				System.out.println("ResponseType canceled event digest");
 				return;
+			}
+
+			// ########## MIDDLEWARE AFTER ##########
+			for (Middleware middleware : this.middlewareAfter) {
+				try {
+					shouldContinue = middleware.acceptEvent(msg);
+				} catch (Exception e) {
+					System.out.println("Error while using middleware: '" + middleware + "'");
+					System.out.println(e);
+				}
+				if (!shouldContinue) {
+					System.out.println(middleware + " canceled event digest");
+					return;
+				}
 			}
 		}
 	}
