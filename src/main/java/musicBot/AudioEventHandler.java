@@ -273,6 +273,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if(this.radioMessage.isPresent()){
 			try{
 				this.radioMessage.get().delete().block();
+				this.radioMessage = Optional.empty();
 			}catch(Exception e){}
 		}
 	}
@@ -290,7 +291,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				DecompiledMessage failedTrackMsg = failedTrack.userRequestMessage;
 				failedTrackMsg.getChannel()
 				.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
-				+"Beachte, bei "+Markdown.toBold("YouTube-Videos")+" können Videos mit Alterbeschränkung leider nicht abgespielt werden!")
+				+"Bitte versuch es erneut. Falls das Problem besteht, melde es bitte kurz mit "+Markdown.toCodeBlock("MegFeedback Deine_Fehlerbeschreibung"))
 				.subscribe();
 			} else if (this.radioMessage.isPresent()) {
 				this.radioMessage.get().getChannel()
@@ -494,8 +495,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 				}
 			}
 			catch(ClientException | NullPointerException clientException){
-				if((clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName())) && !this.lockMsgUpdate && this.active){
-					this.lockMsgUpdate = true;
+				if((clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName())) && this.active){
 					System.out.println("Could not find radio message ("+clientException.getClass().getName()+"), creating new one!");
 					this.radioMessage = this.createRadioMessage(this.buildInfoText());
 				}
@@ -537,10 +537,12 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 		try{
 			System.out.println("Creating radio msg...");
+			if(this.lockMsgUpdate){
+				return this.radioMessage;
+			}
 			this.lockMsgUpdate = true;
 			ret = Optional.of(parent.sendInChannel(msg, channelId));
 			this.radioMessage = ret;
-			this.lockMsgUpdate = false;
 		}
 		catch(ClientException e){
 			if(e.getStatus().code() != 403){
@@ -549,6 +551,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		catch(Exception e){
 			System.out.println("Failed to create a new radio message!");
+		}
+		finally{
+			this.lockMsgUpdate = false;
 		}
 		
 		return ret;
