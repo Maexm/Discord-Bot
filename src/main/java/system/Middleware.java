@@ -548,15 +548,28 @@ public abstract class Middleware {
 	 * @param message The message to be applied after mention
 	 * @return The instance of the message that was sent
 	 */
-	protected final Optional<Message> sendAnswer(String message) {
-		String response = this.getMessage().getUser().getMention() + ", " + message;
-		if(this.isTextCommand()){
-			return Optional.of(this.sendInSameChannel(response));
+	protected final Optional<Message> sendAnswer(String message, boolean ignoreForbidden) {
+		try{
+			String response = this.getMessage().getUser().getMention() + ", " + message;
+			if(this.isTextCommand()){
+				return Optional.of(this.sendInSameChannel(response));
+			}
+			else{
+				this.getMessage().getInteraction().get().getInteractionResponse().createFollowupMessage(response).block(); // This only works because interactions are acknowledged before. You would have to respond to event instead, if this wasnt the case.
+				return Optional.empty();
+			}
 		}
-		else{
-			this.getMessage().getInteraction().get().getInteractionResponse().createFollowupMessage(response).block(); // This only works because interactions are acknowledged before. You would have to respond to event instead, if this wasnt the case.
-			return Optional.empty();
+		catch(ClientException e){
+			if(e.getStatus().code() == 403 && ignoreForbidden){
+				return Optional.empty();
+			}
+			throw e;
 		}
+		
+	}
+
+	protected final Optional<Message> sendAnswer(String message){
+		return this.sendAnswer(message, false);
 	}
 
 	/**

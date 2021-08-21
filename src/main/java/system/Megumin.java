@@ -43,6 +43,7 @@ import musicBot.MusicTrackInfo;
 import musicBot.MusicVariables;
 import musicBot.MusicTrackInfo.ScheduleType;
 import musicBot.MusicVariables.TrackLink;
+import reactor.core.publisher.Mono;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
 import security.SecurityLevel;
@@ -303,10 +304,15 @@ public class Megumin extends ResponseType {
 				// same channel (only true if player was not active before)
 				if (!this.isVoiceConnected()
 						|| !this.getAuthorVoiceChannel().getId().equals(this.getMyVoiceChannel().getId())) {
-					this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
+							try{
+								this.joinVoiceChannel(this.getAuthorVoiceChannel(), this.getAudioProvider());
+							} catch(Exception e){
+								this.sendAnswer("kann deinem VoiceChannel nicht beitreten :anger: Möglicherweise fehlen mir dafür Rechte! Frag bitte deinen lokalen Administrator/ Moderator.");
+								return;
+							}
 				}
 				// MUSIC PLAYBACK
-				Optional<Message> infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet :mag:");
+				Optional<Message> infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet :mag:", true);
 				Optional<InteractionCreateEvent> interaction = this.getMessage().getInteraction();
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
@@ -314,10 +320,13 @@ public class Megumin extends ResponseType {
 							this.getMessage(),
 							(String msg) -> {
 								if(infoMsg.isPresent()){
-									return infoMsg.get().edit(spec -> spec.setContent(msg)).then();
+									return infoMsg.get().edit(spec -> spec.setContent(msg)).onErrorResume(err -> null).then();
 								}
 								else{
-									return interaction.get().getInteractionResponse().createFollowupMessage(msg).then();
+									if(interaction.isPresent()){
+										return interaction.get().getInteractionResponse().createFollowupMessage(msg).onErrorResume(err -> null).then();
+									}
+									return Mono.empty();
 								}
 							},
 							scheduleType, this.getMusicWrapper().getSpotifyResolver());

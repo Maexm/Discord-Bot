@@ -524,6 +524,11 @@ public class AudioEventHandler extends AudioEventAdapter {
 			this.radioMessage = ret;
 			this.lockMsgUpdate = false;
 		}
+		catch(ClientException e){
+			if(e.getStatus().code() != 403){
+				System.out.println("Cannot create radio message (http code "+e.getStatus().code()+")");
+			}
+		}
 		catch(Exception e){
 			System.out.println("Failed to create a new radio message!");
 		}
