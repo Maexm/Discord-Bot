@@ -83,7 +83,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		// Create a new radioMessage, if one does not already exist.
 		if (this.radioMessage == null) {
-			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? this.parent.getConfig().getMusicWrapper().getMusicChannelId() : track.userRequestMessage.getChannel().getId());
+			this.createRadioMessage(":musical_note: Musikwiedergabe wird gestartet...", this.parent.getConfig().getMusicWrapper().getMusicChannelId().isPresent() ? this.parent.getConfig().getMusicWrapper().getMusicChannelId().get() : track.userRequestMessage.getChannel().getId());
 		}
 		// Update radioMessage, if one does already exist.
 		else {
@@ -507,8 +507,8 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	private Message createRadioMessage(String msg, Snowflake channelId){
 		if(channelId == null){
-			channelId = this.parent.getConfig().getMusicWrapper().getMusicChannelId() != null ? 
-			this.parent.getConfig().getMusicWrapper().getMusicChannelId() : 
+			channelId = this.parent.getConfig().getMusicWrapper().getMusicChannelId().isPresent() ? 
+			this.parent.getConfig().getMusicWrapper().getMusicChannelId().get() : 
 			(this.getCurrentAudioTrack() != null && this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class) != null ? this.getCurrentAudioTrack().getUserData(MusicTrackInfo.class).userRequestMessage.getChannel().getId() : null);
 		}
 		Message ret = null;

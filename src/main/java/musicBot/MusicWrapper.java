@@ -1,6 +1,7 @@
 package musicBot;
 
 import java.util.LinkedList;
+import java.util.Optional;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -19,7 +20,7 @@ public class MusicWrapper {
 	private final LinkedList<MusicTrackInfo> addInfo;
 	private final AudioEventHandler playerEventHandler;
 	private final SpotifyResolver spotifyResolver;
-	private Snowflake musicChannelId = null; 
+	private Optional<Snowflake> musicChannelId = Optional.empty(); 
     
     public MusicWrapper(final AudioPlayerManager playerManager, final SpotifyResolver spotifyResolver){
 		this.spotifyResolver = spotifyResolver;
@@ -46,12 +47,12 @@ public class MusicWrapper {
 		return this.spotifyResolver;
 	}
 
-	public final Snowflake getMusicChannelId(){
+	public final Optional<Snowflake> getMusicChannelId(){
 		return this.musicChannelId;
 	}
 
 	public final void setMusicChannelId(Snowflake id){
-		this.musicChannelId = id;
+		this.musicChannelId = Optional.of(id);
 	}
 
 }

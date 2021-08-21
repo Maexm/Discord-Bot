@@ -374,7 +374,7 @@ public final class GuildHandler {
 		ret.announcementChannelId = this.middlewareConfig.announcementChannelId != null ? this.middlewareConfig.announcementChannelId.asLong() : null;
 		ret.guildId = this.guildId != null ?  this.guildId.asLong() : null;
 		ret.homeTown = this.middlewareConfig.homeTown;
-		ret.musicChannelId = this.musicWrapper.getMusicChannelId() != null ? this.musicWrapper.getMusicChannelId().asLong() : null;
+		ret.musicChannelId = this.musicWrapper.getMusicChannelId().isPresent() ? this.musicWrapper.getMusicChannelId().get().asLong() : null;
 		ret.psaNote = this.middlewareConfig.psaNote;
 		ret.specialRoleId = this.middlewareConfig.getSecurityProvider().specialRoleId != null ? this.middlewareConfig.getSecurityProvider().specialRoleId.asLong() : null;
 		ret.updateNote = this.middlewareConfig.updateNote;
