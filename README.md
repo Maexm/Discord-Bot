@@ -4,8 +4,6 @@ Auf der [Master-Branch](https://github.com/Maexm/Discord-Bot/tree/master) befind
 
 Auf der [Dev-Branch](https://github.com/Maexm/Discord-Bot/tree/dev) werden **neue Funktionen** entwickelt bzw. getestet. Eigene Anpassungen bitte auf dieser Branch erstellen!
 
-**DEPRECATED: Dev Branch ist aktuell hinterher**
-
 # Wie verwende ich diesen Bot?
 
 ## Voraussetzungen
