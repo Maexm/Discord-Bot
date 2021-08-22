@@ -75,7 +75,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 		// Send info to user
 		MusicTrackInfo failedTrack = this.loadingQueue.pollFirst();
 		try{
-			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte deinen Track leider nicht laden! :x:").subscribe();
+			failedTrack.editMsg.apply(failedTrack.getSubmittedByUser().getMention()+" , konnte deinen Track leider nicht laden! :x:\n Fehlertext: "+Markdown.toCodeBlock(exception.getMessage())).subscribe();
 		}catch(Exception e){e.printStackTrace();}
 		// Load next or stop if nothing is playing
 		if (!this.loadingQueue.isEmpty()) {
