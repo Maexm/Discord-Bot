@@ -38,6 +38,7 @@ import japanese.Jisho;
 import japanese.RomajiPreparer;
 import japanese.ToKatakanaConverter;
 import japanese.ToRomajiConverter;
+import logging.QuickLogger;
 import musicBot.AudioEventHandler;
 import musicBot.MusicTrackInfo;
 import musicBot.MusicVariables;
@@ -77,7 +78,7 @@ public class Megumin extends ResponseType {
 						.block();
 				this.config.helloMessage = message;
 			} catch (Exception e) {
-				System.out.println("Failed to post hello message in guild " + this.getGuildSecureName());
+				QuickLogger.logMinErr("Failed to post hello message in guild " + this.getGuildSecureName());
 			}
 		}
 	}
@@ -96,7 +97,7 @@ public class Megumin extends ResponseType {
 			this.getGlobalProxy().purgeAllGuilds();
 
 			// ########## LOGOUT ##########
-			System.out.println("Logging out!");
+			QuickLogger.logInfo("Logging out!");
 			logOutMsg = logOutMsg.edit(edit -> edit.setContent("Bis bald!")).block();
 
 			this.getGlobalProxy().logout();
@@ -1378,7 +1379,7 @@ public class Megumin extends ResponseType {
 	@Override
 	protected void onWrongInteraction() {
 		this.sendAnswer("dieser Befehl existiert noch nicht! Wenn du diese Nachricht siehst heißt das, dass mein Besitzer "+Markdown.toBold(this.getOwner().getUsername())+" Mist gebaut hat :smile:");
-		System.out.println("Received an unimplemented command '"+this.getMessage().getContent()+"'");
+		QuickLogger.logWarn("Received an unimplemented command '"+this.getMessage().getContent()+"'");
 	}
 
 	@Override

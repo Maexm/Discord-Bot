@@ -26,6 +26,7 @@ import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.presence.Presence;
 import discord4j.rest.http.client.ClientException;
 import discord4j.voice.AudioProvider;
+import logging.QuickLogger;
 import musicBot.MusicWrapper;
 import reactor.core.publisher.Mono;
 import security.SecurityLevel;
@@ -72,12 +73,12 @@ public abstract class Middleware {
 		} catch (Exception e) {
 			e.printStackTrace();
 				try {
-					System.out.println("Message '"+this.getMessage().getContent()+"' in guild "+this.getGuildSecureName()+" caused an error!");
+					QuickLogger.logErr("Message '"+this.getMessage().getContent()+"' in guild "+this.getGuildSecureName()+" caused an error!");
 					if(!this.quietError){
 						this.sendAnswer("seltsam...das hat bei mir einen Fehler ausgelöst! :anger:");
 					}
 				} catch (Exception e2) {
-					System.out.println("Cannot send messages at all!");
+					QuickLogger.logFatalErr("Cannot send messages at all!");
 				}
 		}
 		return ret;
@@ -610,12 +611,12 @@ public abstract class Middleware {
 		} else {
 			final String CHANNEL_NAME = channel.getName();
 			if (this.isVoiceConnected() && this.getMyVoiceChannel().getId().equals(channel.getId())) {
-				System.out.println("Already connected to same channel '" + CHANNEL_NAME + "'!");
+				QuickLogger.logWarn("Already connected to same channel '" + CHANNEL_NAME + "'!");
 			}
-			System.out.println("Trying to connect to voice channel '" + CHANNEL_NAME + "'");
+			QuickLogger.logDebug("Trying to connect to voice channel '" + CHANNEL_NAME + "'");
 			/*this.voiceConnection = */channel.join(spec -> spec.setProvider(audioProvider)).log().block(Duration.ofSeconds(30l));
 			//channel.sendConnectVoiceState(false, false).block(Duration.ofSeconds(30l));
-			System.out.println("Connected to voice channel '" + CHANNEL_NAME + "'");
+			QuickLogger.logDebug("Connected to voice channel '" + CHANNEL_NAME + "'");
 		}
 	}
 
@@ -624,14 +625,10 @@ public abstract class Middleware {
 	 * that may occur.
 	 */
 	public final void leaveVoiceChannel() {
-		// if(!this.isVoiceConnected()){
-		// 	System.out.println("Cannot leave voice channel, when not connected!");
-		// 	return;
-		// }
 		try {
-			this.getClient().getVoiceConnectionRegistry().disconnect(this.config.guildId).doOnTerminate(() -> {System.out.println("Left voice channel");}).subscribe();
+			this.getClient().getVoiceConnectionRegistry().disconnect(this.config.guildId).doOnTerminate(() -> {QuickLogger.logDebug("Left voice channel");}).subscribe();
 		} catch (Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 
@@ -698,7 +695,7 @@ public abstract class Middleware {
 				channel.createMessage(content).block();
 			}
 			catch(Exception e){
-				System.out.println("Failed to send psa message in a guild");
+				QuickLogger.logMinErr("Failed to send psa message in a guild");
 				e.printStackTrace();
 			}
 		}

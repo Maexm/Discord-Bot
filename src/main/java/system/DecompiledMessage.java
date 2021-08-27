@@ -14,6 +14,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
+import logging.QuickLogger;
 
 public class DecompiledMessage {
     private String msgContent;
@@ -38,7 +39,7 @@ public class DecompiledMessage {
             this.guild = event.getGuild().block();
             this.broken = false;
         } catch (Exception e) {
-            System.out.println("Something went wrong, while accepting event!");
+            QuickLogger.logFatalErr("Something went wrong, while accepting message event!");
             e.printStackTrace();
             this.broken = true;
         }
@@ -75,7 +76,7 @@ public class DecompiledMessage {
             event.acknowledge().block();
             this.broken = false;
         } catch(Exception e){
-            System.out.println("Something went wrong, while accepting event!");
+            QuickLogger.logFatalErr("Something went wrong, while accepting interaction event!");
             e.printStackTrace();
             this.broken = true;
         }

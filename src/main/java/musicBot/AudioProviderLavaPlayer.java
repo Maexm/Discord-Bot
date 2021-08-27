@@ -15,19 +15,15 @@ public class AudioProviderLavaPlayer extends AudioProvider{
 	
 	public AudioProviderLavaPlayer(final AudioPlayer player) {
 		super(ByteBuffer.allocate(StandardAudioDataFormats.DISCORD_OPUS.maximumChunkSize()));
-		//System.out.println("creating music player");
 		frame.setBuffer(getBuffer());
 		this.player = player;
-		//System.out.println("created");
 	}
 
 	@Override
 	public boolean provide() {
-		//System.out.println("providing!");
 		final boolean didProvide = player.provide(frame);
 		
 		if(didProvide) {
-			//System.out.println("did provide....");
 			getBuffer().flip();
 		}
 		return didProvide;

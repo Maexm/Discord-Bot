@@ -5,6 +5,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import exceptions.IllegalMagicException;
+import logging.QuickLogger;
 
 @SuppressWarnings("rawtypes")
 public abstract class RefinedTimerTask extends TimerTask {
@@ -26,7 +27,7 @@ public abstract class RefinedTimerTask extends TimerTask {
         }
 
         if(startDate != null){
-            System.out.println("Scheduled a task for "+startDate.toString());
+            QuickLogger.logInfo("Scheduled a task for "+startDate.toString());
         }
 
         this.delay = delay;

@@ -11,6 +11,8 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+import logging.QuickLogger;
+
 public class HTTPRequests {
 
 	public static String getSimple(final String URL) {
@@ -27,7 +29,7 @@ public class HTTPRequests {
 	 * Execute http request with given client and request. Log request
 	 */
 	public static HttpResponse<String> executeHttp(HttpClient client, HttpRequest request){
-		System.out.println("[HTTPRequests] Sending HTTP request to: " + request.uri());
+		QuickLogger.logInfo("[HTTPRequests] Sending HTTP request to: " + request.uri());
 		HttpResponse<String> resp = null;
 		try {
 			resp = client.send(request, BodyHandlers.ofString());

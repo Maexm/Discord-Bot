@@ -23,12 +23,13 @@ import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import exceptions.StartUpException;
+import logging.QuickLogger;
 
 public class StartUp {
 
 	public static void main(String[] args) {
 
-		System.out.println("STARTING MEGUMIN BOT");
+		QuickLogger.logInfo("STARTING MEGUMIN BOT");
 
 		StartUp.loadMainConfig();
 		Secrets secrets = StartUp.loadSecrets();
@@ -64,8 +65,8 @@ public class StartUp {
 		// ########## On client login ##########
 
 		client.getEventDispatcher().on(ReadyEvent.class).subscribe(ready -> {
-			System.out.println("LOGGED IN AS: '" + ready.getSelf().getUsername() + "'");
-			System.out.println("Currently member of " + ready.getGuilds().size() + " guilds");
+			QuickLogger.logInfo("LOGGED IN AS: '" + ready.getSelf().getUsername() + "'");
+			QuickLogger.logInfo("Currently member of " + ready.getGuilds().size() + " guilds");
 
 			if(RuntimeVariables.firstLogin){
 				client.updatePresence(Presence
@@ -98,14 +99,14 @@ public class StartUp {
 		client.getEventDispatcher().on(MessageCreateEvent.class).log().subscribe(event -> {
 			try{
 				if (RuntimeVariables.isDebug) {
-				System.out.println("Event received!");
+					QuickLogger.logDebug("Event received!");
 				}
 				if(discordHandlerWrapper[0] != null){
 					discordHandlerWrapper[0].acceptEvent(event);
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 		});
@@ -113,14 +114,14 @@ public class StartUp {
 		client.getEventDispatcher().on(InteractionCreateEvent.class).subscribe(event -> {
 			try{
 				if (RuntimeVariables.isDebug) {
-				System.out.println("Event received!");
+					QuickLogger.logDebug("Event received!");
 				}
 				if(discordHandlerWrapper[0] != null){
 					discordHandlerWrapper[0].acceptEvent(event);
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 		});
@@ -133,7 +134,7 @@ public class StartUp {
 					discordHandlerWrapper[0].addGuild(event.getGuild());
 				}
 				catch(Exception e){
-					System.out.println("Something went terribly wrong!");
+					QuickLogger.logFatalErr("Something went terribly wrong!");
 					e.printStackTrace();
 				}
 			}
@@ -147,7 +148,7 @@ public class StartUp {
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 		});
@@ -159,7 +160,7 @@ public class StartUp {
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 			
@@ -174,7 +175,7 @@ public class StartUp {
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 			
@@ -187,7 +188,7 @@ public class StartUp {
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 			
@@ -200,7 +201,7 @@ public class StartUp {
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 		});
@@ -212,7 +213,7 @@ public class StartUp {
 				}
 			}
 			catch(Exception e){
-				System.out.println("Something went terribly wrong!");
+				QuickLogger.logFatalErr("Something went terribly wrong!");
 				e.printStackTrace();
 			}
 		});
@@ -230,7 +231,7 @@ public class StartUp {
 		MainConfig config = gson.fromJson(content, MainConfig.class);
 
 		if(config == null){
-			System.out.println("Failed to read config file " + configFileName);
+			QuickLogger.logMinErr("Failed to read config file " + configFileName);
 			return false;
 		}
 
@@ -247,7 +248,7 @@ public class StartUp {
 		SecretsConfig config = gson.fromJson(content, SecretsConfig.class);
 
 		if(config == null){
-			System.out.println("Failed to read secrets file " + configFileName);
+			QuickLogger.logMinErr("Failed to read secrets file " + configFileName);
 			return null;
 		}
 

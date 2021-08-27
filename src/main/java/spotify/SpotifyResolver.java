@@ -11,6 +11,7 @@ import java.util.Base64;
 import com.google.gson.Gson;
 
 import exceptions.IllegalMagicException;
+import logging.QuickLogger;
 import spotify.SpotifyObjects.ISpotifyObject;
 import spotify.SpotifyObjects.TokenResponse;
 import util.HTTPRequests;
@@ -81,7 +82,7 @@ public class SpotifyResolver {
                 return this.getSpotifyObject(objectId, type, false);
             }
             // Did not try cached token => credentials are broken
-            System.out.println("WARNING: Spotify credentials are broken!");
+            QuickLogger.logFatalErr("Spotify credentials are broken!");
             return null;
         }
         else if(response.statusCode() == 404){

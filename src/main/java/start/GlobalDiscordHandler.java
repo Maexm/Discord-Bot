@@ -26,6 +26,7 @@ import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
+import logging.QuickLogger;
 import musicBot.MusicWrapper;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
@@ -113,7 +114,7 @@ public class GlobalDiscordHandler {
                    }
                 }
                 catch(Exception e){
-                    System.out.println("Failed to update presence!");
+                    QuickLogger.logErr("Failed to update presence!");
                 }
 			}
 
@@ -158,7 +159,7 @@ public class GlobalDiscordHandler {
 
     void addGuild(Guild guild){
         if(!this.guildMap.containsKey(guild.getId())){
-            System.out.println("Bot was added to guild "+guild.getName());
+            QuickLogger.logInfo("Bot was added to guild "+guild.getName());
             MusicWrapper musicWrapper = new MusicWrapper(this.playerManager, this.createSpotifyResolver());
             GuildHandler guildHandler = new GuildHandler(guild.getId(), this.globalProxy, musicWrapper);
             this.guildMap.put(guild.getId(), guildHandler);
@@ -168,7 +169,7 @@ public class GlobalDiscordHandler {
 
     void removeGuild(Guild guild){
         if(this.guildMap.containsKey(guild.getId())){
-            System.out.println("Removing guild "+guild.getName());
+            QuickLogger.logInfo("Removing guild "+guild.getName());
             this.guildMap.remove(guild.getId()).onPurge();
         }
     }
@@ -185,7 +186,7 @@ public class GlobalDiscordHandler {
 
     void logout(){
         this.globalTasks.stopAll();
-        System.out.println("LOGGING OUT");
+        QuickLogger.logInfo("LOGGING OUT");
 		this.getClient().logout().block();
         System.exit(0);
     }
@@ -223,14 +224,14 @@ public class GlobalDiscordHandler {
     }
 
     void saveGuilds(){
-        System.out.println("Saving guild config for "+this.guildMap.size()+" guild(s)");
+        QuickLogger.logInfo("Saving guild config for "+this.guildMap.size()+" guild(s)");
         ArrayList<GuildConfig> guildConfigList = new ArrayList<>();
         this.guildMap.forEach((guildId, guildHandler) -> {
             try{
                guildConfigList.add(guildHandler.createGuildConfig());
             }
             catch(Exception e){
-                System.out.println("Failed to create guildconfig for guild "+guildHandler.getGuild().getName());
+                QuickLogger.logFatalErr("Failed to create guildconfig for guild "+guildHandler.getGuild().getName());
                 e.printStackTrace();
             }
         });
@@ -240,17 +241,23 @@ public class GlobalDiscordHandler {
         File configFile = new File("./botConfig/guildConfig.json");
         boolean success = FileManager.write(configFile, guildConfigsString);
         
-        System.out.println(success ? "Successfully persisted guild data" : "Failed to persist guild data");
+        if(success){
+            QuickLogger.logInfo("Successfully persisted guild data");
+        }
+        else{
+            QuickLogger.logFatalErr("Failed to persist guild data");
+        }
+
     }
 
     void reloadGuilds(){
-        System.out.println("Reloading "+this.guildMap.size()+" guild(s)");
+        QuickLogger.logInfo("Reloading "+this.guildMap.size()+" guild(s)");
         this.guildMap.forEach((guildId, guildHandler) -> {
             try{
                guildHandler.loadConfig();
             }
             catch(Exception e){
-                System.out.println("Failed to load guild "+guildHandler.getGuild().getName());
+                QuickLogger.logFatalErr("Failed to load guild "+guildHandler.getGuild().getName());
                 e.printStackTrace();
             }
         });

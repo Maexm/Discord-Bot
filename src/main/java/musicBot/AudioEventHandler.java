@@ -17,6 +17,7 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.rest.http.client.ClientException;
+import logging.QuickLogger;
 import system.DecompiledMessage;
 import system.ResponseType;
 import util.Emoji;
@@ -79,7 +80,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.parent = parent;
 		// Only load track, if only one track is in the loading queue
 		if (loadRightNow) {
-			System.out.println("Loading track");
+			QuickLogger.logDebug("Loading track");
 			// Track will load IMMEDIATELY
 			this.playerManager.loadItemOrdered(track, track.getQuery(), this.loadScheduler);
 		}
@@ -280,12 +281,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-		System.out.println("Track finished with reason: '" + endReason + "'");
+		QuickLogger.logDebug("Track finished with reason: '" + endReason + "'");
 		this.refreshTask.cancel();
 		this.refreshTimer.purge();
 
 		// LOAD FAILED
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
+			QuickLogger.logErr("Failed to log track with reason "+endReason+ " MayStartNext = "+endReason.mayStartNext);
 			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
 			if (failedTrack != null) {
 				DecompiledMessage failedTrackMsg = failedTrack.userRequestMessage;
@@ -317,13 +319,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 			this.loadScheduler.playTrack(this.trackCopy.get().makeClone(), track.getUserData(MusicTrackInfo.class));
 		}
 		else if (this.tracks.size() != 0 && endReason.mayStartNext) {
-			System.out.println("Starting next!");
+			QuickLogger.logDebug("Starting next!");
 			this.next(1);
 		}
 
 		// TRACK HAS BEEN REPALCED
 		else if (endReason == AudioTrackEndReason.REPLACED) {
-			System.out.println("Track got replaced!");
+			QuickLogger.logDebug("Track got replaced!");
 		}
 
 		// NO MORE TRACKS IN QUEUE -> STOPPING
@@ -333,7 +335,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	}
 
 	void ended() {
-		System.out.println("Music ended!");
+		QuickLogger.logDebug("Music ended!");
 		//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 		this.active = false;
 		this.setLoop(false);
@@ -349,15 +351,15 @@ public class AudioEventHandler extends AudioEventAdapter {
 			this.parent.leaveVoiceChannel();
 			oldMessage.delete().subscribe();
 		}catch(Exception e){
-			System.out.println("Could not delete radio message while ending music session");
+			QuickLogger.logMinErr("Could not delete radio message while ending music session");
 		}		
 	}
 
 	@Override
 	public void onTrackStart(AudioPlayer player, AudioTrack track) {
-		System.out.println("Track has started!");
+		QuickLogger.logDebug("Track has started!");
 		if (!this.active) {
-			System.out.println("Stopping a track from being played, while player not active");
+			QuickLogger.logDebug("Stopping a track from being played, while player not active");
 			player.stopTrack();
 			return;
 		}
@@ -391,7 +393,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 		if (this.radioMessage.isPresent()) {
 			this.updateInfoMsg();
 		} else {
-			System.out.println("A music info message does not exist for some reason!");
+			QuickLogger.logMinErr("A music info message does not exist for some reason!");
 		}
 	}
 
@@ -496,13 +498,13 @@ public class AudioEventHandler extends AudioEventAdapter {
 			}
 			catch(ClientException | NullPointerException clientException){
 				if((clientException.getClass().getName().equals(ClientException.class.getName()) && ((ClientException) clientException).getStatus().code() == 404 || clientException.getClass().getName().equals(NullPointerException.class.getName())) && this.active){
-					System.out.println("Could not find radio message ("+clientException.getClass().getName()+"), creating new one!");
+					QuickLogger.logDebug("Could not find radio message ("+clientException.getClass().getName()+"), creating new one!");
 					this.radioMessage = this.createRadioMessage(this.buildInfoText());
 				}
 			} 
 			catch (Exception e) {
-				System.out.println("Failed to update radio message!");
-				System.out.println(e);
+				QuickLogger.logMinErr("Failed to update radio message!");
+				e.printStackTrace();
 			}
 	}
 
@@ -536,7 +538,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 
 		try{
-			System.out.println("Creating radio msg...");
 			if(this.lockMsgUpdate){
 				return this.radioMessage;
 			}
@@ -546,11 +547,11 @@ public class AudioEventHandler extends AudioEventAdapter {
 		}
 		catch(ClientException e){
 			if(e.getStatus().code() != 403){
-				System.out.println("Cannot create radio message (http code "+e.getStatus().code()+")");
+				QuickLogger.logMinErr("Cannot create radio message (http code "+e.getStatus().code()+")");
 			}
 		}
 		catch(Exception e){
-			System.out.println("Failed to create a new radio message!");
+			QuickLogger.logErr("Failed to create a new radio message!");
 		}
 		finally{
 			this.lockMsgUpdate = false;

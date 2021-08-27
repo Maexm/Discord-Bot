@@ -153,7 +153,6 @@ public class RomajiPreparer {
 			}
 			else{//Wenn VOKAL oder KEIN BUCHSTABE
 				if(i > 0 && isVowel(text[i]) && text[i] == text[i-1]){//Doppel Vokal
-					System.out.println("DOUBLE VOWEL");
 					work = work +"-";
 					continue;
 				}
@@ -161,7 +160,6 @@ public class RomajiPreparer {
 				continue;
 			}
 		}
-		System.out.println("RomajiPreparer: Finished preparing! ToKatakanaConverter will work with '"+work+"'.");
 		return work;
 	}
 	

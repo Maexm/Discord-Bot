@@ -32,7 +32,6 @@ public class TimePrint {
 	
 	public static String msToPretty(long val) {
 		String ret = "";
-		//System.out.println(val);
 		
 		//int ms = (int) (val%1000);
 		//ms -= ms%10;

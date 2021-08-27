@@ -11,6 +11,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 
 import exceptions.IllegalMagicException;
+import logging.QuickLogger;
 import util.Markdown;
 
 public class TrackLoader implements AudioLoadResultHandler {
@@ -30,7 +31,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 
 	@Override
 	public void trackLoaded(AudioTrack track) {
-		System.out.println("Track loaded...");
+		QuickLogger.logDebug("Track loaded...");
 		this.digestTrack(track, this.getInfoForTrack(track));
 	}
 
@@ -42,11 +43,11 @@ public class TrackLoader implements AudioLoadResultHandler {
 		}
 		if (playlist.isSearchResult()) {
 			// Playing first track from search result
-			System.out.println("Loaded a search result!");
+			QuickLogger.logDebug("Loaded a search result!");
 			AudioTrack firstTrack = playlist.getTracks().get(0);
 			this.digestTrack(firstTrack, this.getInfoForTrack(firstTrack));// Passing loaded track to trackLoaded method
 		} else {
-			System.out.println("Loaded playlist!");
+			QuickLogger.logDebug("Loaded playlist!");
 			this.digestMultipleTracks(playlist);
 		}
 
@@ -54,8 +55,6 @@ public class TrackLoader implements AudioLoadResultHandler {
 
 	@Override
 	public void noMatches() {
-		System.out.println("No matches!");
-
 		// Send info to user
 		MusicTrackInfo failedTrack = this.loadingQueue.pollFirst();
 		try{
@@ -71,7 +70,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 
 	@Override
 	public void loadFailed(FriendlyException exception) {
-		System.out.println("Load failed! " + exception);
+		QuickLogger.logErr("Load failed! " + exception);
 		// Send info to user
 		MusicTrackInfo failedTrack = this.loadingQueue.pollFirst();
 		try{
@@ -194,7 +193,7 @@ public class TrackLoader implements AudioLoadResultHandler {
 	 */
 	private void loadNext() {
 		if (!this.loadingQueue.isEmpty()) {
-			System.out.println("Loading next from queue");
+			QuickLogger.logDebug("Loading next from queue");
 			this.playerManager.loadItem(this.loadingQueue.getFirst().getQuery(), this);
 		}
 	}

@@ -2,6 +2,7 @@ package system;
 
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import exceptions.IllegalMagicException;
+import logging.QuickLogger;
 import musicBot.MusicTrackInfo.ScheduleType;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
@@ -348,7 +349,7 @@ public abstract class ResponseType extends Middleware {
 				isCommand = false;
 			}
 			if(isCommand){
-				System.out.println("Command used: "+this.commandSection+" in guild "+this.getGuildSecureName());
+				QuickLogger.logInfo("Command used: "+this.commandSection+" in guild "+this.getGuildSecureName());
 			}
 			else if(!this.isTextCommand()){
 				this.onWrongInteraction();
@@ -362,14 +363,14 @@ public abstract class ResponseType extends Middleware {
 
 	protected final void purge(){
 		try{
-			System.out.println("########## Purging session for guild: "+this.getGuild().getName()+" ###########");
+			QuickLogger.logInfo("########## Purging session for guild: "+this.getGuild().getName()+" ###########");
 		}
 		catch(Exception e){
-			System.out.println("Guild name unavailable!");
+			QuickLogger.logMinErr("Guild name unavailable!");
 		}
 		
 		// ########## CLEAN MUSIC SESSION ##########
-			System.out.println("Cleaning up mussic session...");
+			QuickLogger.logInfo("Cleaning up mussic session...");
 			this.getMusicWrapper().getMusicBotHandler().clearList();
 			if (this.getMusicWrapper().getMusicBotHandler().isPlaying()) {
 				this.getMusicWrapper().getMusicBotHandler().stop();
@@ -379,17 +380,16 @@ public abstract class ResponseType extends Middleware {
 			}
 
 			// Remove hello message
-			System.out.println("Removing hello message...");
+			QuickLogger.logInfo("Removing hello message...");
 			try{
 				this.config.helloMessage.delete().block();
 			}
 			catch(Exception e){
-				System.out.println("Failed to remove message, continuing... ");
-				e.printStackTrace();
+				QuickLogger.logWarn("Failed to remove message, continuing... ");
 			}
 
 			// ########## STOP SURVEYS ##########
-			System.out.println("Stopping surveys...");
+			QuickLogger.logInfo("Stopping surveys...");
 
 			this.getSurveyListVerbose().forEach(survey ->{
 				if(survey.guildId.equals(this.config.guildId)){
@@ -398,7 +398,7 @@ public abstract class ResponseType extends Middleware {
 			});
 
 			// ########## STOP TASKS ##########
-			System.out.println("Stopping tasks...");
+			QuickLogger.logInfo("Stopping tasks...");
 			this.cleanLocalTasks();
 	}
 

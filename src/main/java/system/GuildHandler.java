@@ -25,6 +25,7 @@ import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.rest.util.Permission;
+import logging.QuickLogger;
 import musicBot.MusicWrapper;
 import schedule.RefinedTimerTask;
 import schedule.TaskManager;
@@ -110,11 +111,11 @@ public final class GuildHandler {
 				try {
 					shouldContinue = middleware.acceptEvent(msg);
 				} catch (Exception e) {
-					System.out.println("Error while using middleware: '" + middleware + "'");
-					System.out.println(e);
+					QuickLogger.logErr("Error while using middleware: '" + middleware + "'");
+					e.printStackTrace();
 				}
 				if (!shouldContinue) {
-					System.out.println(middleware + " canceled event digest");
+					QuickLogger.logWarn(middleware + " canceled event digest");
 					return;
 				}
 			}
@@ -123,7 +124,7 @@ public final class GuildHandler {
 			shouldContinue = this.responseSet.acceptEvent(msg);
 
 			if (!shouldContinue) {
-				System.out.println("ResponseType canceled event digest");
+				QuickLogger.logWarn("ResponseType canceled event digest");
 				return;
 			}
 
@@ -132,11 +133,11 @@ public final class GuildHandler {
 				try {
 					shouldContinue = middleware.acceptEvent(msg);
 				} catch (Exception e) {
-					System.out.println("Error while using middleware: '" + middleware + "'");
-					System.out.println(e);
+					QuickLogger.logErr("Error while using middleware: '" + middleware + "'");
+					e.printStackTrace();
 				}
 				if (!shouldContinue) {
-					System.out.println(middleware + " canceled event digest");
+					QuickLogger.logWarn(middleware + " canceled event digest");
 					return;
 				}
 			}
@@ -146,10 +147,10 @@ public final class GuildHandler {
 	public void onPurge(){
 		try{
 			this.responseSet.purge();
-			System.out.println("Purge completed!");
+			QuickLogger.logInfo("Purge completed!");
 		}
 		catch(Exception e){
-			System.out.println("Failed to purge guild session, continuing...");
+			QuickLogger.logWarn("Failed to purge guild session, continuing...");
 			e.printStackTrace();
 		}
 		this.globalProxy.saveAllGuilds();
@@ -164,7 +165,7 @@ public final class GuildHandler {
 			this.responseSet.onVoiceStateEvent(event);
 		}
 		catch(Exception e){
-			System.out.println("Something went wrong while evaluating VoiceStateUpdateEvent for guild "+this.guild.getName());
+			QuickLogger.logErr("Something went wrong while evaluating VoiceStateUpdateEvent for guild "+this.guild.getName());
 		}
 	}
 
@@ -296,7 +297,7 @@ public final class GuildHandler {
 		File configFile = new File("./botConfig/guildConfig.json");
 		String rawConfig = FileManager.read(configFile);
 		if(rawConfig == null){
-			System.out.println("Warning: No guild config file found: "+configFile.getAbsolutePath());
+			QuickLogger.logWarn("Warning: No guild config file found: "+configFile.getAbsolutePath());
 		}
 		else{
 			// Read config file and find correct config for this guild
