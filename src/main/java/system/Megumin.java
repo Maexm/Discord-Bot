@@ -778,6 +778,7 @@ public class Megumin extends ResponseType {
 		this.sendMessageToOwner("Wir haben Feedback von " + Markdown.toBold(this.getMessage().getAuthorName())
 				+ " erhalten! BenutzerId: "+ Markdown.toCodeBlock(this.getMessage().getUser().getId().asString()));
 		this.sendMessageToOwner(Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
+		QuickLogger.logfeedback("From: "+this.getMessage().getAuthorName()+" "+this.getMessage().getUser().getId().asString()+" - "+this.getArgumentSection());
 		this.sendPrivateAnswer("Vielen Dank! Ich habe dein Feedback an " + this.getOwner().getUsername()
 				+ " weitergeleitet! "
 				+ "Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:");

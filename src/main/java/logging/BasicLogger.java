@@ -1,6 +1,7 @@
 package logging;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import start.RuntimeVariables;
 
@@ -25,7 +26,7 @@ public abstract class BasicLogger {
             }
         }
 
-        Calendar time = Calendar.getInstance(RuntimeVariables.getInstance().getTimezone());
+        Calendar time = Calendar.getInstance(RuntimeVariables.getInstance() != null ? RuntimeVariables.getInstance().getTimezone() : TimeZone.getDefault());
 
         System.out.println("[" + time.getTime() + "][" + type + "][" + (caller == null ? "CLASSNAME ERR"
                 : caller.getSimpleName()) + " l:"+lineNumber+"] - " + text);
