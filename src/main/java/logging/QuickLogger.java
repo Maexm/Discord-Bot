@@ -6,6 +6,10 @@ public final class QuickLogger extends BasicLogger {
 
     private final static QuickLogger instance = new QuickLogger();
 
+    private QuickLogger() {
+        super();
+    }
+
     public final static void logWarn(final String text){
         QuickLogger.instance.log(text, LogType.WARN);
     }
