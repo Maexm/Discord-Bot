@@ -295,9 +295,9 @@ public class Megumin extends ResponseType {
 	}
 
 	@Override
-	protected void onReceiveMusicRequest(ScheduleType scheduleType) {
+	protected void onReceiveMusicRequest(ScheduleType scheduleType, String query) {
 		if (this.handleMusicCheck(true, false)) {
-			if (this.getArgumentSection().equals("")) {
+			if (query == null || query.equals("")) {
 				this.sendAnswer(
 						"du musst mir schon sagen, was ich abspielen soll! Gib mir einen YouTube Link oder einen Suchbegriff!");
 			} else {
@@ -316,7 +316,7 @@ public class Megumin extends ResponseType {
 				Optional<Message> infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet :mag:", true);
 				Optional<InteractionCreateEvent> interaction = this.getMessage().getInteraction();
 				try {
-					MusicTrackInfo musicTrack = new MusicTrackInfo(this.getArgumentSection(),
+					MusicTrackInfo musicTrack = new MusicTrackInfo(query,
 							this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(),
 							this.getMessage(),
 							(String msg) -> {
@@ -367,7 +367,7 @@ public class Megumin extends ResponseType {
 	protected void onResumeMusic() {
 		// Interpret as music add request, if there are arguments
 		if (!this.getArgumentSection().equals("")) {
-			this.onReceiveMusicRequest(ScheduleType.NORMAL);
+			this.onReceiveMusicRequest(ScheduleType.NORMAL, this.getArgumentSection());
 		}
 		// Else interpret as music resume request
 		else if (this.handleMusicCheck(true, true)) {
@@ -1419,4 +1419,17 @@ public class Megumin extends ResponseType {
 			this.sendAnswer(interactionAns);
 		}
 	}
+
+	@Override
+	protected void onMexico() {
+		try{
+			this.sendAnswer(":flag_mx:");
+	
+			this.onReceiveMusicRequest(ScheduleType.INTRUSIVE, "The Mexican Hat Dance");
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }
+

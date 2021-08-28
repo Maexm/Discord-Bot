@@ -95,7 +95,7 @@ public abstract class ResponseType extends Middleware {
 				this.onConvertToKatakana();
 				break;
 			case "music":
-				this.onReceiveMusicRequest(ScheduleType.NORMAL);
+				this.onReceiveMusicRequest(ScheduleType.NORMAL, this.getArgumentSection());
 				break;
 			case "prio":
 			case "musicprio":
@@ -105,7 +105,7 @@ public abstract class ResponseType extends Middleware {
 			case "pushmusic":
 			case "front":
 			case "musicfront":
-				this.onReceiveMusicRequest(ScheduleType.PRIO);
+				this.onReceiveMusicRequest(ScheduleType.PRIO, this.getArgumentSection());
 				break;
 			case "clear":
 			case "musicclear":
@@ -275,7 +275,7 @@ public abstract class ResponseType extends Middleware {
 			case "force":
 			case "musicforce":
 			case "forcemusic":
-				this.onReceiveMusicRequest(ScheduleType.INTRUSIVE);
+				this.onReceiveMusicRequest(ScheduleType.INTRUSIVE, this.getArgumentSection());
 				break;
 			case "chicken":
 				this.onChicken();
@@ -343,6 +343,33 @@ public abstract class ResponseType extends Middleware {
 			case "hilfe":
 			case "help":
 				this.onHelp();
+				break;
+			case "xiko":
+			case "xico":
+			case "xikaner":
+			case "xicaner":
+			case "xican":
+			case "ziko":
+			case "zico":
+			case "zikaner":
+			case "zicaner":
+			case "zican":
+			case "siko":
+			case "sico":
+			case "sikaner":
+			case "sicaner":
+			case "sican":
+			case "ciko":
+			case "cico":
+			case "cikaner":
+			case "cicaner":
+			case "cican":
+			case "iko":
+			case "ico":
+			case "ikaner":
+			case "icaner":
+			case "ican":
+				this.onMexico();
 				break;
 			default:
 				// Nothing, user typed in a command that does not exist
@@ -462,7 +489,7 @@ public abstract class ResponseType extends Middleware {
 	/**
 	 * Receives a link to a music source and adds it to the music queue
 	 */
-	protected abstract void onReceiveMusicRequest(ScheduleType scheduleType);
+	protected abstract void onReceiveMusicRequest(ScheduleType scheduleType, String text);
 
 	protected abstract void onPauseMusic();
 
@@ -570,5 +597,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onLoopMusic();
 
 	protected abstract void onHelp();
+
+	protected abstract void onMexico();
 
 }
