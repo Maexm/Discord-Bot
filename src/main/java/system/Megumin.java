@@ -982,7 +982,7 @@ public class Megumin extends ResponseType {
 					this.getClient().getUserById(userId)
 					.flatMap(user -> user.getPrivateChannel())
 					.flatMap(channel -> channel.createMessage(spec ->{
-						spec.setContent(Markdown.toSafeMultilineBlockQuotes("Auf "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los. Komm und sag Hallo!\n\n"
+						spec.setContent(Markdown.toSafeMultilineBlockQuotes("In "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los. Komm und sag Hallo!\n\n"
 							+"Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!"));
 					})).block();
 				}
