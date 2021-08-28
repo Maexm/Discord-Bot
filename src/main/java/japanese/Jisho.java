@@ -58,7 +58,21 @@ public class Jisho {
 				// data.slug BROKEN
 			if(data.slug.startsWith("5186") && data.slug.length() == 24) {
 				// Use japanese[0].word instead of slug
-				ret += Markdown.toBold(data.japanese[0].word)+" ("+data.japanese[0].reading+" - "+ToRomajiConverter.toRomaji(data.japanese[0].reading)+")\n";
+
+				// Uff
+				if(data.japanese[0].reading == null && data.japanese[0].word != null){
+					ret += Markdown.toBold(data.japanese[0].word);
+				}
+				else if(data.japanese[0].reading != null && data.japanese[0].word == null){
+					ret += Markdown.toBold( data.japanese[0].reading) + " (" + data.japanese[0].reading+" - "+ToRomajiConverter.toRomaji(data.japanese[0].reading)+")";
+				}
+				else if(data.japanese[0].reading != null && data.japanese[0].word != null) {
+					ret += Markdown.toBold( data.japanese[0].word) + " (" + data.japanese[0].reading+" - "+ToRomajiConverter.toRomaji(data.japanese[0].reading)+")";
+				}
+				else{
+					continue;
+				}
+				ret += "\n";
 			}
 			else {
 				// WORD AND READING
