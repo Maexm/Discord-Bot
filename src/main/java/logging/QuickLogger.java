@@ -1,5 +1,7 @@
 package logging;
 
+import start.RuntimeVariables;
+
 public final class QuickLogger extends BasicLogger {
 
     private final static QuickLogger instance = new QuickLogger();
@@ -21,7 +23,9 @@ public final class QuickLogger extends BasicLogger {
     }
 
     public final static void logDebug(final String text){
-        QuickLogger.instance.log(text, LogType.DEBUG);
+        if(RuntimeVariables.isDebug()){
+            QuickLogger.instance.log(text, LogType.DEBUG);
+        }
     }
 
     public final static void logfeedback(final String text){
