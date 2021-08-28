@@ -336,23 +336,32 @@ public class AudioEventHandler extends AudioEventAdapter {
 
 	void ended() {
 		QuickLogger.logDebug("Music ended!");
-		//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
-		this.active = false;
-		this.setLoop(false);
-		this.refreshTask.cancel();
-		this.refreshTimer.purge();
-		this.refreshTimer.cancel();
-		this.refreshTimer = null;
-		this.lockMsgUpdate = false;
-
-		Message oldMessage = this.radioMessage.orElse(null);
-		this.radioMessage = Optional.empty();
 		try{
-			this.parent.leaveVoiceChannel();
-			oldMessage.delete().subscribe();
-		}catch(Exception e){
-			QuickLogger.logMinErr("Could not delete radio message while ending music session");
-		}		
+			//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
+			this.active = false;
+			this.setLoop(false);
+			if(this.refreshTask != null){
+				this.refreshTask.cancel();
+			}
+			if(this.refreshTimer != null){
+				this.refreshTimer.purge();
+				this.refreshTimer.cancel();
+			}
+			this.refreshTimer = null;
+			this.lockMsgUpdate = false;
+
+			Message oldMessage = this.radioMessage.orElse(null);
+			this.radioMessage = Optional.empty();
+			try{
+				this.parent.leaveVoiceChannel();
+				oldMessage.delete().subscribe();
+			}catch(Exception e){
+				QuickLogger.logMinErr("Could not delete radio message while ending music session");
+			}
+		} catch(Exception e){
+			QuickLogger.logFatalErr("Failed to end music session!");
+			e.printStackTrace();
+		}	
 	}
 
 	@Override
