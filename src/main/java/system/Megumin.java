@@ -802,9 +802,10 @@ public class Megumin extends ResponseType {
 			return;
 		}
 
-		if(this.argumentSection.contains(":")){
+		final String possibleTimestamp = this.getArgumentSection().replaceAll("[^0-9]+", ":");
+		if(!this.getArgumentSection().endsWith("%") && possibleTimestamp.contains(":")){
 			try{
-				long ms = Time.revertMsToPretty(this.getArgumentSection());
+				long ms = Time.revertMsToPretty(possibleTimestamp, ":");
 				long pos = this.getMusicWrapper().getMusicBotHandler().setPosition(ms);
 				this.sendAnswer("neue Position ist "+Markdown.toBold(TimePrint.msToPretty(pos)));
 				this.deleteReceivedMessage();
