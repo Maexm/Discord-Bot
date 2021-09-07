@@ -1102,17 +1102,17 @@ public class Megumin extends ResponseType {
 			this.sendAnswer("eine Antwort wurde dir privat gesendet!");
 		}
 		if(set.isEmpty()){
-			this.sendPrivateAnswer("Du hast noch keinen VoiceChannel abonniert. Schreib auf einem entsprechendem Server "+Markdown.toCodeBlock("MegFollow ChannelName/Snowflake")+", um Benachrichtigungen für einen VoiceChannel zu erhalten!");
+			this.sendPrivateAnswer("Du hast noch keinen VoiceChannel abonniert. Schreib auf einem entsprechenden Server "+Markdown.toCodeBlock("MegFollow ChannelName/Snowflake")+", um Benachrichtigungen für einen VoiceChannel zu erhalten!");
 			return;
 		}
 
-		String response = "Du hast "+set.size()+" "+(set.size() == 1 ? "VoiceChannel" : "VoiceChannels")+" abonniert:\n";
+		String response = "Du hast "+set.size()+" VoiceChannel"+" abonniert:\n";
 		response += Markdown.toUnsafeMultilineBlockQuotes("");
 		for(Pair<Guild, VoiceChannel> pair : set){
 			response += "Server: "+Markdown.toBold(pair.key.getName())+" - VoiceChannel: "+Markdown.toBold(pair.value.getName())+"\n";
 		}
 
-		response += "\n\nSchreib auf dem entsprechendem Server(!) "+Markdown.toCodeBlock("MegUnfollow ChannelName/Snowflake")+" um einen Kanal zu deabonnieren!";
+		response += "\n\nSchreib auf dem entsprechenden Server(!) "+Markdown.toCodeBlock("MegUnfollow ChannelName/Snowflake")+" um einen Kanal zu deabonnieren!";
 
 		this.sendPrivateAnswer(response);
 		this.deleteReceivedMessage();
