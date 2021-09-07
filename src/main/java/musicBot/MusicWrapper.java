@@ -52,7 +52,7 @@ public class MusicWrapper {
 	}
 
 	public final void setMusicChannelId(Snowflake id){
-		this.musicChannelId = Optional.of(id);
+		this.musicChannelId = Optional.ofNullable(id);
 	}
 
 }
