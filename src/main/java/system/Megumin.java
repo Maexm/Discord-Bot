@@ -71,12 +71,12 @@ public class Megumin extends ResponseType {
 		super(config, localTasks);
 		if (!RuntimeVariables.isDebug() && !this.isPrivate()){
 			try {
-				MessageChannel channel = this.getPsaChannel(false);
-				Message message = channel
-						.createMessage(
-								"Ich bin Online und einsatzbereit! Schreib " + Markdown.toCodeBlock("MegHelp") + "!")
-						.block();
-				this.config.helloMessage = message;
+				// MessageChannel channel = this.getPsaChannel(false);
+				// Message message = channel
+				// 		.createMessage(
+				// 				"Ich bin Online und einsatzbereit! Schreib " + Markdown.toCodeBlock("MegHelp") + "!")
+				// 		.block();
+				// this.config.helloMessage = message;
 			} catch (Exception e) {
 				QuickLogger.logMinErr("Failed to post hello message in guild " + this.getGuildSecureName());
 			}
