@@ -1,4 +1,9 @@
 # Changelog
+# 1.3.1.0 (7th of Semptember 2021)
+:mexico:
+- Evaluate MegJump Position with regex
+- Custom Logging Strategy
+- Minor fixes
 ## 1.3.0.0 (31th of July 2021)
 - MegLoop
 - Minor bug fixes
