@@ -803,7 +803,7 @@ public class Megumin extends ResponseType {
 		}
 
 		final String possibleTimestamp = this.getArgumentSection().replaceAll("[^0-9]+", ":");
-		if(!this.getArgumentSection().endsWith("%") && possibleTimestamp.contains(":")){
+		if(!this.getArgumentSection().endsWith("%") && !this.getArgumentSection().startsWith("-") && possibleTimestamp.contains(":")){
 			try{
 				long ms = Time.revertMsToPretty(possibleTimestamp, ":");
 				long pos = this.getMusicWrapper().getMusicBotHandler().setPosition(ms);
