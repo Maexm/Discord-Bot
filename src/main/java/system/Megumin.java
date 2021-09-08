@@ -784,6 +784,9 @@ public class Megumin extends ResponseType {
 				+ "Er wird bei Rückfragen auf dich zukommen. Falls du zunächst keine Rückmeldung bekommst heißt das, dass dein Feedback ohne Rückfragen akzeptiert wurde :smile:");
 		this.sendPrivateAnswer(Markdown.toSafeMultilineBlockQuotes(this.getArgumentSection()));
 		this.deleteReceivedMessage();
+		if(!this.isTextCommand()){
+			this.sendAnswer("*siehe Privatchat*");
+		}
 	}
 
 	@Override
