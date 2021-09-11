@@ -152,7 +152,7 @@ public class Megumin extends ResponseType {
 					String surveyOption = survey.getOptionTextFromIndex(arguments[1]);
 					if (survey.optionExists(surveyOption)) {
 						boolean inPrivate = this.isPrivate();
-						if (!inPrivate) {
+						if (!inPrivate && this.isTextCommand()) {
 							this.deleteReceivedMessage();
 							this.sendPrivateAnswer(
 									"Du hast öffentlich für eine Umfrage abgestimmt. Ich habe diese Nachricht gelöscht,\n"
@@ -190,6 +190,9 @@ public class Megumin extends ResponseType {
 								break;
 							default:
 								throw new IllegalMagicException("Invalid vote response '" + resp + "' received!");
+						}
+						if(!this.isTextCommand()){
+							this.sendAnswer("Siehe Privatchat :)");
 						}
 					} else {
 						this.sendAnswer("diese Option existiert nicht!");
