@@ -513,7 +513,6 @@ public class AudioEventHandler extends AudioEventAdapter {
 			} 
 			catch (Exception e) {
 				QuickLogger.logMinErr("Failed to update radio message!");
-				e.printStackTrace();
 			}
 	}
 
