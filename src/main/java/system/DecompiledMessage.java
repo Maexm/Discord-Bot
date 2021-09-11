@@ -53,7 +53,7 @@ public class DecompiledMessage {
             List<String> optionVals = new ArrayList<>();
 
             command.getOptions().forEach(option -> {
-                optionVals.add(DecompiledMessage.stringifyOptions(option, ";"));
+                optionVals.add(DecompiledMessage.stringifyOption(option, ";"));
             });
 
             if(!optionVals.isEmpty()){
@@ -82,7 +82,7 @@ public class DecompiledMessage {
         }
     }
 
-    public final static String stringifyOptions(ApplicationCommandInteractionOption option, String delimiter){
+    public final static String stringifyOption(ApplicationCommandInteractionOption option, String delimiter){
         if(option.getValue().isPresent()){
             return option.getValue().get().getRaw();
         }
@@ -90,7 +90,7 @@ public class DecompiledMessage {
             String nextDelimiter = delimiter.equals(";") ? "-" : ";";
             List<String> optionVals = new ArrayList<>();
             option.getOptions().forEach(opt -> {
-                optionVals.add(DecompiledMessage.stringifyOptions(opt, nextDelimiter));
+                optionVals.add(DecompiledMessage.stringifyOption(opt, nextDelimiter));
             });
             return !optionVals.isEmpty() ? String.join(delimiter, optionVals) : "";
         }
