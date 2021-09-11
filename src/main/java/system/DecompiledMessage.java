@@ -64,11 +64,6 @@ public class DecompiledMessage {
             this.msgAuthorObject = interaction.getUser();
             this.msgAuthorName = this.msgAuthorObject != null ? this.msgAuthorObject.getUsername() : "";
             this.msgMember = interaction.getMember();
-            // Block private
-            if(!this.msgMember.isPresent()){
-                event.reply("Wird aktuell in privaten Kanälen nicht unterstützt. Bitte probiere es auf einem Server!").block();
-                return;
-            }
             this.channel = interaction.getChannel().block();
             this.messageObject = Optional.empty();
             this.interactionObject = Optional.ofNullable(event);
