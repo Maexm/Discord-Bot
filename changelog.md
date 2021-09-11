@@ -1,5 +1,8 @@
 # Changelog
-# 1.3.1.0 (7th of Semptember 2021)
+
+## 1.3.1.1 (11th of September 2021)
+- Minor bug fixes and slash command adjustments
+## 1.3.1.0 (7th of Semptember 2021)
 :mexico:
 - Evaluate MegJump Position with regex
 - Custom Logging Strategy
