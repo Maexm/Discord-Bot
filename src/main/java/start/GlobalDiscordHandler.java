@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Optional;
 
 import com.google.gson.Gson;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -34,6 +35,7 @@ import spotify.SpotifyResolver;
 import survey.Survey;
 import system.DecompiledMessage;
 import system.GuildHandler;
+import util.StringUtils;
 import util.Time;
 import weather.Weather;
 
@@ -45,15 +47,15 @@ public class GlobalDiscordHandler {
     private final GatewayDiscordClient client;
     private final ArrayList<Survey> surveys;
     private final AudioPlayerManager playerManager;
-    private final Secrets secrets;
+    private final Optional<Secrets> secrets;
     private final Weather weatherService;
     private final TaskManager<RefinedTimerTask> globalTasks;
 
-    public GlobalDiscordHandler(ReadyEvent readyEvent, Secrets secrets) {
+    public GlobalDiscordHandler(ReadyEvent readyEvent, Optional<Secrets> secrets) {
         this.globalProxy = new GlobalDiscordProxy(this);
         this.client = readyEvent.getClient();
         this.secrets = secrets;
-        this.weatherService = new Weather(secrets.getWeatherApiKey());
+        this.weatherService = new Weather(secrets.isPresent() ? secrets.get().getWeatherApiKey() : null);
         this.globalTasks = new TaskManager<>();
         
 
@@ -122,7 +124,12 @@ public class GlobalDiscordHandler {
     }
 
     private SpotifyResolver createSpotifyResolver(){
-        return new SpotifyResolver(this.secrets.getSpotifyClientId(), this.secrets.getSpotifyClientSecret());
+        if(this.secrets.isPresent() && !StringUtils.isNullOrWhiteSpace(this.secrets.get().getSpotifyClientId()) && !StringUtils.isNullOrWhiteSpace(this.secrets.get().getSpotifyClientSecret())){
+            return new SpotifyResolver(this.secrets.get().getSpotifyClientId(), this.secrets.get().getSpotifyClientSecret());
+        }
+        else{
+            return new SpotifyResolver("", "");
+        }
     }
 
     public HashMap<Snowflake, GuildHandler> getGuildMap(){
