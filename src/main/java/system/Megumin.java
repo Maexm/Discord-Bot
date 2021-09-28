@@ -1288,13 +1288,15 @@ public class Megumin extends ResponseType {
 		switch(args.size()){
 			// Current config
 			case 1:
-				answer += "Es gelten folgende Einstellungen:\n\n"
+				answer += "Es gelten folgende Einstellungen:\n"
 				       + "Hier werden Infos zur Musiksession geposted: " + Markdown.toBold(target.getMusicWrapper().getMusicChannelId().isPresent() ? target.getChannelById(target.getMusicWrapper().getMusicChannelId().get()).getName() : "Kanal wird automatisch ermittelt")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";musik;channelId oder Name")+"\n\n"
-					   + "Rolle mit mehr Berechtigungen (aktuell Lautstärke ändern): "+ Markdown.toBold(target.getConfig().getSecurityProvider().specialRoleId != null ? target.getRoleById(target.getConfig().getSecurityProvider().specialRoleId).getName() : "Keiner außer Admins haben Extraberechtigungen")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";spezial;rollenId oder Name")+"\n\n"
+					   + "Rolle mit mehr Berechtigungen: "+ Markdown.toBold(target.getConfig().getSecurityProvider().specialRoleId != null ? target.getRoleById(target.getConfig().getSecurityProvider().specialRoleId).getName() : "Keiner außer Serveradmins hat Extraberechtigungen")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";spezial;rollenId oder Name")+"\n\n"
 					   + "Systembenachrichtigungen zum Bot (keine Update Infos): "+Markdown.toBold(target.getConfig().psaNote ? "Ja, dein Server bleibt immer informiert!" : "Nein, dein Server lebt hinterm Mond!")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";psa")+"\n\n"
 					   + "Benachrichtigungen bei neuen Updates: "+ Markdown.toBold(target.getConfig().updateNote ? "Ja, dein Server wird bei neuen Updates informiert!" : "Nein, deine Servermitglieder erfahren nicht, wenn es neue Funktionen zum Ausprobieren gibt!")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";update")+"\n\n"
-					   + "Heimatstadt: "+Markdown.toBold(target.getConfig().homeTown != null && !target.getConfig().homeTown.equals("") ? target.getConfig().homeTown : "Nichts angegeben, verwende Standard: "+RuntimeVariables.getInstance().getHometown())+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";stadt;Deine Stadt")+"\n\n";
-				break;
+					   + "Heimatstadt: "+Markdown.toBold(target.getConfig().homeTown != null && !target.getConfig().homeTown.equals("") ? target.getConfig().homeTown : "Nichts angegeben, verwende Standard: "+RuntimeVariables.getInstance().getHometown())+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";stadt;Deine Stadt")+"\n\n"
+					   + "Befehlsprefix (NUR auf deinem Server): "+Markdown.toBold(!StringUtils.isNullOrWhiteSpace(target.getConfig().customPrefix) ? target.getConfig().customPrefix : "Nichts angegeben.")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";prefix;neuer Prefix")+"\n\n";
+				this.sendPrivateAnswer(answer);
+				return;
 			// Apply config (case 3 if config requires args)
 			case 3:
 				configArg = args.get(2);
@@ -1370,6 +1372,13 @@ public class Megumin extends ResponseType {
 						target.getConfig().homeTown = configArg;
 						answer += configArg.equals("") ? "Verwende Standard "+Markdown.toBold(RuntimeVariables.getInstance().getHometown()) : "Die Heimatstadt des Servers ist nun "+Markdown.toBold(configArg);
 						break;
+					case "prefix":
+					case "command":
+					case "cmd":
+					case "befehl":
+						target.getConfig().customPrefix = configArg;
+						answer += configArg.equals("") ? "Prefix gelöscht. Alle Befehle fangen mit "+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+ " an!" : "Befehle fangen auf deinem Server jetzt mit "+Markdown.toBold(configArg)+" an. Der alte Prefix ("+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+") funktioniert aber weiterhin!";
+						break;
 					default:
 					this.sendPrivateAnswer("Ungültiger Parameter. Argumente müssen mit Semikolon getrennt werden. Versuchs mit "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";option;argumente"));
 					this.deleteReceivedMessage();
@@ -1384,7 +1393,13 @@ public class Megumin extends ResponseType {
 
 		this.sendPrivateAnswer(answer);
 		this.deleteReceivedMessage();
-		this.getGlobalProxy().saveAllGuilds();
+		try{
+			this.getGlobalProxy().saveAllGuilds();
+			this.sendPrivateAnswer("Einstellungen erfolgreich gespeichert :white_check_mark:");
+		}
+		catch(Exception e){
+			this.sendPrivateAnswer("Beim Speichern ist ein Problem aufgetreten. Bitte prüfe die aktuellen Einstellungen und versuche es ggf. nochmal! :x:");
+		}
 	}
 
 	@Override

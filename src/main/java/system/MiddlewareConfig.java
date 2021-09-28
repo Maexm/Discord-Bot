@@ -24,6 +24,7 @@ public class MiddlewareConfig {
 	public boolean psaNote = true;
 	private final SecurityProvider securityProvider;
 	public String homeTown = null;
+	public String customPrefix = null;
 
 	Message helloMessage = null;
     

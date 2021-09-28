@@ -32,6 +32,7 @@ import schedule.TaskManager;
 import security.SecurityLevel;
 import start.RuntimeVariables;
 import util.Pair;
+import util.StringUtils;
 import start.GlobalDiscordProxy;
 
 public final class GuildHandler {
@@ -381,6 +382,12 @@ public final class GuildHandler {
 				if(guildConfig.homeTown != null && !guildConfig.homeTown.equals("")){
 					this.middlewareConfig.homeTown = guildConfig.homeTown;
 				}
+
+				// ########## PREFIX ##########
+				this.middlewareConfig.customPrefix = null;
+				if(!StringUtils.isNullOrWhiteSpace(guildConfig.prefix)){
+					this.middlewareConfig.customPrefix = guildConfig.prefix;
+				}
 			}
 		}
 	}
@@ -395,6 +402,7 @@ public final class GuildHandler {
 		ret.psaNote = this.middlewareConfig.psaNote;
 		ret.specialRoleId = this.middlewareConfig.getSecurityProvider().specialRoleId != null ? this.middlewareConfig.getSecurityProvider().specialRoleId.asLong() : null;
 		ret.updateNote = this.middlewareConfig.updateNote;
+		ret.prefix = this.middlewareConfig.customPrefix;
 		
 		// Convert HashMap with Snowflakes into arraylist with VoiceSubscription objects containing longs
 		ArrayList<VoiceSubscription> helperSubscriptions = new ArrayList<>();
