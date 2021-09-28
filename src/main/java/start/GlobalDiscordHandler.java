@@ -35,6 +35,7 @@ import spotify.SpotifyResolver;
 import survey.Survey;
 import system.DecompiledMessage;
 import system.GuildHandler;
+import translator.TranslatorService;
 import util.StringUtils;
 import util.Time;
 import weather.Weather;
@@ -50,6 +51,7 @@ public class GlobalDiscordHandler {
     private final Optional<Secrets> secrets;
     private final Weather weatherService;
     private final TaskManager<RefinedTimerTask> globalTasks;
+    private final TranslatorService translator;
 
     public GlobalDiscordHandler(ReadyEvent readyEvent, Optional<Secrets> secrets) {
         this.globalProxy = new GlobalDiscordProxy(this);
@@ -57,6 +59,7 @@ public class GlobalDiscordHandler {
         this.secrets = secrets;
         this.weatherService = new Weather(secrets.isPresent() ? secrets.get().getWeatherApiKey() : null);
         this.globalTasks = new TaskManager<>();
+        this.translator = new TranslatorService(secrets.isPresent() ? secrets.get().getTranslatorKey() : null, secrets.isPresent() ? secrets.get().getTranslatorRegion() : null);
         
 
         this.playerManager = new DefaultAudioPlayerManager();
@@ -274,5 +277,9 @@ public class GlobalDiscordHandler {
 
     Weather getWeatherService(){
         return this.weatherService;
+    }
+
+    TranslatorService getTranslatorService(){
+        return this.translator;
     }
 }

@@ -16,6 +16,9 @@ public class Secrets {
         if(StringUtils.isNullOrWhiteSpace(config.weatherApiKey)){
             QuickLogger.logWarn("WeatherApiKey missing. Services using weather will not work.");
         }
+        if(StringUtils.isNullOrWhiteSpace(config.translatorKey) || StringUtils.isNullOrWhiteSpace(config.translatorRegion)){
+            QuickLogger.logWarn("translatorKey and/or translatorRegion missing. Services using translator will not work.");
+        }
         
     }
 
@@ -39,5 +42,13 @@ public class Secrets {
 
     String getWeatherApiKey(){
         return this.config.weatherApiKey;
+    }
+
+    String getTranslatorKey(){
+        return this.config.translatorKey;
+    }
+
+    String getTranslatorRegion(){
+        return this.config.translatorRegion;
     }
 }

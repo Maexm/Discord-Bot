@@ -53,12 +53,15 @@ import util.HTTPRequests;
 import util.Help;
 import util.Markdown;
 import util.Pair;
+import util.StringUtils;
 import util.Time;
 import util.TimePrint;
 import start.RuntimeVariables;
 import start.StartUp;
 import survey.Survey;
 import survey.VoteChange;
+import translator.TranslatorResponse;
+import translator.LanguageResponse.Language;
 import weather.Weather;
 import wiki.Wikipedia;
 import wiki.Wikipedia.WikiPage;
@@ -1436,6 +1439,42 @@ public class Megumin extends ResponseType {
 		}
 		catch(Exception e){
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected void onTranslate(String query) {
+		if(StringUtils.isNullOrWhiteSpace(query)){
+			this.sendAnswer("Text fehlt! Was soll ich übersetzen?");
+			return;
+		}
+		
+		Optional<Message> msg = this.sendAnswer("wird übersetzt... :mag:");
+
+		Optional<TranslatorResponse[]> resps = this.getGlobalProxy().getTranslatorService().translate(new String[] {query}, "de");
+		if(resps.isEmpty() || resps.get().length == 0 || resps.get()[0].translations == null || resps.get()[0].translations.length == 0){
+			String errMsg = this.getMessageAuthor().getMention()+", konnte "+Markdown.toBold(query)+" nicht übersetzen!";
+			if(msg.isPresent()){
+				msg.get().edit(spec -> spec.setContent(errMsg)).block();
+			}
+			else{
+				this.sendAnswer(errMsg);
+			}
+			return;
+		}
+
+		
+
+		TranslatorResponse firstResp = resps.get()[0];
+		Optional<Language> detectedLang = firstResp.detectedLanguage != null ? this.getGlobalProxy().getTranslatorService().getLanguage(firstResp.detectedLanguage.language, "de") : Optional.empty();
+		String successMsg = Markdown.toSafeMultilineBlockQuotes(this.getMessageAuthor().getMention()+"\n"+(detectedLang.isPresent() ? "Erkannte Sprache: "+Markdown.toBold(detectedLang.get().name)+"\n" : "")
+		+ "\nÜbersetzung: "+Markdown.toBold(firstResp.translations[0].text));
+
+		if(msg.isPresent()){
+			msg.get().edit(spec -> spec.setContent(successMsg)).block();
+		}
+		else{
+			this.sendAnswer(successMsg);
 		}
 	}
 }
