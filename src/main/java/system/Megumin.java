@@ -1437,10 +1437,11 @@ public class Megumin extends ResponseType {
 				interactionAns = "eine Befehlsliste wurde dir privat zugesendet!";
 				break;
 			default:
-				interactionAns = "dafür gibt es keine Befehlsliste!";
+				this.sendAnswer("dafür gibt es keine Befehlsliste!");
+				return;
 		}
 
-		if(!this.isTextCommand()){
+		if(!this.isPrivate()){
 			this.sendAnswer(interactionAns);
 		}
 	}
