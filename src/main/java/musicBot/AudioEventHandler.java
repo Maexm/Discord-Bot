@@ -170,6 +170,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 	public void next(int amount) {
 		amount--;// Decrement amount, since this.player.playtrack will already "skip" one track.
 		this.remove(amount);
+		this.setLoop(false);
 		if (this.tracks.size() != 0) {
 			AudioTrack track = this.tracks.pollFirst();
 			this.loadScheduler.playTrack(track, track.getUserData(MusicTrackInfo.class));
@@ -286,32 +287,39 @@ public class AudioEventHandler extends AudioEventAdapter {
 		this.refreshTimer.purge();
 
 		// LOAD FAILED
-		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
-			QuickLogger.logErr("Failed to log track with reason "+endReason+ " MayStartNext = "+endReason.mayStartNext);
-			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
-			if (failedTrack != null) {
-				DecompiledMessage failedTrackMsg = failedTrack.userRequestMessage;
-				failedTrackMsg.getChannel()
-				.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
-				+"Bitte versuch es erneut. Falls das Problem besteht, melde es bitte kurz mit "+Markdown.toCodeBlock("MegFeedback Deine_Fehlerbeschreibung"))
-				.subscribe();
-			} else if (this.radioMessage.isPresent()) {
-				this.radioMessage.get().getChannel()
-				.flatMap(channel -> channel.createMessage("Während der Wiedergabe eines Tracks ist ein Fehler aufgetreten!"))
-				.subscribe();
-			}
-		}
-		else if(endReason == AudioTrackEndReason.CLEANUP){
-			MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
-			if (failedTrack != null) {
-				DecompiledMessage failedTrackMsg = failedTrack.userRequestMessage;
+		switch(endReason){
+			case LOAD_FAILED:
+				QuickLogger.logErr("Failed to log track with reason "+endReason+ " MayStartNext = "+endReason.mayStartNext);
+				MusicTrackInfo failedTrack = track.getUserData(MusicTrackInfo.class);
+				if (failedTrack != null) {
+					DecompiledMessage failedTrackMsg = failedTrack.userRequestMessage;
 					failedTrackMsg.getChannel()
-					.createMessage(failedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!")
+					.createMessage(failedTrack.getSubmittedByUser().getMention() + ", bei der Wiedergabe deines Tracks ist leider ein Fehler aufgetreten!\n\n"
+					+"Bitte versuch es erneut. Falls das Problem besteht, melde es bitte kurz mit "+Markdown.toCodeBlock("MegFeedback Deine_Fehlerbeschreibung"))
 					.subscribe();
-			} else if (this.radioMessage.isPresent()) {
-					this.radioMessage.get().getChannel().flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
+				} else if (this.radioMessage.isPresent()) {
+					this.radioMessage.get().getChannel()
+					.flatMap(channel -> channel.createMessage("Während der Wiedergabe eines Tracks ist ein Fehler aufgetreten!"))
 					.subscribe();
-			}
+				}
+				break;
+			case CLEANUP:
+				MusicTrackInfo cleanedTrack = track.getUserData(MusicTrackInfo.class);
+				if (cleanedTrack != null) {
+					DecompiledMessage cleanedTrackMsg = cleanedTrack.userRequestMessage;
+						cleanedTrackMsg.getChannel()
+						.createMessage(cleanedTrack.getSubmittedByUser().getMention() + ", dein Track war inaktiv und wurde beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!")
+						.subscribe();
+				} else if (this.radioMessage.isPresent()) {
+						this.radioMessage.get().getChannel().flatMap(channel -> channel.createMessage("Ein Track wurde aufgrund von Inaktivität beendet!\nBitte kontaktiere den Botinhaber mit `MegFeedback Deine Bugmeldung`, falls das öfter vorkommen sollte. Du solltest die Musik-Session jetzt nochmal starten können!"))
+						.subscribe();
+				}
+				break;
+			case REPLACED:
+				this.setLoop(false);
+				break;
+			default:
+			// Default case resolves warning in switch arg
 		}
 
 		// STARTING NEXT

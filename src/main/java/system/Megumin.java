@@ -425,7 +425,6 @@ public class Megumin extends ResponseType {
 					this.sendAnswer("überspringe Musik...");
 					this.deleteReceivedMessage();
 				}
-				this.getMusicWrapper().getMusicBotHandler().setLoop(false);
 				this.getMusicWrapper().getMusicBotHandler().next(count);// Count = 1, unless a different number was
 																		// parsed
 			}
