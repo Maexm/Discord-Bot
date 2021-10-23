@@ -54,10 +54,12 @@ public class AudioEventHandler extends AudioEventAdapter {
 	 */
 	private boolean loadFlag = true;
 	private boolean isLoop = false;
+	private boolean prevMutex = false;
 	/**
 	 * Copy of current track. Only present, if playback is looping (setting a finished track to pos 0 and replaying it wont work -> clone is required)
 	 */
 	private Optional<AudioTrack> trackCopy = Optional.empty();
+	private Optional<AudioTrack> prevSong = Optional.empty();
 
 	public AudioEventHandler(final AudioPlayer player, final AudioPlayerManager playerManager,
 			final TrackLoader loadScheduler, final LinkedList<AudioTrack> tracks,
@@ -279,6 +281,24 @@ public class AudioEventHandler extends AudioEventAdapter {
 			}catch(Exception e){}
 		}
 	}
+	/**
+	 * Plays previously played song, if one exists.
+	 * @return The song that was stored for replay
+	 */
+	public Optional<AudioTrack> playPrevious(){
+		if(!this.isActive()){
+			return Optional.empty();
+		}
+		if(this.prevSong.isPresent()){
+			AudioTrack ret = this.prevSong.get().makeClone();
+			this.tracks.addFirst(this.getCurrentAudioTrack().makeClone());
+			this.prevMutex = true;
+			this.loadScheduler.playTrack(this.prevSong.get(), this.prevSong.get().getUserData(MusicTrackInfo.class));
+			this.prevSong = Optional.empty();
+			return Optional.ofNullable(ret);
+		}
+		return this.prevSong;
+	}
 
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
@@ -322,24 +342,29 @@ public class AudioEventHandler extends AudioEventAdapter {
 			// Default case resolves warning in switch arg
 		}
 
+		try{
+			if(!this.isLoop() && !track.getInfo().isStream && !this.prevMutex){
+				this.prevSong = Optional.ofNullable(track.makeClone());
+			}
+		}
+		catch(Exception e) {}
+		
+
 		// STARTING NEXT
-		if(this.isLoop() && endReason.mayStartNext && this.trackCopy.isPresent()){
-			this.loadScheduler.playTrack(this.trackCopy.get().makeClone(), track.getUserData(MusicTrackInfo.class));
+		if(endReason.mayStartNext){
+			if(this.isLoop() && this.trackCopy.isPresent()){
+				this.loadScheduler.playTrack(this.trackCopy.get().makeClone(), track.getUserData(MusicTrackInfo.class));
+			}
+			else if(this.tracks.size() != 0){
+				QuickLogger.logDebug("Starting next!");
+				this.next(1);
+			}
 		}
-		else if (this.tracks.size() != 0 && endReason.mayStartNext) {
-			QuickLogger.logDebug("Starting next!");
-			this.next(1);
-		}
-
-		// TRACK HAS BEEN REPALCED
-		else if (endReason == AudioTrackEndReason.REPLACED) {
-			QuickLogger.logDebug("Track got replaced!");
-		}
-
 		// NO MORE TRACKS IN QUEUE -> STOPPING
-		else {
+		else if(endReason != AudioTrackEndReason.REPLACED){
 			this.ended();
 		}
+		this.prevMutex = false;
 	}
 
 	void ended() {
@@ -348,6 +373,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 			//this.parent.getClient().updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).subscribe();
 			this.active = false;
 			this.setLoop(false);
+			this.prevSong = Optional.empty();
 			if(this.refreshTask != null){
 				this.refreshTask.cancel();
 			}

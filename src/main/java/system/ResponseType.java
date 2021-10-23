@@ -395,6 +395,12 @@ public abstract class ResponseType extends Middleware {
 					case "translation":
 						this.onTranslate(this.getArgumentSection());
 						break;
+					case "back":
+					case "zurueck":
+					case "prev":
+					case "previous":
+						this.onPrevMusic();
+						break;
 					default:
 						// Nothing, user typed in a command that does not exist
 						isCommand = false;
@@ -628,5 +634,7 @@ public abstract class ResponseType extends Middleware {
 	protected abstract void onMexico();
 
 	protected abstract void onTranslate(String query);
+
+	protected abstract void onPrevMusic();
 
 }

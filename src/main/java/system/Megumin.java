@@ -1492,5 +1492,18 @@ public class Megumin extends ResponseType {
 			this.sendAnswer(successMsg);
 		}
 	}
+
+	@Override
+	protected void onPrevMusic() {
+		if(this.handleMusicCheck(true, true)){
+			Optional<AudioTrack> prevTrack = this.config.musicWrapper.getMusicBotHandler().playPrevious();
+			if(prevTrack.isPresent()){
+				this.sendAnswer("spiele vorherigen Song "+Markdown.toBold(prevTrack.get().getInfo().title) + " von "+Markdown.toBold(prevTrack.get().getInfo().author));
+			}
+			else{
+				this.sendAnswer("kein vorheriger Song vorhanden!");
+			}
+		}
+	}
 }
 
