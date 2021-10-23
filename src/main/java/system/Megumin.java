@@ -1376,7 +1376,7 @@ public class Megumin extends ResponseType {
 					case "cmd":
 					case "befehl":
 						target.getConfig().customPrefix = configArg;
-						answer += configArg.equals("") ? "Prefix gelöscht. Alle Befehle fangen mit "+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+ " an!" : "Befehle fangen auf deinem Server jetzt mit "+Markdown.toBold(configArg)+" an. Der alte Prefix ("+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+") funktioniert aber weiterhin!";
+						answer += StringUtils.isNullOrWhiteSpace(configArg) ? "Prefix gelöscht. Alle Befehle fangen mit "+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+ " an!" : "Befehle fangen auf deinem Server jetzt mit "+Markdown.toBold(configArg)+" an. Der alte Prefix ("+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+") funktioniert aber weiterhin!";
 						break;
 					default:
 					this.sendPrivateAnswer("Ungültiger Parameter. Argumente müssen mit Semikolon getrennt werden. Versuchs mit "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";option;argumente"));
