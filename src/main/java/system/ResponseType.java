@@ -139,6 +139,7 @@ public abstract class ResponseType extends Middleware {
 						break;
 					case "stop":
 					case "musicstop":
+					case "leave":
 						this.onStopMusic();
 						break;
 					case "musicnxt":
@@ -301,6 +302,7 @@ public abstract class ResponseType extends Middleware {
 					case "chicken nuggets":
 					case "chickennuggets":
 					case "chickenmegnuggets":
+					case "nugget":
 						this.onNuggets();
 						break;
 					case "pommes":
@@ -393,6 +395,7 @@ public abstract class ResponseType extends Middleware {
 					case "trans":
 					case "uebersetzer":
 					case "translation":
+					case "t":
 						this.onTranslate(this.getArgumentSection());
 						break;
 					case "back":
