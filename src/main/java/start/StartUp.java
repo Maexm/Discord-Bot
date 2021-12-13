@@ -30,7 +30,7 @@ public class StartUp {
 	public static void main(String[] args) {
 
 		QuickLogger.logInfo("STARTING MEGUMIN BOT");
-
+		System.setProperty("log4j2.formatMsgNoLookups", "true");
 		StartUp.loadMainConfig();
 		Secrets secrets = StartUp.loadSecrets();
 
