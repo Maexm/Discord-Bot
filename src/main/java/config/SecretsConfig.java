@@ -5,4 +5,6 @@ public class SecretsConfig {
     public String spotifyClientId;
     public String spotifyClientSecret;
     public String weatherApiKey;
+    public String translatorKey;
+    public String translatorRegion;
 }

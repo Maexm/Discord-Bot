@@ -11,8 +11,7 @@ Auf der [Dev-Branch](https://github.com/Maexm/Discord-Bot/tree/dev) werden **neu
 Mindestens Version 8, damit das Projekt kompiliert.\
 Mindestens Version 11, damit das Projekt vernünftig läuft.
 
-- **Maven**\
-Weiß leider nicht, welche Version...
+- **Maven**
 
 Die Version in der pom.xml muss ggf. an die Java Version angepasst werden:
 ```xml

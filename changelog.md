@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0.0 (19th of December 2021)
+- Custom Prefix for Commands (server scoped)
+- MegBack
+- Dependencies updated
+- MegTranslate
+- Minor fixes
 ## 1.3.1.1 (11th of September 2021)
 - Minor bug fixes and slash command adjustments
 ## 1.3.1.0 (7th of Semptember 2021)

@@ -2,6 +2,7 @@ package start;
 
 import java.io.Console;
 import java.io.File;
+import java.util.Optional;
 
 import com.google.gson.Gson;
 
@@ -24,6 +25,7 @@ import discord4j.core.object.presence.ClientActivity;
 import discord4j.core.object.presence.ClientPresence;
 import exceptions.StartUpException;
 import logging.QuickLogger;
+import util.StringUtils;
 
 public class StartUp {
 
@@ -32,7 +34,7 @@ public class StartUp {
 		QuickLogger.logInfo("STARTING MEGUMIN BOT");
 		System.setProperty("log4j2.formatMsgNoLookups", "true");
 		StartUp.loadMainConfig();
-		Secrets secrets = StartUp.loadSecrets();
+		Optional<Secrets> secrets = StartUp.loadSecrets();
 
 		// Retrieve debug info, if available
 		if (args.length >= 1 && args[0].toUpperCase().equals("DEBUG") || args.length >= 2 && args[1].toUpperCase().equals("DEBUG")) {
@@ -41,26 +43,31 @@ public class StartUp {
 
 		// Retrieve token
 		String TOKEN = "";
-		if (secrets != null && secrets.getBotKey() != null && secrets.getBotKey() != ""){
-			TOKEN = secrets.getLastBotKey();
+		if (secrets.isPresent() && secrets.get().getBotKey() != null && secrets.get().getBotKey() != ""){
+			TOKEN = secrets.get().getLastBotKey();
 		}
 		else if (args.length >= 1 && !args[0].toUpperCase().equals("DEBUG")) {
 			TOKEN = args[0];
 		} else {
-			System.out.println("Please enter a token (won't be displayed): ");
+			System.out.println("Please enter a token (won't be displayed in console): ");
 			Console console = System.console();
 			TOKEN = new String(console.readPassword());
 		}
 
-		if (TOKEN == null || TOKEN.equals("")) {
+		if (StringUtils.isNullOrWhiteSpace(TOKEN)) {
 			throw new StartUpException("Token missing");
 		}
+
 		//reactor.util.Loggers.useJdkLoggers();
 
 		// Objects
 		GlobalDiscordHandler[] discordHandlerWrapper = new GlobalDiscordHandler[1];
 
 		final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build().login().block();
+
+		if(secrets.isEmpty()){
+			QuickLogger.logWarn("No secrets.json file found. Some services will not work.");
+		}
 
 		// ########## On client login ##########
 
@@ -239,7 +246,7 @@ public class StartUp {
 		return true;
 	}
 
-	private static Secrets loadSecrets(){
+	private static Optional<Secrets> loadSecrets(){
 		final String configFileName = "./botConfig/secrets.json";
 
 		// Read config file
@@ -249,9 +256,9 @@ public class StartUp {
 
 		if(config == null){
 			QuickLogger.logMinErr("Failed to read secrets file " + configFileName);
-			return null;
+			return Optional.empty();
 		}
 
-		return new Secrets(config);
+		return Optional.ofNullable(new Secrets(config));
 	}
 }

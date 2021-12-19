@@ -7,6 +7,7 @@ import util.HTTPRequests;
 import util.Markdown;
 import util.Format;
 import util.Range;
+import util.StringUtils;
 import util.Units;
 import weather.WeatherResponses.SingleResponse;
 
@@ -26,7 +27,7 @@ public class Weather {
     public SingleResponse getWeatherResponse(String city){
         city = HTTPRequests.urlEncode(city);
 
-        if(this.apiKey == null || this.apiKey.equals("")){
+        if(StringUtils.isNullOrWhiteSpace(this.apiKey)){
             throw new IllegalMagicException("Weather API key not set!");
         }
 

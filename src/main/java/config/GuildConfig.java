@@ -18,6 +18,8 @@ public class GuildConfig {
 
     public String homeTown;
 
+    public String prefix;
+
     public static class VoiceSubscription{
         public Long voiceChannelId;
         public Long[] userIds;

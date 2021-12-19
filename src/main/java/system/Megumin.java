@@ -53,12 +53,15 @@ import util.HTTPRequests;
 import util.Help;
 import util.Markdown;
 import util.Pair;
+import util.StringUtils;
 import util.Time;
 import util.TimePrint;
 import start.RuntimeVariables;
 import start.StartUp;
 import survey.Survey;
 import survey.VoteChange;
+import translator.TranslatorResponse;
+import translator.LanguageResponse.Language;
 import weather.Weather;
 import wiki.Wikipedia;
 import wiki.Wikipedia.WikiPage;
@@ -154,9 +157,6 @@ public class Megumin extends ResponseType {
 						boolean inPrivate = this.isPrivate();
 						if (!inPrivate && this.isTextCommand()) {
 							this.deleteReceivedMessage();
-							this.sendPrivateAnswer(
-									"Du hast öffentlich für eine Umfrage abgestimmt. Ich habe diese Nachricht gelöscht,\n"
-											+ "eventuell hat aber jemand schon deinen geheimen Vote gesehen! :cold_sweat:");
 						}
 						VoteChange resp = this.getSurveyForKeyUserScoped(surveyKey, userId)
 								.receiveVote(this.getMessage().getUser(), surveyOption);
@@ -422,7 +422,6 @@ public class Megumin extends ResponseType {
 					this.sendAnswer("überspringe Musik...");
 					this.deleteReceivedMessage();
 				}
-				this.getMusicWrapper().getMusicBotHandler().setLoop(false);
 				this.getMusicWrapper().getMusicBotHandler().next(count);// Count = 1, unless a different number was
 																		// parsed
 			}
@@ -989,7 +988,7 @@ public class Megumin extends ResponseType {
 					.flatMap(user -> user.getPrivateChannel())
 					.flatMap(channel -> channel.createMessage(spec ->{
 						spec.setContent(Markdown.toSafeMultilineBlockQuotes("In "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los. Komm und sag Hallo!\n\n"
-							+"Schreib auf dem entsprechendem Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!"));
+							+"Schreib auf dem entsprechenden Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!"));
 					})).block();
 				}
 			}
@@ -1285,13 +1284,15 @@ public class Megumin extends ResponseType {
 		switch(args.size()){
 			// Current config
 			case 1:
-				answer += "Es gelten folgende Einstellungen:\n\n"
+				answer += "Es gelten folgende Einstellungen:\n"
 				       + "Hier werden Infos zur Musiksession geposted: " + Markdown.toBold(target.getMusicWrapper().getMusicChannelId().isPresent() ? target.getChannelById(target.getMusicWrapper().getMusicChannelId().get()).getName() : "Kanal wird automatisch ermittelt")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";musik;channelId oder Name")+"\n\n"
-					   + "Rolle mit mehr Berechtigungen (aktuell Lautstärke ändern): "+ Markdown.toBold(target.getConfig().getSecurityProvider().specialRoleId != null ? target.getRoleById(target.getConfig().getSecurityProvider().specialRoleId).getName() : "Keiner außer Admins haben Extraberechtigungen")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";spezial;rollenId oder Name")+"\n\n"
+					   + "Rolle mit mehr Berechtigungen: "+ Markdown.toBold(target.getConfig().getSecurityProvider().specialRoleId != null ? target.getRoleById(target.getConfig().getSecurityProvider().specialRoleId).getName() : "Keiner außer Serveradmins hat Extraberechtigungen")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";spezial;rollenId oder Name")+"\n\n"
 					   + "Systembenachrichtigungen zum Bot (keine Update Infos): "+Markdown.toBold(target.getConfig().psaNote ? "Ja, dein Server bleibt immer informiert!" : "Nein, dein Server lebt hinterm Mond!")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";psa")+"\n\n"
 					   + "Benachrichtigungen bei neuen Updates: "+ Markdown.toBold(target.getConfig().updateNote ? "Ja, dein Server wird bei neuen Updates informiert!" : "Nein, deine Servermitglieder erfahren nicht, wenn es neue Funktionen zum Ausprobieren gibt!")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";update")+"\n\n"
-					   + "Heimatstadt: "+Markdown.toBold(target.getConfig().homeTown != null && !target.getConfig().homeTown.equals("") ? target.getConfig().homeTown : "Nichts angegeben, verwende Standard: "+RuntimeVariables.getInstance().getHometown())+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";stadt;Deine Stadt")+"\n\n";
-				break;
+					   + "Heimatstadt: "+Markdown.toBold(target.getConfig().homeTown != null && !target.getConfig().homeTown.equals("") ? target.getConfig().homeTown : "Nichts angegeben, verwende Standard: "+RuntimeVariables.getInstance().getHometown())+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";stadt;Deine Stadt")+"\n\n"
+					   + "Befehlsprefix (NUR auf deinem Server): "+Markdown.toBold(!StringUtils.isNullOrWhiteSpace(target.getConfig().customPrefix) ? target.getConfig().customPrefix : "Nichts angegeben.")+"\nSchreib zum Konfigurieren "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";prefix;neuer Prefix")+"\n\n";
+				this.sendPrivateAnswer(answer);
+				return;
 			// Apply config (case 3 if config requires args)
 			case 3:
 				configArg = args.get(2);
@@ -1367,6 +1368,13 @@ public class Megumin extends ResponseType {
 						target.getConfig().homeTown = configArg;
 						answer += configArg.equals("") ? "Verwende Standard "+Markdown.toBold(RuntimeVariables.getInstance().getHometown()) : "Die Heimatstadt des Servers ist nun "+Markdown.toBold(configArg);
 						break;
+					case "prefix":
+					case "command":
+					case "cmd":
+					case "befehl":
+						target.getConfig().customPrefix = configArg;
+						answer += StringUtils.isNullOrWhiteSpace(configArg) ? "Prefix gelöscht. Alle Befehle fangen mit "+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+ " an!" : "Befehle fangen auf deinem Server jetzt mit "+Markdown.toBold(configArg)+" an. Der alte Prefix ("+Markdown.toBold(RuntimeVariables.getInstance().getCommandPrefix())+") funktioniert aber weiterhin!";
+						break;
 					default:
 					this.sendPrivateAnswer("Ungültiger Parameter. Argumente müssen mit Semikolon getrennt werden. Versuchs mit "+Markdown.toCodeBlock("MegConfig "+targetGuild.getId().asString()+";option;argumente"));
 					this.deleteReceivedMessage();
@@ -1381,7 +1389,13 @@ public class Megumin extends ResponseType {
 
 		this.sendPrivateAnswer(answer);
 		this.deleteReceivedMessage();
-		this.getGlobalProxy().saveAllGuilds();
+		try{
+			this.getGlobalProxy().saveAllGuilds();
+			this.sendPrivateAnswer("Einstellungen erfolgreich gespeichert :white_check_mark:");
+		}
+		catch(Exception e){
+			this.sendPrivateAnswer("Beim Speichern ist ein Problem aufgetreten. Bitte prüfe die aktuellen Einstellungen und versuche es ggf. nochmal! :x:");
+		}
 	}
 
 	@Override
@@ -1419,10 +1433,11 @@ public class Megumin extends ResponseType {
 				interactionAns = "eine Befehlsliste wurde dir privat zugesendet!";
 				break;
 			default:
-				interactionAns = "dafür gibt es keine Befehlsliste!";
+				this.sendAnswer("dafür gibt es keine Befehlsliste!");
+				return;
 		}
 
-		if(!this.isTextCommand()){
+		if(!this.isPrivate()){
 			this.sendAnswer(interactionAns);
 		}
 	}
@@ -1436,6 +1451,55 @@ public class Megumin extends ResponseType {
 		}
 		catch(Exception e){
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected void onTranslate(String query) {
+		if(StringUtils.isNullOrWhiteSpace(query)){
+			this.sendAnswer("Text fehlt! Was soll ich übersetzen?");
+			return;
+		}
+		
+		Optional<Message> msg = this.sendAnswer("wird übersetzt... :mag:");
+
+		Optional<TranslatorResponse[]> resps = this.getGlobalProxy().getTranslatorService().translate(new String[] {query}, "de");
+		if(resps.isEmpty() || resps.get().length == 0 || resps.get()[0].translations == null || resps.get()[0].translations.length == 0){
+			String errMsg = this.getMessageAuthor().getMention()+", konnte "+Markdown.toBold(query)+" nicht übersetzen!";
+			if(msg.isPresent()){
+				msg.get().edit(spec -> spec.setContent(errMsg)).block();
+			}
+			else{
+				this.sendAnswer(errMsg);
+			}
+			return;
+		}
+
+		
+
+		TranslatorResponse firstResp = resps.get()[0];
+		Optional<Language> detectedLang = firstResp.detectedLanguage != null ? this.getGlobalProxy().getTranslatorService().getLanguage(firstResp.detectedLanguage.language, "de") : Optional.empty();
+		String successMsg = Markdown.toSafeMultilineBlockQuotes(this.getMessageAuthor().getMention()+"\n"+(detectedLang.isPresent() ? "Erkannte Sprache: "+Markdown.toBold(detectedLang.get().name)+"\n" : "")
+		+ "\nÜbersetzung: "+Markdown.toBold(firstResp.translations[0].text));
+
+		if(msg.isPresent()){
+			msg.get().edit(spec -> spec.setContent(successMsg)).block();
+		}
+		else{
+			this.sendAnswer(successMsg);
+		}
+	}
+
+	@Override
+	protected void onPrevMusic() {
+		if(this.handleMusicCheck(true, true)){
+			Optional<AudioTrack> prevTrack = this.config.musicWrapper.getMusicBotHandler().playPrevious();
+			if(prevTrack.isPresent()){
+				this.sendAnswer("spiele vorherigen Song "+Markdown.toBold(prevTrack.get().getInfo().title) + " von "+Markdown.toBold(prevTrack.get().getInfo().author));
+			}
+			else{
+				this.sendAnswer("kein vorheriger Song vorhanden!");
+			}
 		}
 	}
 }
