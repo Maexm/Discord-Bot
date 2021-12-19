@@ -140,6 +140,7 @@ public abstract class ResponseType extends Middleware {
 					case "stop":
 					case "musicstop":
 					case "leave":
+					case "verlassen":
 						this.onStopMusic();
 						break;
 					case "musicnxt":
@@ -402,6 +403,7 @@ public abstract class ResponseType extends Middleware {
 					case "zurueck":
 					case "prev":
 					case "previous":
+					case "b":
 						this.onPrevMusic();
 						break;
 					default:
