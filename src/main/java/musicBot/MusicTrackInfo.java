@@ -32,7 +32,7 @@ public class MusicTrackInfo {
 
 	public MusicTrackInfo(final String url, final User submittedByUser, final AudioEventHandler audioEventHandler,
 			final DecompiledMessage userRequestMessage, final Function<String, Mono<Void>> editMsg, final ScheduleType scheduleType, final SpotifyResolver spotifyResolver) {
-		final String sanitizedUrl = url.replace("{", "").replace("}", "");
+		final String sanitizedUrl = url.replace("${", "").replace("{", "").replace("}", "");
 		this.originalQuery = sanitizedUrl;
 		this.trackQuery = this.evalUrl(sanitizedUrl, spotifyResolver); // Determine search term for track loader & determine track type
 
