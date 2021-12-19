@@ -368,7 +368,7 @@ public class Survey {
 				+ Markdown.toBold(this.description) + "\n" + optionsText + "\n" + "Die Umfrage endet am: "
 				+ Markdown.toBold(TimePrint.DD_MMMM_YYYY_HH_MM_SS(this.endTime)) + "\n" + this.getMultiTextNew() + "\n"
 				+ "Schreib mir (am besten privat):\n"
-				+ Markdown.toBold("MegUmfrage " + Markdown.toUnderlined(this.key) + "-OPTION_NUMMER") + "\n"
+				+ Markdown.toBold("MegUmfrage " + Markdown.toUnderlined(this.key) + ";OPTION_NUMMER") + "\n"
 				+ "Achte auf korrekte Syntax!";
 	}
 

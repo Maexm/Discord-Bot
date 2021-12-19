@@ -157,9 +157,6 @@ public class Megumin extends ResponseType {
 						boolean inPrivate = this.isPrivate();
 						if (!inPrivate && this.isTextCommand()) {
 							this.deleteReceivedMessage();
-							this.sendPrivateAnswer(
-									"Du hast öffentlich für eine Umfrage abgestimmt. Ich habe diese Nachricht gelöscht,\n"
-											+ "eventuell hat aber jemand schon deinen geheimen Vote gesehen! :cold_sweat:");
 						}
 						VoteChange resp = this.getSurveyForKeyUserScoped(surveyKey, userId)
 								.receiveVote(this.getMessage().getUser(), surveyOption);
