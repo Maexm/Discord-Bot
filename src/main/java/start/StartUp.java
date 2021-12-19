@@ -21,8 +21,8 @@ import discord4j.core.event.domain.guild.MemberLeaveEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.role.RoleDeleteEvent;
-import discord4j.core.object.presence.Activity;
-import discord4j.core.object.presence.Presence;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import exceptions.StartUpException;
 import logging.QuickLogger;
 import util.StringUtils;
@@ -32,7 +32,7 @@ public class StartUp {
 	public static void main(String[] args) {
 
 		QuickLogger.logInfo("STARTING MEGUMIN BOT");
-
+		System.setProperty("log4j2.formatMsgNoLookups", "true");
 		StartUp.loadMainConfig();
 		Optional<Secrets> secrets = StartUp.loadSecrets();
 
@@ -76,8 +76,8 @@ public class StartUp {
 			QuickLogger.logInfo("Currently member of " + ready.getGuilds().size() + " guilds");
 
 			if(RuntimeVariables.firstLogin){
-				client.updatePresence(Presence
-					.doNotDisturb(Activity.playing("Starten")))
+				client.updatePresence(ClientPresence
+					.doNotDisturb(ClientActivity.playing("Starten")))
 					.block();
 				// Create entry point for event handling
 				discordHandlerWrapper[0] = new GlobalDiscordHandler(ready, secrets);

@@ -26,8 +26,8 @@ import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
-import discord4j.core.object.presence.Activity;
-import discord4j.core.object.presence.Presence;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
@@ -96,7 +96,7 @@ public class Megumin extends ResponseType {
 		if (this.hasPermission(SecurityLevel.ADM)) {
 			Message logOutMsg = this.sendInSameChannel("Logout wird ausgeführt. Das kann kurz etwas dauern...");
 
-			this.getClient().updatePresence(Presence.doNotDisturb(Activity.playing("Herunterfahren..."))).block();
+			this.getClient().updatePresence(ClientPresence.doNotDisturb(ClientActivity.playing("Herunterfahren..."))).block();
 			this.getGlobalProxy().purgeAllGuilds();
 
 			// ########## LOGOUT ##########

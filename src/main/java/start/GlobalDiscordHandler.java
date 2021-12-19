@@ -25,8 +25,8 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.presence.Activity;
-import discord4j.core.object.presence.Presence;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import logging.QuickLogger;
 import musicBot.MusicWrapper;
 import schedule.RefinedTimerTask;
@@ -79,8 +79,8 @@ public class GlobalDiscordHandler {
 
         this.surveys = new ArrayList<>();
 
-        this.client.updatePresence(Presence
-					.online(Activity.playing(RuntimeVariables.getStatus())))
+        this.client.updatePresence(ClientPresence
+					.online(ClientActivity.playing(RuntimeVariables.getStatus())))
 					.block();
 
         // ########## TASKS ##########
@@ -91,7 +91,7 @@ public class GlobalDiscordHandler {
 			@Override
 			public void runTask() {
 				try{
-                client.updatePresence(Presence.online(Activity.playing(RuntimeVariables.getStatus()))).block();
+                client.updatePresence(ClientPresence.online(ClientActivity.playing(RuntimeVariables.getStatus()))).block();
                    Calendar now = Time.getNow();
                    switch(now.get(Calendar.MONTH) + 1){
                        case 3:
@@ -111,7 +111,7 @@ public class GlobalDiscordHandler {
                             case 1:
                                 String url = RuntimeVariables.getInstance().getConfig().data[1];
                                 if(url != null && !url.equals("")){
-                                    client.updatePresence(Presence.online(Activity.streaming(RuntimeVariables.getStatus(), url))).block();
+                                    client.updatePresence(ClientPresence.online(ClientActivity.streaming(RuntimeVariables.getStatus(), url))).block();
                                 }
                                 break;
                         }
