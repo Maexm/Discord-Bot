@@ -359,6 +359,9 @@ public class AudioEventHandler extends AudioEventAdapter {
 				QuickLogger.logDebug("Starting next!");
 				this.next(1);
 			}
+			else{
+				this.ended();
+			}
 		}
 		// NO MORE TRACKS IN QUEUE -> STOPPING
 		else if(endReason != AudioTrackEndReason.REPLACED){
