@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import discord4j.core.event.domain.interaction.InteractionCreateEvent;
+import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.command.ApplicationCommandInteraction;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
@@ -22,7 +22,7 @@ public class DecompiledMessage {
     private User msgAuthorObject;
     private Optional<Member> msgMember;
     private Optional<Message> messageObject = Optional.empty();
-    private Optional<InteractionCreateEvent> interactionObject = Optional.empty();
+    private Optional<DeferrableInteractionEvent> interactionObject = Optional.empty();
     private MessageChannel channel;
     private Guild guild;
     private boolean broken = true;
@@ -45,7 +45,7 @@ public class DecompiledMessage {
         }
     }
 
-    public DecompiledMessage(InteractionCreateEvent event, String prefix){
+    public DecompiledMessage(DeferrableInteractionEvent event, String prefix){
         try{
             ApplicationCommandInteraction command = event.getInteraction().getCommandInteraction().orElse(null);
             Interaction interaction = event.getInteraction();
@@ -68,7 +68,7 @@ public class DecompiledMessage {
             this.messageObject = Optional.empty();
             this.interactionObject = Optional.ofNullable(event);
             this.guild = interaction.getGuild().block();
-            event.acknowledge().block();
+            event.deferReply().block();
             this.broken = false;
         } catch(Exception e){
             QuickLogger.logFatalErr("Something went wrong, while accepting interaction event!");
@@ -118,7 +118,7 @@ public class DecompiledMessage {
         return this.messageObject;
     }
 
-    public Optional<InteractionCreateEvent> getInteraction(){
+    public Optional<DeferrableInteractionEvent> getInteraction(){
         return this.interactionObject;
     }
 

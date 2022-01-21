@@ -16,7 +16,7 @@ import config.FileManager;
 import config.GuildConfig;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.interaction.InteractionCreateEvent;
+import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
@@ -153,7 +153,7 @@ public class GlobalDiscordHandler {
         }
     }
 
-    public void acceptEvent(InteractionCreateEvent event){
+    public void acceptEvent(DeferrableInteractionEvent event){
         DecompiledMessage msg = new DecompiledMessage(event, RuntimeVariables.getInstance().getCommandPrefix());
         if(msg.isBroken()){
             return;

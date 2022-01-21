@@ -16,6 +16,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.MessageEditSpec;
 import discord4j.rest.http.client.ClientException;
 import logging.QuickLogger;
 import system.DecompiledMessage;
@@ -537,9 +538,7 @@ public class AudioEventHandler extends AudioEventAdapter {
 					throw new NullPointerException();
 				}
 				else{
-					this.radioMessage = Optional.of(this.radioMessage.get().edit(spec -> {
-						spec.setContent(this.buildInfoText());
-					}).block());
+					this.radioMessage = Optional.of(this.radioMessage.get().edit(MessageEditSpec.builder().contentOrNull(this.buildInfoText()).build()).block());
 				}
 			}
 			catch(ClientException | NullPointerException clientException){

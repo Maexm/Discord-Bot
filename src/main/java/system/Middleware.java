@@ -24,6 +24,7 @@ import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.presence.Presence;
+import discord4j.core.spec.VoiceChannelJoinSpec;
 import discord4j.rest.http.client.ClientException;
 import discord4j.voice.AudioProvider;
 import logging.QuickLogger;
@@ -614,7 +615,7 @@ public abstract class Middleware {
 				QuickLogger.logWarn("Already connected to same channel '" + CHANNEL_NAME + "'!");
 			}
 			QuickLogger.logDebug("Trying to connect to voice channel '" + CHANNEL_NAME + "'");
-			/*this.voiceConnection = */channel.join(spec -> spec.setProvider(audioProvider)).log().block(Duration.ofSeconds(30l));
+			/*this.voiceConnection = */channel.join(VoiceChannelJoinSpec.builder().provider(audioProvider).build()).log().block(Duration.ofSeconds(30l));
 			//channel.sendConnectVoiceState(false, false).block(Duration.ofSeconds(30l));
 			QuickLogger.logDebug("Connected to voice channel '" + CHANNEL_NAME + "'");
 		}

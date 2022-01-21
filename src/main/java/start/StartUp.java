@@ -11,7 +11,7 @@ import config.MainConfig;
 import config.SecretsConfig;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.interaction.InteractionCreateEvent;
+import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.channel.TextChannelDeleteEvent;
 import discord4j.core.event.domain.channel.VoiceChannelDeleteEvent;
@@ -118,7 +118,7 @@ public class StartUp {
 			}
 		});
 
-		client.getEventDispatcher().on(InteractionCreateEvent.class).subscribe(event -> {
+		client.getEventDispatcher().on(DeferrableInteractionEvent.class).subscribe(event -> {
 			try{
 				if (RuntimeVariables.isDebug) {
 					QuickLogger.logDebug("Event received!");
