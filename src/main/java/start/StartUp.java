@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import config.FileManager;
 import config.MainConfig;
 import config.SecretsConfig;
-import discord4j.core.DiscordClientBuilder;
+import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.InteractionCreateEvent;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
@@ -23,6 +23,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.role.RoleDeleteEvent;
 import discord4j.core.object.presence.ClientActivity;
 import discord4j.core.object.presence.ClientPresence;
+import discord4j.gateway.intent.IntentSet;
 import exceptions.StartUpException;
 import logging.QuickLogger;
 import util.StringUtils;
@@ -63,7 +64,12 @@ public class StartUp {
 		// Objects
 		GlobalDiscordHandler[] discordHandlerWrapper = new GlobalDiscordHandler[1];
 
-		final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build().login().block();
+		final GatewayDiscordClient client = DiscordClient
+											.create(TOKEN)
+											.gateway()
+											.setEnabledIntents(IntentSet.all())
+											.login()
+											.block();
 
 		if(secrets.isEmpty()){
 			QuickLogger.logWarn("No secrets.json file found. Some services will not work.");
