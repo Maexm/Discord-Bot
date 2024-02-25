@@ -144,9 +144,9 @@ public class MusicTrackInfo {
 
 				// Further determine what type of spotify url we are dealing with
 				// ########## TRACK ##########
-				if(nonUrlPath.startsWith("track:") || urlObj != null && urlObj.getPath().startsWith("/track/")){
+				if(nonUrlPath.startsWith("track:") || urlObj != null && urlObj.getPath().contains("/track/")){
 					// Extract id and pass fetch metadata
-					final String id = urlObj == null ? nonUrlPath.replaceFirst("track:", "") : urlObj.getPath().replace("/track/", "");
+					final String id = urlObj == null ? nonUrlPath.replaceFirst("track:", "") : urlObj.getPath().replaceFirst(".*/track/", "");
 					SpotifyTrackResponse trackResponse = spotifyResolver.getSpotifyObject(id, SpotifyTrackResponse.class, true);
 
 					// Evaluate metadata
@@ -156,9 +156,9 @@ public class MusicTrackInfo {
 					}
 				}
 				// ########## ALBUM ##########
-				else if(nonUrlPath.startsWith("album:") || urlObj != null && urlObj.getPath().startsWith("/album/")){
+				else if(nonUrlPath.startsWith("album:") || urlObj != null && urlObj.getPath().contains("/album/")){
 					// Same comments as for "track"
-					final String id = urlObj == null ? nonUrlPath.replaceFirst("album:", "") : urlObj.getPath().replace("/album/", "");
+					final String id = urlObj == null ? nonUrlPath.replaceFirst("album:", "") : urlObj.getPath().replaceFirst(".*/album/", "");
 					SpotifyAlbumResponse albumResponse = spotifyResolver.getSpotifyObject(id, SpotifyAlbumResponse.class, true);
 
 					if(albumResponse != null){
@@ -167,9 +167,9 @@ public class MusicTrackInfo {
 					}
 				}
 				// ########## ARTIST ##########
-				else if(/*nonUrlPath.startsWith("artist:") || */urlObj != null && urlObj.getPath().startsWith("/artist/")){
+				else if(/*nonUrlPath.startsWith("artist:") || */urlObj != null && urlObj.getPath().contains("/artist/")){
 					// Same comments as for "track"
-					final String id = urlObj == null ? nonUrlPath.replaceFirst("artist:", "") : urlObj.getPath().replace("/artist/", "");
+					final String id = urlObj == null ? nonUrlPath.replaceFirst("artist:", "") : urlObj.getPath().replaceFirst(".*/artist/", "");
 					SpotifyArtistResponse artistResponse = spotifyResolver.getSpotifyObject(id, SpotifyArtistResponse.class, true);
 
 					if(artistResponse != null){
