@@ -152,7 +152,7 @@ public class MusicTrackInfo {
 					// Evaluate metadata
 					if(trackResponse != null){
 						String firstArtistName = trackResponse.artists != null && trackResponse.artists.length > 0 ? trackResponse.artists[0].name+" " : "";
-						return "ytsearch:"+firstArtistName+trackResponse.name;
+						return "ytsearch: "+firstArtistName+trackResponse.name;
 					}
 				}
 				// ########## ALBUM ##########
@@ -163,7 +163,7 @@ public class MusicTrackInfo {
 
 					if(albumResponse != null){
 						String firstArtistName = albumResponse.artists != null && albumResponse.artists.length > 0 ? albumResponse.artists[0].name+" " : "";
-						return "ytsearch:"+firstArtistName+albumResponse.name;
+						return "ytsearch: "+firstArtistName+albumResponse.name;
 					}
 				}
 				// ########## ARTIST ##########
@@ -173,7 +173,7 @@ public class MusicTrackInfo {
 					SpotifyArtistResponse artistResponse = spotifyResolver.getSpotifyObject(id, SpotifyArtistResponse.class, true);
 
 					if(artistResponse != null){
-						return "ytsearch:"+artistResponse.name+" album";
+						return "ytsearch: "+artistResponse.name+" album";
 					}
 				}
 
@@ -184,7 +184,7 @@ public class MusicTrackInfo {
 		// Not an url or invalid host => yt search
 		if(urlObj == null || !this.isValidHost(urlObj.getHost())) {
 			this.trackType = TrackType.YOUTUBE_SEARCH;
-			return "ytsearch:"+url;
+			return "ytsearch: "+url;
 		}
 
 		// Valid url and valid host but not a spotify link => Will load track directly from given url
