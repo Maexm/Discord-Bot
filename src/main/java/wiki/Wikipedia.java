@@ -47,7 +47,10 @@ public class Wikipedia {
     }
 
     private static WikiResult fetchResult(final String url){
-        String response = HTTPRequests.getSimple(url);
+        // Recently, wikipedia started blocking requests that do not allign with their robot policies
+        // See https://wikitech.wikimedia.org/wiki/Robot_policy
+        // And more specifically (concerning user agent header) this: https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
+        String response = HTTPRequests.getSimpleWithHeaders(url, "User-Agent", "bot");
         Gson gson = new Gson();
         return gson.fromJson(response, WikiResult.class);
     }
