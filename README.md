@@ -31,6 +31,12 @@ Nach dem Start erhält der User einen Bot-Token prompt. Hier einfach den Token f
 
 Eventuell werden SLF4J Fehler angezeigt. Diese können ignoriert werden.
 Der Bot ist generisch gestaltet und mit mehreren Servern kompatibel.
+
+# Docker deployment
+Eine 'Dockerfile' mit eingebauter Build-Stage ist im Repo enthalten. Zum bauen 'docker build -t irgendein_image_name .' im Repo Rootverzeichnis ausführen. Das fertige Image dann mit Docker starten.
+- Wenn sich die Projetkversion ändert, ändert sich auch die kompilierte jar-Datei (meguminBot-{version}-jar-with-dependencies.jar). In dem Fall muss auch der Dateiname in der Dockerdatei entsprechend angepasst werden.
+- Client Secrets müssen vor dem Build in './botConfig' existieren. Nachträglich lassen sich die Configs momentan nicht bearbeiten.
+
 # (DEPRECATED) Wie orientiere ich mich in dem Spaghetticode?
 
 Offensichtlich beginnt der Bot bei **StartUp**. Von dort aus werden messageReceivedEvents an **BotHeart** weitergegeben und von dort aus an eine Instanz von **ResponseType**, wo der Befehl dann schließlich verarbeitet wird.
