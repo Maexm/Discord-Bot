@@ -17,7 +17,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
-import discord4j.core.event.domain.interaction.InteractionCreateEvent;
+import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
@@ -28,6 +28,10 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.ClientActivity;
 import discord4j.core.object.presence.ClientPresence;
+import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.InteractionFollowupCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
+import discord4j.core.spec.MessageEditSpec;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
@@ -101,7 +105,7 @@ public class Megumin extends ResponseType {
 
 			// ########## LOGOUT ##########
 			QuickLogger.logInfo("Logging out!");
-			logOutMsg = logOutMsg.edit(edit -> edit.setContent("Bis bald!")).block();
+			logOutMsg = logOutMsg.edit(MessageEditSpec.builder().contentOrNull("Bis bald!").build()).block();
 
 			this.getGlobalProxy().logout();
 		} else {
@@ -292,7 +296,7 @@ public class Megumin extends ResponseType {
 				this.sendAnswer(result);
 			}
 			else{
-				msg.get().edit(spec -> spec.setContent(result)).block();
+				msg.get().edit(MessageEditSpec.builder().contentOrNull(result).build()).block();
 			}
 		}
 	}
@@ -317,18 +321,18 @@ public class Megumin extends ResponseType {
 				}
 				// MUSIC PLAYBACK
 				Optional<Message> infoMsg = this.sendAnswer("dein Trackvorschlag wird verarbeitet :mag:", true);
-				Optional<InteractionCreateEvent> interaction = this.getMessage().getInteraction();
+				Optional<DeferrableInteractionEvent> interaction = this.getMessage().getInteraction();
 				try {
 					MusicTrackInfo musicTrack = new MusicTrackInfo(query,
 							this.getMessage().getUser(), this.getMusicWrapper().getMusicBotHandler(),
 							this.getMessage(),
 							(String msg) -> {
 								if(infoMsg.isPresent()){
-									return infoMsg.get().edit(spec -> spec.setContent(msg)).onErrorResume(err -> null).then();
+									return infoMsg.get().edit(MessageEditSpec.builder().contentOrNull(msg).build()).onErrorResume(err -> null).then();
 								}
 								else{
 									if(interaction.isPresent()){
-										return interaction.get().getInteractionResponse().createFollowupMessage(msg).onErrorResume(err -> null).then();
+										return interaction.get().createFollowup(InteractionFollowupCreateSpec.builder().content(msg).build()).onErrorResume(err -> null).then();
 									}
 									return Mono.empty();
 								}
@@ -753,17 +757,17 @@ public class Megumin extends ResponseType {
 	
 			final String humanUrl = "https://" + page.CUSTOM_PROP_LANGUAGE + "." + Wikipedia.WIKI_NORMAL_BASE_URL
 					+ HTTPRequests.urlEncode(page.title.replace(" ", "_"));
-	
-			this.getMessageChannel().createEmbed(spec -> {
-				spec.setColor(Color.CYAN)
-				.setTitle(page.title)
-				.setUrl(humanUrl)
-				.setDescription(page.extract);
-	
-				if (page.original != null) {
-					spec.setImage(page.original.source);
-				}
-			}).block();
+			
+					EmbedCreateSpec.Builder builder = EmbedCreateSpec.builder()
+						.color(Color.CYAN)
+						.title(page.title)
+						.url(humanUrl)
+						.description(page.extract);
+						
+					if (page.original != null) {
+						builder.image(page.original.source);
+					}
+			this.getMessageChannel().createMessage(builder.build()).block();
 		}
 
 		if(loadingMessage.isPresent()){
@@ -986,10 +990,8 @@ public class Megumin extends ResponseType {
 					// Else notify user
 					this.getClient().getUserById(userId)
 					.flatMap(user -> user.getPrivateChannel())
-					.flatMap(channel -> channel.createMessage(spec ->{
-						spec.setContent(Markdown.toSafeMultilineBlockQuotes("In "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los. Komm und sag Hallo!\n\n"
-							+"Schreib auf dem entsprechenden Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!"));
-					})).block();
+					.flatMap(channel -> channel.createMessage(MessageCreateSpec.builder().content(Markdown.toSafeMultilineBlockQuotes("In "+Markdown.toBold(this.getGuildSecureName())+" im "+Markdown.toBold(voiceChannel.getName())+" VoiceChannel ist etwas los. Komm und sag Hallo!\n\n"
+						+"Schreib auf dem entsprechenden Server "+Markdown.toCodeBlock("MegUnfollow "+voiceChannel.getId().asString())+" um die Benachrichtigung auszuschalten!")).build())).block();
 				}
 			}
 		}
@@ -1202,10 +1204,10 @@ public class Megumin extends ResponseType {
 			else{
 				try(InputStream fileStream = new FileInputStream(logFile)){
 					this.getMessageAuthorPrivateChannel()
-					.createMessage(spec -> 
-								spec.addFile("nohup.txt", fileStream)
-								.setContent("Hier deine Logdatei!")
-								)
+					.createMessage(MessageCreateSpec.builder()
+								.addFile("nohup.txt", fileStream)
+								.content("Hier deine Logdatei!")
+								.build())
 								.block();
 				}
 			}
@@ -1467,7 +1469,7 @@ public class Megumin extends ResponseType {
 		if(resps.isEmpty() || resps.get().length == 0 || resps.get()[0].translations == null || resps.get()[0].translations.length == 0){
 			String errMsg = this.getMessageAuthor().getMention()+", konnte "+Markdown.toBold(query)+" nicht übersetzen!";
 			if(msg.isPresent()){
-				msg.get().edit(spec -> spec.setContent(errMsg)).block();
+				msg.get().edit(MessageEditSpec.builder().contentOrNull(errMsg).build()).block();
 			}
 			else{
 				this.sendAnswer(errMsg);
@@ -1483,7 +1485,7 @@ public class Megumin extends ResponseType {
 		+ "\nÜbersetzung: "+Markdown.toBold(firstResp.translations[0].text));
 
 		if(msg.isPresent()){
-			msg.get().edit(spec -> spec.setContent(successMsg)).block();
+			msg.get().edit(MessageEditSpec.builder().contentOrNull(successMsg).build()).block();
 		}
 		else{
 			this.sendAnswer(successMsg);

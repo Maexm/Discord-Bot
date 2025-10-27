@@ -144,36 +144,36 @@ public class MusicTrackInfo {
 
 				// Further determine what type of spotify url we are dealing with
 				// ########## TRACK ##########
-				if(nonUrlPath.startsWith("track:") || urlObj != null && urlObj.getPath().startsWith("/track/")){
+				if(nonUrlPath.startsWith("track:") || urlObj != null && urlObj.getPath().contains("/track/")){
 					// Extract id and pass fetch metadata
-					final String id = urlObj == null ? nonUrlPath.replaceFirst("track:", "") : urlObj.getPath().replace("/track/", "");
+					final String id = urlObj == null ? nonUrlPath.replaceFirst("track:", "") : urlObj.getPath().replaceFirst(".*/track/", "");
 					SpotifyTrackResponse trackResponse = spotifyResolver.getSpotifyObject(id, SpotifyTrackResponse.class, true);
 
 					// Evaluate metadata
 					if(trackResponse != null){
 						String firstArtistName = trackResponse.artists != null && trackResponse.artists.length > 0 ? trackResponse.artists[0].name+" " : "";
-						return "ytsearch:"+firstArtistName+trackResponse.name;
+						return "ytsearch: "+firstArtistName+trackResponse.name;
 					}
 				}
 				// ########## ALBUM ##########
-				else if(nonUrlPath.startsWith("album:") || urlObj != null && urlObj.getPath().startsWith("/album/")){
+				else if(nonUrlPath.startsWith("album:") || urlObj != null && urlObj.getPath().contains("/album/")){
 					// Same comments as for "track"
-					final String id = urlObj == null ? nonUrlPath.replaceFirst("album:", "") : urlObj.getPath().replace("/album/", "");
+					final String id = urlObj == null ? nonUrlPath.replaceFirst("album:", "") : urlObj.getPath().replaceFirst(".*/album/", "");
 					SpotifyAlbumResponse albumResponse = spotifyResolver.getSpotifyObject(id, SpotifyAlbumResponse.class, true);
 
 					if(albumResponse != null){
 						String firstArtistName = albumResponse.artists != null && albumResponse.artists.length > 0 ? albumResponse.artists[0].name+" " : "";
-						return "ytsearch:"+firstArtistName+albumResponse.name;
+						return "ytsearch: "+firstArtistName+albumResponse.name;
 					}
 				}
 				// ########## ARTIST ##########
-				else if(/*nonUrlPath.startsWith("artist:") || */urlObj != null && urlObj.getPath().startsWith("/artist/")){
+				else if(/*nonUrlPath.startsWith("artist:") || */urlObj != null && urlObj.getPath().contains("/artist/")){
 					// Same comments as for "track"
-					final String id = urlObj == null ? nonUrlPath.replaceFirst("artist:", "") : urlObj.getPath().replace("/artist/", "");
+					final String id = urlObj == null ? nonUrlPath.replaceFirst("artist:", "") : urlObj.getPath().replaceFirst(".*/artist/", "");
 					SpotifyArtistResponse artistResponse = spotifyResolver.getSpotifyObject(id, SpotifyArtistResponse.class, true);
 
 					if(artistResponse != null){
-						return "ytsearch:"+artistResponse.name+" album";
+						return "ytsearch: "+artistResponse.name+" album";
 					}
 				}
 
@@ -184,7 +184,7 @@ public class MusicTrackInfo {
 		// Not an url or invalid host => yt search
 		if(urlObj == null || !this.isValidHost(urlObj.getHost())) {
 			this.trackType = TrackType.YOUTUBE_SEARCH;
-			return "ytsearch:"+url;
+			return "ytsearch: "+url;
 		}
 
 		// Valid url and valid host but not a spotify link => Will load track directly from given url

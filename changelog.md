@@ -1,5 +1,6 @@
 # Changelog
-
+## 1.4.0.1 (23th of March 2023)
+- Updated to Discord4j 3.2.4
 ## 1.4.0.0 (19th of December 2021)
 - Custom Prefix for Commands (server scoped)
 - MegBack

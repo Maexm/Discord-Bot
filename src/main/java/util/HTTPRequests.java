@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -15,12 +16,27 @@ import logging.QuickLogger;
 
 public class HTTPRequests {
 
-	public static String getSimple(final String URL) {
+	public static String getSimpleWithHeaders(final String URL, final String... headers) {
 		HttpClient client = HttpClient.newHttpClient();
-		HttpRequest req = HttpRequest.newBuilder().uri(URI.create(URL)).GET().timeout(Duration.ofSeconds(10l)).build();
+
+		Builder httpBuilder = HttpRequest.newBuilder()
+			.uri(URI.create(URL));
+		
+			// Add headers ONLY if present (passing empty headers causes errors on some web APIs)
+			if(headers != null && headers.length > 0) {
+				httpBuilder.headers(headers);
+			}
+
+			HttpRequest req = httpBuilder.GET()
+			.timeout(Duration.ofSeconds(10l))
+			.build();
 		HttpResponse<String> resp = HTTPRequests.executeHttp(client, req);
 
-		return resp != null ? resp.body() : null;	
+		return resp != null ? resp.body() : null;
+	}
+
+	public static String getSimple(final String URL) {
+		return getSimpleWithHeaders(URL, new String[0]);
 	}
 
 	

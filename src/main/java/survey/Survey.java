@@ -9,6 +9,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.MessageEditSpec;
 import exceptions.SurveyCreateIllegalDurationException;
 import logging.QuickLogger;
 import util.Markdown;
@@ -386,9 +387,7 @@ public class Survey {
 	}
 
 	private void updateMessage() {
-		this.publicMessage.edit(spec -> {
-			spec.setContent(this.createMessageText());
-		}).block();
+		this.publicMessage.edit(MessageEditSpec.builder().contentOrNull(this.createMessageText()).build()).block();
 	}
 
 	public String getIDPrint() {
